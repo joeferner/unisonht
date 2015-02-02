@@ -9,35 +9,39 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>unisonht-web</artifactId>
-    <name>UnisonHT - Web</name>
+    <artifactId>unisonht-web-jetty</artifactId>
+    <name>UnisonHT: Web: Jetty</name>
 
     <dependencies>
         <dependency>
             <groupId>com.unisonht</groupId>
-            <artifactId>unisonht-core</artifactId>
+            <artifactId>unisonht-web</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.lumify</groupId>
-            <artifactId>miniweb</artifactId>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-server</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-servlet</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-servlets</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-webapp</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.beust</groupId>
+            <artifactId>jcommander</artifactId>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.json</groupId>
-            <artifactId>json</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>commons-codec</groupId>
-            <artifactId>commons-codec</artifactId>
+            <scope>runtime</scope>
         </dependency>
     </dependencies>
 </project>

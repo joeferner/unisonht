@@ -17,8 +17,8 @@ public class FileConfigurationLoader extends ConfigurationLoader {
      * !!! DO NOT DEFINE A LOGGER here. This class get loaded very early in the process and we don't want to the logger to be initialized yet **
      */
     public static final String ENV_UNISONHT_DIR = "UNISONHT_DIR";
-    public static final String DEFAULT_UNIX_LOCATION = "/opt/lumify/";
-    public static final String DEFAULT_WINDOWS_LOCATION = "c:/opt/lumify/";
+    public static final String DEFAULT_UNIX_LOCATION = "/opt/unisonht/";
+    public static final String DEFAULT_WINDOWS_LOCATION = "c:/opt/unisonht/";
 
     public FileConfigurationLoader(Map initParameters) {
         super(initParameters);
@@ -26,7 +26,7 @@ public class FileConfigurationLoader extends ConfigurationLoader {
 
     public Configuration createConfiguration() {
         final Map<String, String> properties = new HashMap<>();
-        List<File> configDirectories = getLumifyDirectoriesFromLeastPriority("config");
+        List<File> configDirectories = getDirectoriesFromLeastPriority("config");
         if (configDirectories.size() == 0) {
             throw new UnisonhtException("Could not find any valid config directories.");
         }
@@ -37,11 +37,11 @@ public class FileConfigurationLoader extends ConfigurationLoader {
         return new Configuration(this, properties);
     }
 
-    public static List<File> getLumifyDirectoriesFromMostPriority(String subDirectory) {
-        return Lists.reverse(getLumifyDirectoriesFromLeastPriority(subDirectory));
+    public static List<File> getDirectoriesFromMostPriority(String subDirectory) {
+        return Lists.reverse(getDirectoriesFromLeastPriority(subDirectory));
     }
 
-    public static List<File> getLumifyDirectoriesFromLeastPriority(String subDirectory) {
+    public static List<File> getDirectoriesFromLeastPriority(String subDirectory) {
         List<File> results = new ArrayList<>();
 
         if (ProcessUtil.isWindows()) {
@@ -140,7 +140,7 @@ public class FileConfigurationLoader extends ConfigurationLoader {
 
     @Override
     public File resolveFileName(String fileName) {
-        List<File> configDirectories = getLumifyDirectoriesFromMostPriority("config");
+        List<File> configDirectories = getDirectoriesFromMostPriority("config");
         if (configDirectories.size() == 0) {
             throw new UnisonhtException("Could not find any valid config directories.");
         }
