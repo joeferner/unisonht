@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.unisonht.clientapi.ClientApiObject;
 import com.unisonht.config.Configuration;
-import com.unisonht.utils.ObjectMapperFactory;
+import com.unisonht.clientapi.utils.ObjectMapperFactory;
 import com.unisonht.utils.UnisonhtException;
 import com.unisonht.web.utils.ConnectionClosedException;
 import io.lumify.miniweb.HandlerChain;

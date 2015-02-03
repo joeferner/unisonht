@@ -18,7 +18,6 @@ public class UnisonhtBootstrap extends AbstractModule {
 
     public static InjectHelper.ModuleMaker bootstrapModuleMaker(final Configuration config) {
         return new InjectHelper.ModuleMaker() {
-
             @Override
             public Module createModule() {
                 return UnisonhtBootstrap.bootstrap(config);

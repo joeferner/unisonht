@@ -8,6 +8,10 @@ module unisonht {
     loadRemote: ()=>void;
   }
 
+  export interface IRemotesCtrlDocument extends Document {
+    remoteButtonPress:(buttonKey:string)=>void;
+  }
+
   export class RemotesCtrl {
     constructor(private $scope:IRemotesCtrlScope,
                 private configService:ConfigService,
@@ -21,7 +25,7 @@ module unisonht {
 
     loadRemote():void {
       var remoteName = this.$scope.selectedRemoteName;
-      document.remoteButtonPress = this.remoteButtonPress.bind(this, remoteName);
+      (<IRemotesCtrlDocument>document).remoteButtonPress = this.remoteButtonPress.bind(this, remoteName);
       $('#remote-image').attr('src', 'config/remote/' + remoteName + '/image');
       this.configService.getRemote(remoteName)
         .then((remote) => {

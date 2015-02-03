@@ -17,6 +17,10 @@ public class ClassUtil {
         }
     }
 
+    public static <T> Class<? extends T> forName(String className, Class<T> classType) {
+        return forName(className);
+    }
+
     public static Method findMethod(Class clazz, String methodName, Class[] parameters) {
         while (clazz != null) {
             try {

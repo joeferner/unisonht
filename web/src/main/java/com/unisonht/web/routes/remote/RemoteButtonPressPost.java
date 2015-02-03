@@ -2,6 +2,7 @@ package com.unisonht.web.routes.remote;
 
 import com.google.inject.Inject;
 import com.unisonht.config.Configuration;
+import com.unisonht.services.RemoteService;
 import com.unisonht.utils.UnisonhtLogger;
 import com.unisonht.utils.UnisonhtLoggerFactory;
 import com.unisonht.web.routes.BaseRequestHandler;
@@ -11,11 +12,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 public class RemoteButtonPressPost extends BaseRequestHandler {
-    private static final UnisonhtLogger LOGGER = UnisonhtLoggerFactory.getLogger(RemoteButtonPressPost.class);
+    private final RemoteService remoteService;
 
     @Inject
-    public RemoteButtonPressPost(Configuration configuration) {
+    public RemoteButtonPressPost(
+            Configuration configuration,
+            RemoteService remoteService
+    ) {
         super(configuration);
+        this.remoteService = remoteService;
     }
 
     @Override
@@ -23,7 +28,7 @@ public class RemoteButtonPressPost extends BaseRequestHandler {
         String remoteName = getAttributeString(request, "remoteName");
         String buttonName = getAttributeString(request, "buttonName");
 
-        LOGGER.debug("button press: %s %s", remoteName, buttonName);
+        remoteService.buttonPress(remoteName, buttonName);
 
         respondWithSuccessJson(response);
     }

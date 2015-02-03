@@ -181,6 +181,7 @@ public class ConfigJson extends ClientApiObject {
 
     public static class ChangeInputAction extends Action {
         private String device;
+        private String input;
 
         public String getDevice() {
             return device;
@@ -188,6 +189,14 @@ public class ConfigJson extends ClientApiObject {
 
         public void setDevice(String device) {
             this.device = device;
+        }
+
+        public String getInput() {
+            return input;
+        }
+
+        public void setInput(String input) {
+            this.input = input;
         }
     }
 

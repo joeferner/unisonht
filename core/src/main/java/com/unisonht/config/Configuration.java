@@ -1,6 +1,7 @@
 package com.unisonht.config;
 
 import com.unisonht.clientapi.ConfigJson;
+import com.unisonht.clientapi.utils.ObjectMapperFactory;
 import com.unisonht.utils.*;
 import org.apache.commons.beanutils.ConvertUtilsBean;
 

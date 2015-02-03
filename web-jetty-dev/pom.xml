@@ -37,5 +37,25 @@
             <artifactId>unisonht-plugin-tivo</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.unisonht</groupId>
+            <artifactId>unisonht-plugin-benq-projector</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.unisonht</groupId>
+            <artifactId>unisonht-plugin-yamaha-receiver</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.unisonht</groupId>
+            <artifactId>unisonht-plugin-kodi</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.unisonht</groupId>
+            <artifactId>unisonht-plugin-sony-bluray</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>

@@ -15,6 +15,10 @@
 
     <modules>
         <module>tivo</module>
+        <module>benq-projector</module>
+        <module>yamaha-receiver</module>
+        <module>kodi</module>
+        <module>sony-bluray</module>
     </modules>
 
 </project>

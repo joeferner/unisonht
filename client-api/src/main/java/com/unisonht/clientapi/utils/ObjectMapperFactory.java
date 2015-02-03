@@ -1,4 +1,4 @@
-package com.unisonht.utils;
+package com.unisonht.clientapi.utils;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;

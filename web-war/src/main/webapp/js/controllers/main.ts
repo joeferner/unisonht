@@ -15,7 +15,7 @@ module unisonht {
                 private $compile:ng.ICompileService) {
       $scope.$on('alert', function (event, args) {
         console.log('alert', args);
-        var templateScope:IMainCtrlScope = $scope.$new();
+        var templateScope:IMainCtrlScope = <IMainCtrlScope><any>$scope.$new();
         templateScope.alert = args;
         templateScope.alert.severity = templateScope.alert.severity || 'info';
         var html = $compile($templateCache.get('alert-template'))(templateScope)[0];

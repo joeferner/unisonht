@@ -4,6 +4,7 @@ import com.google.inject.Injector;
 import com.unisonht.UnisonhtBootstrap;
 import com.unisonht.config.Configuration;
 import com.unisonht.config.ConfigurationLoader;
+import com.unisonht.services.DeviceService;
 import com.unisonht.utils.InjectHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +29,7 @@ public class WebApplicationBootstrap implements ServletContextListener {
         if (context != null) {
             Configuration configuration = ConfigurationLoader.load(context.getInitParameter(APP_CONFIG_LOADER), getInitParametersAsMap(context));
             setupInjector(context, configuration);
+            setupDevices();
             setupWebApp(context);
         } else {
             throw new RuntimeException("Failed to initialize context. UnisonHT is not running.");
@@ -54,6 +56,10 @@ public class WebApplicationBootstrap implements ServletContextListener {
 
         // Store the injector in the context for a servlet to access later
         context.setAttribute(Injector.class.getName(), InjectHelper.getInjector());
+    }
+
+    private void setupDevices() {
+        InjectHelper.getInstance(DeviceService.class).loadDeviceInstances();
     }
 
     private void setupWebApp(ServletContext context) {
