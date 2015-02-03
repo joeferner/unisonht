@@ -45,27 +45,27 @@ public class FileConfigurationLoader extends ConfigurationLoader {
         List<File> results = new ArrayList<>();
 
         if (ProcessUtil.isWindows()) {
-            addLumifySubDirectory(results, DEFAULT_WINDOWS_LOCATION, subDirectory);
+            addUnisonhtSubDirectory(results, DEFAULT_WINDOWS_LOCATION, subDirectory);
         } else {
-            addLumifySubDirectory(results, DEFAULT_UNIX_LOCATION, subDirectory);
+            addUnisonhtSubDirectory(results, DEFAULT_UNIX_LOCATION, subDirectory);
         }
 
         String appData = System.getProperty("appdata");
         if (appData != null && appData.length() > 0) {
-            addLumifySubDirectory(results, new File(new File(appData), "Lumify").getAbsolutePath(), subDirectory);
+            addUnisonhtSubDirectory(results, new File(new File(appData), "UnisonHT").getAbsolutePath(), subDirectory);
         }
 
         String userHome = System.getProperty("user.home");
         if (userHome != null && userHome.length() > 0) {
-            addLumifySubDirectory(results, new File(new File(userHome), ".lumify").getAbsolutePath(), subDirectory);
+            addUnisonhtSubDirectory(results, new File(new File(userHome), ".unisonht").getAbsolutePath(), subDirectory);
         }
 
-        addLumifySubDirectory(results, System.getenv(ENV_UNISONHT_DIR), subDirectory);
+        addUnisonhtSubDirectory(results, System.getenv(ENV_UNISONHT_DIR), subDirectory);
 
         return ImmutableList.copyOf(results);
     }
 
-    private static void addLumifySubDirectory(List<File> results, String location, String subDirectory) {
+    private static void addUnisonhtSubDirectory(List<File> results, String location, String subDirectory) {
         if (location == null || location.trim().length() == 0) {
             return;
         }

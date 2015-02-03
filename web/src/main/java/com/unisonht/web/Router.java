@@ -1,7 +1,8 @@
 package com.unisonht.web;
 
 import com.google.inject.Injector;
-import com.unisonht.web.routes.button.PressPost;
+import com.unisonht.web.routes.button.ButtonPressPost;
+import com.unisonht.web.routes.config.ConfigGet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +29,9 @@ public class Router extends HttpServlet {
 
         app = new WebApp(servletContext, injector);
 
-        app.post("/button/press", PressPost.class);
+        app.get("/config", ConfigGet.class);
+
+        app.post("/button/press", ButtonPressPost.class);
     }
 
     @Override

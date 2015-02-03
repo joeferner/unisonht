@@ -1,12 +1,11 @@
 package com.unisonht.config;
 
-import com.unisonht.utils.ClassUtil;
-import com.unisonht.utils.UnisonhtException;
-import com.unisonht.utils.UnisonhtLogger;
-import com.unisonht.utils.UnisonhtLoggerFactory;
+import com.unisonht.clientapi.ConfigJson;
+import com.unisonht.utils.*;
 import org.apache.commons.beanutils.ConvertUtilsBean;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -252,5 +251,14 @@ public final class Configuration {
             }
         }
         return results;
+    }
+
+    public ConfigJson getConfigJson() {
+        File configJsonFile = resolveFileName("config.json");
+        try {
+            return ObjectMapperFactory.getInstance().readValue(configJsonFile, ConfigJson.class);
+        } catch (IOException ex) {
+            throw new UnisonhtException("Could not read: " + configJsonFile.getAbsolutePath(), ex);
+        }
     }
 }

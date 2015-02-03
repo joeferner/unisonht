@@ -30,13 +30,13 @@ public class UnisonhtLoggerFactory {
     public static UnisonhtLogger getLogger(String name) {
         ensureInitialized();
         synchronized (logMap) {
-            UnisonhtLogger lumifyLogger = logMap.get(name);
-            if (lumifyLogger != null) {
-                return lumifyLogger;
+            UnisonhtLogger unisonhtLogger = logMap.get(name);
+            if (unisonhtLogger != null) {
+                return unisonhtLogger;
             }
-            lumifyLogger = new UnisonhtLogger(LoggerFactory.getLogger(name));
-            logMap.put(name, lumifyLogger);
-            return lumifyLogger;
+            unisonhtLogger = new UnisonhtLogger(LoggerFactory.getLogger(name));
+            logMap.put(name, unisonhtLogger);
+            return unisonhtLogger;
         }
     }
 }

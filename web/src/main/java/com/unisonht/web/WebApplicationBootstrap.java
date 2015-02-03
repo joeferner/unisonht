@@ -30,7 +30,7 @@ public class WebApplicationBootstrap implements ServletContextListener {
             setupInjector(context, configuration);
             setupWebApp(context);
         } else {
-            throw new RuntimeException("Failed to initialize context. Lumify is not running.");
+            throw new RuntimeException("Failed to initialize context. UnisonHT is not running.");
         }
     }
 

@@ -17,6 +17,7 @@
         <module>web-jetty</module>
         <module>web-jetty-dev</module>
         <module>web-war</module>
+        <module>plugins</module>
     </modules>
 
     <scm>

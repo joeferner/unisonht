@@ -36,8 +36,8 @@ public class ClassUtil {
         outputClasspath(classLoader, printStream);
     }
 
-    public static void logClasspath(ClassLoader classLoader, UnisonhtLogger lumifyLogger) {
-        outputClasspath(classLoader, lumifyLogger);
+    public static void logClasspath(ClassLoader classLoader, UnisonhtLogger unisonhtLogger) {
+        outputClasspath(classLoader, unisonhtLogger);
     }
 
     private static void outputClasspath(ClassLoader classLoader, Object outputObject) {
