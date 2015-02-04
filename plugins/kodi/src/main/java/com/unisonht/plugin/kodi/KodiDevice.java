@@ -134,6 +134,7 @@ public class KodiDevice extends Device {
             }
             String results = new String(buffer, 0, count);
             LOGGER.debug("json response: %s", results);
+            LOGGER.error("TODO check results for error");
             socket = s;
             return new JSONObject(results);
         } catch (Exception ex) {

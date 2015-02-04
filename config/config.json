@@ -36,7 +36,8 @@
     "bluray": {
       "deviceClass": "com.unisonht.plugin.bluray.sony.SonyBlurayDevicePlugin",
       "data": {
-        "address": "localhost"
+        "address": "192.168.0.164",
+        "mac": "78:61:7c:a9:cc:c9"
       }
     }
   },
@@ -123,6 +124,46 @@
       }
     },
     "bluray": {
+      "onEnter": {
+        "action": "simultaneous",
+        "actions": [
+          {
+            "action": "ensureOn",
+            "device": "bluray"
+          },
+          {
+            "action": "sequential",
+            "actions": [
+              {
+                "action": "ensureOn",
+                "device": "projector"
+              },
+              {
+                "action": "changeInput",
+                "device": "receiver",
+                "input": "hdmi"
+              }
+            ]
+          },
+          {
+            "action": "sequential",
+            "actions": [
+              {
+                "action": "ensureOn",
+                "device": "receiver"
+              },
+              {
+                "action": "changeInput",
+                "device": "receiver",
+                "input": "bluray"
+              }
+            ]
+          }
+        ]
+      },
+      "defaultDevice": "bluray",
+      "buttonMap": {
+      }
     },
     "kodi": {
       "onEnter": {
