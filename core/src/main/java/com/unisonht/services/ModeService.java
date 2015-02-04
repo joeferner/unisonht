@@ -12,16 +12,19 @@ public class ModeService {
     private final Configuration configuration;
     private final ActionService actionService;
     private final StateService stateService;
+    private final DeviceService deviceService;
 
     @Inject
     public ModeService(
             Configuration configuration,
             ActionService actionService,
-            StateService stateService
+            StateService stateService,
+            DeviceService deviceService
     ) {
         this.configuration = configuration;
         this.actionService = actionService;
         this.stateService = stateService;
+        this.deviceService = deviceService;
     }
 
     public ConfigJson.Mode getCurrentMode() {
@@ -54,6 +57,14 @@ public class ModeService {
         ConfigJson.Mode currentMode = getCurrentMode();
         if (currentMode != null && buttonPress(currentMode, remoteName, buttonName)) {
             return;
+        }
+
+        if (currentMode != null) {
+            String defaultDevice = currentMode.getDefaultDevice();
+            if (defaultDevice != null) {
+                deviceService.buttonPress(defaultDevice, buttonName);
+                return;
+            }
         }
 
         throw new UnisonhtException("Not a valid button " + remoteName + ":" + buttonName + " for mode " + stateService.getCurrentModeName());

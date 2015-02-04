@@ -50,6 +50,7 @@ public class ConfigJson extends ClientApiObject {
     public static class Mode extends ClientApiObject {
         private Map<String, Action> buttonMap = new HashMap<>();
         private Action onEnter;
+        private String defaultDevice;
 
         public Map<String, Action> getButtonMap() {
             return buttonMap;
@@ -65,6 +66,14 @@ public class ConfigJson extends ClientApiObject {
 
         public void setOnEnter(Action onEnter) {
             this.onEnter = onEnter;
+        }
+
+        public String getDefaultDevice() {
+            return defaultDevice;
+        }
+
+        public void setDefaultDevice(String defaultDevice) {
+            this.defaultDevice = defaultDevice;
         }
     }
 

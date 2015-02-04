@@ -3,13 +3,13 @@
     "tivo": {
       "deviceClass": "com.unisonht.plugin.tivo.TivoDevicePlugin",
       "data": {
-        "address": "192.168.0.100"
+        "address": "localhost"
       }
     },
     "projector": {
       "deviceClass": "com.unisonht.plugin.projector.benq.BenqProjectorDevicePlugin",
       "data": {
-        "address": "192.168.0.100",
+        "address": "localhost",
         "inputs": {
           "hdmi": "hdmi"
         }
@@ -18,23 +18,23 @@
     "receiver": {
       "deviceClass": "com.unisonht.plugin.receiver.yamaha.YamahaReceiverDevicePlugin",
       "data": {
-        "address": "192.168.0.100",
+        "address": "localhost",
         "inputs": {
           "tivo": "hdmi1",
           "raspberrypi": "hdmi2"
         }
       }
     },
-    "xbmc": {
+    "kodi": {
       "deviceClass": "com.unisonht.plugin.kodi.KodiDevicePlugin",
       "data": {
-        "address": "192.168.0.100"
+        "address": "localhost"
       }
     },
     "bluray": {
       "deviceClass": "com.unisonht.plugin.bluray.sony.SonyBlurayDevicePlugin",
       "data": {
-        "address": "192.168.0.100"
+        "address": "localhost"
       }
     }
   },
@@ -55,7 +55,7 @@
         },
         "C": {
           "action": "switchMode",
-          "mode": "xbmc"
+          "mode": "kodi"
         },
         "D": {
           "action": "switchMode",
@@ -116,17 +116,13 @@
           }
         ]
       },
+      "defaultDevice": "tivo",
       "buttonMap": {
-        "NUM1": {
-          "action": "deviceButtonPress",
-          "device": "tivo",
-          "button": "NUM1"
-        }
       }
     },
     "bluray": {
     },
-    "xbmc": {
+    "kodi": {
     },
     "help": {
       "onEnter": {
@@ -185,7 +181,7 @@
         },
         {
           "action": "ensureOff",
-          "device": "xbmc"
+          "device": "kodi"
         },
         {
           "action": "ensureOff",
@@ -206,7 +202,14 @@
             86
           ]
         },
-        "TIVO": {"coords": []},
+        "TIVO": {
+          "coords": [
+            165,
+            39,
+            199,
+            82
+          ]
+        },
         "LIVETV": {
           "coords": [
             205,

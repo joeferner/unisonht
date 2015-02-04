@@ -18,12 +18,12 @@ public class SonyBlurayDevice extends Device {
 
     @Override
     public void ensureOff() {
-        throw new UnisonhtException("Not supported");
+        LOGGER.error("TODO ensureOff");
     }
 
     @Override
     public void ensureOn() {
-        throw new UnisonhtException("Not supported");
+        LOGGER.error("TODO ensureOn");
     }
 
     @Override
