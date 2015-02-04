@@ -21,14 +21,16 @@
         "address": "localhost",
         "inputs": {
           "tivo": "hdmi1",
-          "raspberrypi": "hdmi2"
+          "kodi": "hdmi2",
+          "raspberrypi": "hdmi3"
         }
       }
     },
     "kodi": {
       "deviceClass": "com.unisonht.plugin.kodi.KodiDevicePlugin",
       "data": {
-        "address": "localhost"
+        "address": "192.168.0.20",
+        "mac": "50:46:5d:b3:52:a2"
       }
     },
     "bluray": {
@@ -123,6 +125,46 @@
     "bluray": {
     },
     "kodi": {
+      "onEnter": {
+        "action": "simultaneous",
+        "actions": [
+          {
+            "action": "ensureOn",
+            "device": "kodi"
+          },
+          {
+            "action": "sequential",
+            "actions": [
+              {
+                "action": "ensureOn",
+                "device": "projector"
+              },
+              {
+                "action": "changeInput",
+                "device": "receiver",
+                "input": "hdmi"
+              }
+            ]
+          },
+          {
+            "action": "sequential",
+            "actions": [
+              {
+                "action": "ensureOn",
+                "device": "receiver"
+              },
+              {
+                "action": "changeInput",
+                "device": "receiver",
+                "input": "kodi"
+              }
+            ]
+          }
+        ]
+      },
+      "defaultDevice": "kodi",
+      "buttonMap": {
+      }
     },
     "help": {
       "onEnter": {
@@ -202,7 +244,7 @@
             86
           ]
         },
-        "TIVO": {
+        "HOME": {
           "coords": [
             165,
             39,

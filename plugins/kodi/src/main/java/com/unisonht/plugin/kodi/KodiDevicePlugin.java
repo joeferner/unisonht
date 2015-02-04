@@ -9,6 +9,7 @@ public class KodiDevicePlugin extends DevicePlugin {
     @Override
     public Device createDevice(Map<String, Object> configuration) {
         String address = (String) configuration.get("address");
-        return new KodiDevice(address);
+        String macAddress = (String) configuration.get("mac");
+        return new KodiDevice(address, macAddress);
     }
 }

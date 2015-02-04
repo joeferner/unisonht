@@ -36,6 +36,10 @@ public class TivoDevice extends Device {
     public void buttonPress(String buttonName) {
         Socket s = ensureConnected();
 
+        if (buttonName.equalsIgnoreCase("HOME")) {
+            buttonName = "TIVO";
+        }
+
         String data = "IRCODE " + buttonName + "\r";
         try {
             LOGGER.debug("Sending: %s", data);
