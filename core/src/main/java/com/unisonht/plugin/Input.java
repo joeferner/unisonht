@@ -21,7 +21,11 @@ public abstract class Input {
     protected void fireEvent(String remoteControlName, String buttonName, int repeatCount) {
         LOGGER.debug("fireEvent(remoteControlName:%s, buttonName:%s, repeatCount:%d)", remoteControlName, buttonName, repeatCount);
         for (InputEventListener inputEventListener : this.eventListeners) {
-            inputEventListener.onButtonPress(remoteControlName, buttonName, repeatCount);
+            try {
+                inputEventListener.onButtonPress(remoteControlName, buttonName, repeatCount);
+            } catch (Exception ex) {
+                LOGGER.error("Failed to send button press %s, %s, %d", remoteControlName, buttonName, repeatCount, ex);
+            }
         }
     }
 }
