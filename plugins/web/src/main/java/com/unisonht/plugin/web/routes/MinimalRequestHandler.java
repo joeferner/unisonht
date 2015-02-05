@@ -1,9 +1,9 @@
-package com.unisonht.web.routes;
+package com.unisonht.plugin.web.routes;
 
 import com.google.common.base.Preconditions;
 import com.unisonht.config.Configuration;
 import com.unisonht.utils.UnisonhtException;
-import com.unisonht.web.WebApp;
+import com.unisonht.plugin.web.WebApp;
 import io.lumify.miniweb.App;
 import io.lumify.miniweb.Handler;
 

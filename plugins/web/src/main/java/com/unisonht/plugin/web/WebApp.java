@@ -1,4 +1,4 @@
-package com.unisonht.web;
+package com.unisonht.plugin.web;
 
 import com.google.inject.Injector;
 import io.lumify.miniweb.App;

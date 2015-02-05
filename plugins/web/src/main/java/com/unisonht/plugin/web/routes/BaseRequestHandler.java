@@ -1,4 +1,4 @@
-package com.unisonht.web.routes;
+package com.unisonht.plugin.web.routes;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -7,7 +7,7 @@ import com.unisonht.clientapi.ClientApiObject;
 import com.unisonht.config.Configuration;
 import com.unisonht.clientapi.utils.ObjectMapperFactory;
 import com.unisonht.utils.UnisonhtException;
-import com.unisonht.web.utils.ConnectionClosedException;
+import com.unisonht.plugin.web.utils.ConnectionClosedException;
 import io.lumify.miniweb.HandlerChain;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;

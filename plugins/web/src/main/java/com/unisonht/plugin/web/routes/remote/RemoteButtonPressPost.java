@@ -1,11 +1,9 @@
-package com.unisonht.web.routes.remote;
+package com.unisonht.plugin.web.routes.remote;
 
 import com.google.inject.Inject;
 import com.unisonht.config.Configuration;
 import com.unisonht.services.RemoteService;
-import com.unisonht.utils.UnisonhtLogger;
-import com.unisonht.utils.UnisonhtLoggerFactory;
-import com.unisonht.web.routes.BaseRequestHandler;
+import com.unisonht.plugin.web.routes.BaseRequestHandler;
 import io.lumify.miniweb.HandlerChain;
 
 import javax.servlet.http.HttpServletRequest;

@@ -1,4 +1,4 @@
-package com.unisonht.web.utils;
+package com.unisonht.plugin.web.utils;
 
 import com.unisonht.utils.UnisonhtException;
 

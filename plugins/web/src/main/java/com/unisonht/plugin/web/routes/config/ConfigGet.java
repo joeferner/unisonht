@@ -1,9 +1,9 @@
-package com.unisonht.web.routes.config;
+package com.unisonht.plugin.web.routes.config;
 
 import com.google.inject.Inject;
 import com.unisonht.clientapi.ConfigJson;
 import com.unisonht.config.Configuration;
-import com.unisonht.web.routes.BaseRequestHandler;
+import com.unisonht.plugin.web.routes.BaseRequestHandler;
 import io.lumify.miniweb.HandlerChain;
 
 import javax.servlet.http.HttpServletRequest;

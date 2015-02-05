@@ -1,9 +1,9 @@
-package com.unisonht.web;
+package com.unisonht.plugin.web;
 
 import com.google.inject.Injector;
-import com.unisonht.web.routes.remote.RemoteButtonPressPost;
-import com.unisonht.web.routes.config.ConfigGet;
-import com.unisonht.web.routes.config.ConfigGetRemoteImage;
+import com.unisonht.plugin.web.routes.remote.RemoteButtonPressPost;
+import com.unisonht.plugin.web.routes.config.ConfigGet;
+import com.unisonht.plugin.web.routes.config.ConfigGetRemoteImage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

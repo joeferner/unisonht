@@ -1,4 +1,4 @@
-package com.unisonht.web.routes;
+package com.unisonht.plugin.web.routes;
 
 public enum ResponseTypes {
     JSON_OBJECT,

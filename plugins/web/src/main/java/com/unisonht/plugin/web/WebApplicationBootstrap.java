@@ -1,7 +1,8 @@
-package com.unisonht.web;
+package com.unisonht.plugin.web;
 
 import com.google.inject.Injector;
 import com.unisonht.utils.InjectHelper;
+import com.unisonht.utils.UnisonhtException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,8 +25,9 @@ public class WebApplicationBootstrap implements ServletContextListener {
 
             setupWebApp(context);
         } else {
-            throw new RuntimeException("Failed to initialize context. UnisonHT is not running.");
+            throw new UnisonhtException("Failed to initialize context. UnisonHT is not running.");
         }
+        LOGGER.info("END: contextInitialized");
     }
 
     @Override

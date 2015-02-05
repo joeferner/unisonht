@@ -9,7 +9,7 @@
       "pluginClass": "com.unisonht.plugin.web.WebInputPlugin",
       "data": {
         "port": 10080,
-        "webAppDir": "/home/jferner/dev/unisonht/web-war/src/main/webapp"
+        "webAppDir": "/home/jferner/dev/unisonht/plugins/web/src/main/java/webapp"
       }
     }
   },

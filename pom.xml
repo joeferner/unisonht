@@ -13,8 +13,6 @@
     <modules>
         <module>core</module>
         <module>client-api</module>
-        <module>web</module>
-        <module>web-war</module>
         <module>plugins</module>
         <module>command-line</module>
     </modules>

@@ -18,11 +18,6 @@
             <artifactId>unisonht-core</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>com.unisonht</groupId>
-            <artifactId>unisonht-web</artifactId>
-            <version>${project.version}</version>
-        </dependency>
 
         <dependency>
             <groupId>log4j</groupId>
