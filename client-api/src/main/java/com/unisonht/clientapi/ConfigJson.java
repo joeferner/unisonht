@@ -9,10 +9,15 @@ import java.util.List;
 import java.util.Map;
 
 public class ConfigJson extends ClientApiObject {
+    private Map<String, InputPlugin> inputPlugins = new HashMap<>();
     private Map<String, Device> devices = new HashMap<>();
     private Map<String, Mode> modes = new HashMap<>();
     private Map<String, Action> macros = new HashMap<>();
     private Map<String, Remote> remotes = new HashMap<>();
+
+    public Map<String, InputPlugin> getInputPlugins() {
+        return inputPlugins;
+    }
 
     public Map<String, Device> getDevices() {
         return devices;
@@ -28,6 +33,23 @@ public class ConfigJson extends ClientApiObject {
 
     public Map<String, Remote> getRemotes() {
         return remotes;
+    }
+
+    public static class InputPlugin extends ClientApiObject {
+        private String pluginClass;
+        private Map<String, Object> data = new HashMap<>();
+
+        public Map<String, Object> getData() {
+            return data;
+        }
+
+        public String getPluginClass() {
+            return pluginClass;
+        }
+
+        public void setPluginClass(String pluginClass) {
+            this.pluginClass = pluginClass;
+        }
     }
 
     public static class Device extends ClientApiObject {

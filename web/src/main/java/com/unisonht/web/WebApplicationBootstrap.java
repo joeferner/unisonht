@@ -5,6 +5,7 @@ import com.unisonht.UnisonhtBootstrap;
 import com.unisonht.config.Configuration;
 import com.unisonht.config.ConfigurationLoader;
 import com.unisonht.services.DeviceService;
+import com.unisonht.services.InputPluginService;
 import com.unisonht.utils.InjectHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +31,7 @@ public class WebApplicationBootstrap implements ServletContextListener {
             Configuration configuration = ConfigurationLoader.load(context.getInitParameter(APP_CONFIG_LOADER), getInitParametersAsMap(context));
             setupInjector(context, configuration);
             setupDevices();
+            setupInputPlugins();
             setupWebApp(context);
         } else {
             throw new RuntimeException("Failed to initialize context. UnisonHT is not running.");
@@ -60,6 +62,10 @@ public class WebApplicationBootstrap implements ServletContextListener {
 
     private void setupDevices() {
         InjectHelper.getInstance(DeviceService.class).loadDeviceInstances();
+    }
+
+    private void setupInputPlugins() {
+        InjectHelper.getInstance(InputPluginService.class).loadInputPlugins();
     }
 
     private void setupWebApp(ServletContext context) {

@@ -1,4 +1,11 @@
 {
+  "inputPlugins": {
+    "lirc": {
+      "pluginClass": "com.unisonht.plugin.lirc.LircInputPlugin",
+      "data": {
+      }
+    }
+  },
   "devices": {
     "tivo": {
       "deviceClass": "com.unisonht.plugin.tivo.TivoDevicePlugin",

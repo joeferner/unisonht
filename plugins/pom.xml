@@ -19,6 +19,7 @@
         <module>yamaha-receiver</module>
         <module>kodi</module>
         <module>sony-bluray</module>
+        <module>unisonht-plugin-lirc</module>
     </modules>
 
 </project>

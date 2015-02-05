@@ -57,5 +57,10 @@
             <artifactId>unisonht-plugin-sony-bluray</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.unisonht</groupId>
+            <artifactId>unisonht-plugin-lirc</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>
