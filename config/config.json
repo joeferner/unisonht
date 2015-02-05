@@ -36,7 +36,8 @@
         "inputs": {
           "tivo": "hdmi1",
           "kodi": "hdmi2",
-          "raspberrypi": "hdmi3"
+          "raspberrypi": "hdmi3",
+          "xbox": "hdmi4"
         }
       }
     },
@@ -52,6 +53,17 @@
       "data": {
         "address": "192.168.0.164",
         "mac": "78:61:7c:a9:cc:c9"
+      }
+    },
+    "xbox": {
+      "deviceClass": "com.unisonht.plugin.xbox.XBoxDevicePlugin"
+    },
+    "imageViewer": {
+      "deviceClass": "com.unisonht.plugin.imageViewer.ImageViewerDevicePlugin",
+      "data": {
+        "images": {
+          "HELP": "/home/jferner/dev/unisonht/config/tivo-roamio-pro-remote.jpg"
+        }
       }
     }
   },
@@ -112,7 +124,7 @@
               },
               {
                 "action": "changeInput",
-                "device": "receiver",
+                "device": "projector",
                 "input": "hdmi"
               }
             ]
@@ -143,7 +155,7 @@
         "actions": [
           {
             "action": "ensureOn",
-            "device": "bluray"
+            "device": "xbox"
           },
           {
             "action": "sequential",
@@ -154,7 +166,7 @@
               },
               {
                 "action": "changeInput",
-                "device": "receiver",
+                "device": "projector",
                 "input": "hdmi"
               }
             ]
@@ -169,7 +181,7 @@
               {
                 "action": "changeInput",
                 "device": "receiver",
-                "input": "bluray"
+                "input": "xbox"
               }
             ]
           }
@@ -196,7 +208,7 @@
               },
               {
                 "action": "changeInput",
-                "device": "receiver",
+                "device": "projector",
                 "input": "hdmi"
               }
             ]
@@ -223,8 +235,67 @@
     },
     "help": {
       "onEnter": {
+        "action": "sequential",
+        "actions": [
+          {
+            "action": "deviceButtonPress",
+            "device": "imageViewer",
+            "button": "HELP"
+          },
+          {
+            "action": "simultaneous",
+            "actions": [
+              {
+                "action": "sequential",
+                "actions": [
+                  {
+                    "action": "ensureOn",
+                    "device": "projector"
+                  },
+                  {
+                    "action": "changeInput",
+                    "device": "projector",
+                    "input": "hdmi"
+                  }
+                ]
+              },
+              {
+                "action": "sequential",
+                "actions": [
+                  {
+                    "action": "ensureOn",
+                    "device": "receiver"
+                  },
+                  {
+                    "action": "changeInput",
+                    "device": "receiver",
+                    "input": "raspberrypi"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "onExit": {
+        "action": "ensureOff",
+        "device": "imageViewer"
+      },
+      "buttonMap": {
+        "NUM1": {
+          "action": "switchMode",
+          "mode": "xbox"
+        }
+      }
+    },
+    "xbox": {
+      "onEnter": {
         "action": "simultaneous",
         "actions": [
+          {
+            "action": "ensureOn",
+            "device": "xbox"
+          },
           {
             "action": "sequential",
             "actions": [
@@ -234,7 +305,7 @@
               },
               {
                 "action": "changeInput",
-                "device": "receiver",
+                "device": "projector",
                 "input": "hdmi"
               }
             ]
@@ -249,18 +320,11 @@
               {
                 "action": "changeInput",
                 "device": "receiver",
-                "input": "raspberrypi"
+                "input": "xbox"
               }
             ]
           }
         ]
-      },
-      "buttonMap": {
-        "NUM1": {
-          "action": "deviceButtonPress",
-          "device": "tivo",
-          "button": "1"
-        }
       }
     }
   },

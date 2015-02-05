@@ -68,5 +68,15 @@
             <artifactId>unisonht-plugin-web</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.unisonht</groupId>
+            <artifactId>unisonht-plugin-xbox</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.unisonht</groupId>
+            <artifactId>unisonht-plugin-image-viewer</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>

@@ -1,5 +1,6 @@
 package com.unisonht.clientapi;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
@@ -7,6 +8,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class ConfigJson extends ClientApiObject {
     private Map<String, InputPlugin> inputPlugins = new HashMap<>();
@@ -199,14 +202,18 @@ public class ConfigJson extends ClientApiObject {
     }
 
     public static class SwitchModeAction extends Action {
-        private String mode;
+        private final String mode;
+
+        public SwitchModeAction(
+                @JsonProperty("mode")
+                String mode
+        ) {
+            checkNotNull(mode, "mode is required");
+            this.mode = mode;
+        }
 
         public String getMode() {
             return mode;
-        }
-
-        public void setMode(String mode) {
-            this.mode = mode;
         }
     }
 

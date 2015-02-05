@@ -53,12 +53,14 @@ public class DeviceService {
         Map<String, Device> devices = new HashMap<>();
         for (Map.Entry<String, ConfigJson.Device> deviceEntry : configuration.getConfigJson().getDevices().entrySet()) {
             String deviceName = deviceEntry.getKey();
-            LOGGER.debug("creating device: %s (%s)", deviceName, deviceEntry.getValue().getDeviceClass());
+            String deviceClass = deviceEntry.getValue().getDeviceClass();
+            checkNotNull(deviceClass, "deviceClass is required for a device");
+            LOGGER.debug("creating device: %s (%s)", deviceName, deviceClass);
             Device deviceInstance;
             try {
                 deviceInstance = createDeviceInstance(deviceEntry.getValue());
             } catch (Throwable ex) {
-                throw new UnisonhtException("Could not create device " + deviceName + " using " + deviceEntry.getValue().getDeviceClass(), ex);
+                throw new UnisonhtException("Could not create device " + deviceName + " using " + deviceClass, ex);
             }
             devices.put(deviceName, deviceInstance);
         }

@@ -21,6 +21,8 @@
         <module>sony-bluray</module>
         <module>lirc</module>
         <module>web</module>
+        <module>image-viewer</module>
+        <module>xbox</module>
     </modules>
 
 </project>
