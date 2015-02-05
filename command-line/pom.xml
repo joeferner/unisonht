@@ -9,15 +9,21 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>unisonht-web-jetty-dev</artifactId>
-    <name>UnisonHT: Web: Jetty: Dev</name>
+    <artifactId>unisonht-command-line</artifactId>
+    <name>UnisonHT: Command Line</name>
 
     <dependencies>
         <dependency>
             <groupId>com.unisonht</groupId>
-            <artifactId>unisonht-web-jetty</artifactId>
+            <artifactId>unisonht-core</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.unisonht</groupId>
+            <artifactId>unisonht-web</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
@@ -60,6 +66,11 @@
         <dependency>
             <groupId>com.unisonht</groupId>
             <artifactId>unisonht-plugin-lirc</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.unisonht</groupId>
+            <artifactId>unisonht-plugin-web</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
