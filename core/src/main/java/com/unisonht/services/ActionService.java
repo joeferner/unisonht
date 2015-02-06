@@ -18,7 +18,6 @@ import java.util.concurrent.FutureTask;
 public class ActionService {
     private static final UnisonhtLogger LOGGER = UnisonhtLoggerFactory.getLogger(ActionService.class);
     private final Configuration configuration;
-    private final StateService stateService;
     private final DeviceService deviceService;
     private ModeService modeService;
     private final ExecutorService executor;
@@ -26,11 +25,9 @@ public class ActionService {
     @Inject
     public ActionService(
             Configuration configuration,
-            StateService stateService,
             DeviceService deviceService
     ) {
         this.configuration = configuration;
-        this.stateService = stateService;
         this.deviceService = deviceService;
         this.executor = Executors.newFixedThreadPool(5);
     }

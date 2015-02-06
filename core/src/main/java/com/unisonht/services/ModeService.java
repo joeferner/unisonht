@@ -1,49 +1,63 @@
 package com.unisonht.services;
 
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.unisonht.clientapi.ConfigJson;
 import com.unisonht.config.Configuration;
 import com.unisonht.utils.UnisonhtException;
+import com.unisonht.utils.UnisonhtLogger;
+import com.unisonht.utils.UnisonhtLoggerFactory;
 
 import java.util.Map;
 
+@Singleton
 public class ModeService {
+    private static final UnisonhtLogger LOGGER = UnisonhtLoggerFactory.getLogger(ModeService.class);
     public static final String DEFAULT_MODE_NAME = "_";
     private final Configuration configuration;
     private final ActionService actionService;
-    private final StateService stateService;
     private final DeviceService deviceService;
+    private String currentModeName;
 
     @Inject
     public ModeService(
             Configuration configuration,
             ActionService actionService,
-            StateService stateService,
             DeviceService deviceService
     ) {
         this.configuration = configuration;
         this.actionService = actionService;
-        this.stateService = stateService;
         this.deviceService = deviceService;
     }
 
     public ConfigJson.Mode getCurrentMode() {
-        if (stateService.getCurrentModeName() != null) {
-            return configuration.getConfigJson().getModes().get(stateService.getCurrentModeName());
+        if (getCurrentModeName() != null) {
+            return configuration.getConfigJson().getModes().get(getCurrentModeName());
         }
         return null;
     }
 
     public void switchMode(String modeName) {
+        ConfigJson.Mode currentMode = getCurrentMode();
+        if (currentMode != null) {
+            ConfigJson.Action onExitAction = currentMode.getOnExit();
+            if (onExitAction != null) {
+                LOGGER.debug("Running onExit for: %s", this.currentModeName);
+                actionService.runAction(onExitAction);
+            }
+        }
+        this.currentModeName = null;
+
         ConfigJson configJson = configuration.getConfigJson();
         ConfigJson.Mode mode = configJson.getModes().get(modeName);
         if (mode == null) {
             throw new UnisonhtException("Could not find mode: " + modeName);
         }
         if (mode.getOnEnter() != null) {
+            LOGGER.debug("Running onEnter for: %s", modeName);
             actionService.runAction(mode.getOnEnter());
         }
-        this.stateService.setCurrentModeName(modeName);
+        this.currentModeName = modeName;
     }
 
     public void buttonPress(String remoteName, String buttonName) {
@@ -67,7 +81,7 @@ public class ModeService {
             }
         }
 
-        throw new UnisonhtException("Not a valid button " + remoteName + ":" + buttonName + " for mode " + stateService.getCurrentModeName());
+        throw new UnisonhtException("Not a valid button " + remoteName + ":" + buttonName + " for mode " + getCurrentModeName());
     }
 
     private boolean buttonPress(ConfigJson.Mode mode, String remoteName, String buttonName) {
@@ -88,5 +102,9 @@ public class ModeService {
             return true;
         }
         return false;
+    }
+
+    public String getCurrentModeName() {
+        return currentModeName;
     }
 }
