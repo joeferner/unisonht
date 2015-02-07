@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,11 +11,35 @@ import java.util.Map;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class ConfigJson extends ClientApiObject {
-    private Map<String, InputPlugin> inputPlugins = new HashMap<>();
-    private Map<String, Device> devices = new HashMap<>();
-    private Map<String, Mode> modes = new HashMap<>();
-    private Map<String, Action> macros = new HashMap<>();
-    private Map<String, Remote> remotes = new HashMap<>();
+    private final Map<String, InputPlugin> inputPlugins;
+    private final Map<String, Device> devices;
+    private final Map<String, Mode> modes;
+    private final String defaultMode;
+    private final Map<String, Action> macros;
+    private final Map<String, Remote> remotes;
+
+    public ConfigJson(
+            @JsonProperty("inputPlugins") Map<String, InputPlugin> inputPlugins,
+            @JsonProperty("devices") Map<String, Device> devices,
+            @JsonProperty("modes") Map<String, Mode> modes,
+            @JsonProperty("defaultMode") String defaultMode,
+            @JsonProperty("remotes") Map<String, Remote> remotes,
+            @JsonProperty("macros") Map<String, Action> macros
+    ) {
+        checkNotNull(inputPlugins, "inputPlugins is required");
+        checkNotNull(devices, "devices is required");
+        checkNotNull(modes, "modes is required");
+        checkNotNull(remotes, "remotes is required");
+        if (macros == null) {
+            macros = new HashMap<>();
+        }
+        this.defaultMode = defaultMode;
+        this.inputPlugins = inputPlugins;
+        this.devices = devices;
+        this.modes = modes;
+        this.macros = macros;
+        this.remotes = remotes;
+    }
 
     public Map<String, InputPlugin> getInputPlugins() {
         return inputPlugins;
@@ -38,9 +61,25 @@ public class ConfigJson extends ClientApiObject {
         return remotes;
     }
 
+    public String getDefaultMode() {
+        return defaultMode;
+    }
+
     public static class InputPlugin extends ClientApiObject {
-        private String pluginClass;
-        private Map<String, Object> data = new HashMap<>();
+        private final String pluginClass;
+        private final Map<String, Object> data;
+
+        public InputPlugin(
+                @JsonProperty("pluginClass") String pluginClass,
+                @JsonProperty("data") Map<String, Object> data
+        ) {
+            checkNotNull(pluginClass, "pluginClass is required");
+            if (data == null) {
+                data = new HashMap<>();
+            }
+            this.pluginClass = pluginClass;
+            this.data = data;
+        }
 
         public Map<String, Object> getData() {
             return data;
@@ -49,15 +88,23 @@ public class ConfigJson extends ClientApiObject {
         public String getPluginClass() {
             return pluginClass;
         }
-
-        public void setPluginClass(String pluginClass) {
-            this.pluginClass = pluginClass;
-        }
     }
 
     public static class Device extends ClientApiObject {
-        private String deviceClass;
-        private Map<String, Object> data = new HashMap<>();
+        private final String deviceClass;
+        private final Map<String, Object> data;
+
+        public Device(
+                @JsonProperty("deviceClass") String deviceClass,
+                @JsonProperty("data") Map<String, Object> data
+        ) {
+            checkNotNull(deviceClass, "deviceClass is required");
+            if (data == null) {
+                data = new HashMap<>();
+            }
+            this.deviceClass = deviceClass;
+            this.data = data;
+        }
 
         public Map<String, Object> getData() {
             return data;
@@ -66,48 +113,43 @@ public class ConfigJson extends ClientApiObject {
         public String getDeviceClass() {
             return deviceClass;
         }
-
-        public void setDeviceClass(String deviceClass) {
-            this.deviceClass = deviceClass;
-        }
     }
 
     public static class Mode extends ClientApiObject {
-        private Map<String, Action> buttonMap = new HashMap<>();
-        private Action onEnter;
-        private Action onExit;
-        private String defaultDevice;
+        private final String defaultDevice;
+        private final Map<String, Action> buttonMap;
+        private final Action onEnter;
+        private final Action onExit;
+
+        public Mode(
+                @JsonProperty("defaultDevice") String defaultDevice,
+                @JsonProperty("buttonMap") Map<String, Action> buttonMap,
+                @JsonProperty("onEnter") Action onEnter,
+                @JsonProperty("onExit") Action onExit
+        ) {
+            if (buttonMap == null) {
+                buttonMap = new HashMap<>();
+            }
+            this.defaultDevice = defaultDevice;
+            this.buttonMap = buttonMap;
+            this.onEnter = onEnter;
+            this.onExit = onExit;
+        }
 
         public Map<String, Action> getButtonMap() {
             return buttonMap;
-        }
-
-        public void setButtonMap(Map<String, Action> buttonMap) {
-            this.buttonMap = buttonMap;
         }
 
         public Action getOnEnter() {
             return onEnter;
         }
 
-        public void setOnEnter(Action onEnter) {
-            this.onEnter = onEnter;
-        }
-
         public Action getOnExit() {
             return onExit;
         }
 
-        public void setOnExit(Action onExit) {
-            this.onExit = onExit;
-        }
-
         public String getDefaultDevice() {
             return defaultDevice;
-        }
-
-        public void setDefaultDevice(String defaultDevice) {
-            this.defaultDevice = defaultDevice;
         }
     }
 
@@ -126,40 +168,40 @@ public class ConfigJson extends ClientApiObject {
             @JsonSubTypes.Type(value = ChangeInputAction.class, name = "changeInput")
     })
     public abstract static class Action extends ClientApiObject {
-        private String action;
-
-        public String getAction() {
-            return action;
-        }
-
-        public void setAction(String action) {
-            this.action = action;
-        }
     }
 
     public static class DeviceButtonPressAction extends Action {
-        private String device;
-        private String button;
+        private final String device;
+        private final String button;
+
+        protected DeviceButtonPressAction(
+                @JsonProperty("device") String device,
+                @JsonProperty("button") String button
+        ) {
+            checkNotNull(device, "device is required");
+            checkNotNull(button, "button is required");
+            this.device = device;
+            this.button = button;
+        }
 
         public String getDevice() {
             return device;
         }
 
-        public void setDevice(String device) {
-            this.device = device;
-        }
-
         public String getButton() {
             return button;
-        }
-
-        public void setButton(String button) {
-            this.button = button;
         }
     }
 
     public static class SimultaneousAction extends Action {
-        private List<Action> actions = new ArrayList<>();
+        private final List<Action> actions;
+
+        public SimultaneousAction(
+                @JsonProperty("actions") List<Action> actions
+        ) {
+            checkNotNull(actions, "actions is required");
+            this.actions = actions;
+        }
 
         public List<Action> getActions() {
             return actions;
@@ -167,7 +209,14 @@ public class ConfigJson extends ClientApiObject {
     }
 
     public static class SequentialAction extends Action {
-        private List<Action> actions = new ArrayList<>();
+        private final List<Action> actions;
+
+        public SequentialAction(
+                @JsonProperty("actions") List<Action> actions
+        ) {
+            checkNotNull(actions, "actions is required");
+            this.actions = actions;
+        }
 
         public List<Action> getActions() {
             return actions;
@@ -175,38 +224,57 @@ public class ConfigJson extends ClientApiObject {
     }
 
     public static class EnsureOffAction extends Action {
-        private String device;
+        private final String device;
+
+        protected EnsureOffAction(
+                @JsonProperty("device") String device
+        ) {
+            checkNotNull(device, "device is required");
+            this.device = device;
+        }
 
         public String getDevice() {
             return device;
-        }
-
-        public void setDevice(String device) {
-            this.device = device;
         }
     }
 
     public static class EnsureOnAction extends Action {
-        private String device;
+        private final String device;
+
+        protected EnsureOnAction(
+                @JsonProperty("device") String device
+        ) {
+            checkNotNull(device, "device is required");
+            this.device = device;
+        }
 
         public String getDevice() {
             return device;
         }
-
-        public void setDevice(String device) {
-            this.device = device;
-        }
     }
 
     public static class RunMacroAction extends Action {
-        private String name;
+        private final String name;
+        private final Map<String, Object> args;
+
+        protected RunMacroAction(
+                @JsonProperty("name") String name,
+                @JsonProperty("args") Map<String, Object> args
+        ) {
+            checkNotNull(name, "name is required");
+            if (args == null) {
+                args = new HashMap<>();
+            }
+            this.args = args;
+            this.name = name;
+        }
 
         public String getName() {
             return name;
         }
 
-        public void setName(String name) {
-            this.name = name;
+        public Map<String, Object> getArgs() {
+            return args;
         }
     }
 
@@ -214,8 +282,7 @@ public class ConfigJson extends ClientApiObject {
         private final String mode;
 
         public SwitchModeAction(
-                @JsonProperty("mode")
-                String mode
+                @JsonProperty("mode") String mode
         ) {
             checkNotNull(mode, "mode is required");
             this.mode = mode;
@@ -227,36 +294,42 @@ public class ConfigJson extends ClientApiObject {
     }
 
     public static class ChangeInputAction extends Action {
-        private String device;
-        private String input;
+        private final String device;
+        private final String input;
+
+        public ChangeInputAction(
+                @JsonProperty("device") String device,
+                @JsonProperty("input") String input
+        ) {
+            checkNotNull(device, "device is required");
+            checkNotNull(input, "input is required");
+            this.device = device;
+            this.input = input;
+        }
 
         public String getDevice() {
             return device;
         }
 
-        public void setDevice(String device) {
-            this.device = device;
-        }
-
         public String getInput() {
             return input;
-        }
-
-        public void setInput(String input) {
-            this.input = input;
         }
     }
 
     public static class Remote extends ClientApiObject {
-        private String imageFilename;
-        private Map<String, Button> buttonMap = new HashMap<>();
+        private final String imageFilename;
+        private final Map<String, Button> buttonMap;
+
+        public Remote(
+                @JsonProperty("imageFilename") String imageFilename,
+                @JsonProperty("buttonMap") Map<String, Button> buttonMap
+        ) {
+            this.imageFilename = imageFilename;
+            this.buttonMap = buttonMap;
+        }
 
         public String getImageFilename() {
             return imageFilename;
-        }
-
-        public void setImageFilename(String imageFilename) {
-            this.imageFilename = imageFilename;
         }
 
         public Map<String, Button> getButtonMap() {
@@ -264,14 +337,16 @@ public class ConfigJson extends ClientApiObject {
         }
 
         public static class Button {
-            private int[] coords;
+            private final int[] coords;
+
+            public Button(
+                    @JsonProperty("coords") int[] coords
+            ) {
+                this.coords = coords;
+            }
 
             public int[] getCoords() {
                 return coords;
-            }
-
-            public void setCoords(int[] coords) {
-                this.coords = coords;
             }
         }
     }

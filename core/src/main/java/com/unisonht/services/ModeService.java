@@ -13,7 +13,7 @@ import java.util.Map;
 @Singleton
 public class ModeService {
     private static final UnisonhtLogger LOGGER = UnisonhtLoggerFactory.getLogger(ModeService.class);
-    public static final String DEFAULT_MODE_NAME = "_";
+    public static final String GLOBAL_MODE_NAME = "global";
     private final Configuration configuration;
     private final ActionService actionService;
     private final DeviceService deviceService;
@@ -28,6 +28,7 @@ public class ModeService {
         this.configuration = configuration;
         this.actionService = actionService;
         this.deviceService = deviceService;
+        this.currentModeName = this.configuration.getConfigJson().getDefaultMode();
     }
 
     public ConfigJson.Mode getCurrentMode() {
@@ -58,13 +59,14 @@ public class ModeService {
             actionService.runAction(mode.getOnEnter());
         }
         this.currentModeName = modeName;
+        LOGGER.info("mode is now: %s", this.currentModeName);
     }
 
     public void buttonPress(String remoteName, String buttonName) {
         ConfigJson configJson = configuration.getConfigJson();
 
-        ConfigJson.Mode defaultMode = configJson.getModes().get(ModeService.DEFAULT_MODE_NAME);
-        if (defaultMode != null && buttonPress(defaultMode, remoteName, buttonName)) {
+        ConfigJson.Mode globalMode = configJson.getModes().get(ModeService.GLOBAL_MODE_NAME);
+        if (globalMode != null && buttonPress(globalMode, remoteName, buttonName)) {
             return;
         }
 

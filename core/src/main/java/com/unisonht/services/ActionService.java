@@ -3,17 +3,18 @@ package com.unisonht.services;
 import com.google.inject.Inject;
 import com.unisonht.clientapi.ConfigJson;
 import com.unisonht.config.Configuration;
-import com.unisonht.utils.InjectHelper;
-import com.unisonht.utils.UnisonhtException;
-import com.unisonht.utils.UnisonhtLogger;
-import com.unisonht.utils.UnisonhtLoggerFactory;
+import com.unisonht.utils.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ActionService {
     private static final UnisonhtLogger LOGGER = UnisonhtLoggerFactory.getLogger(ActionService.class);
@@ -33,46 +34,57 @@ public class ActionService {
     }
 
     public void runAction(ConfigJson.Action action) {
+        runAction(action, new HashMap<String, Object>());
+    }
+
+    public void runAction(ConfigJson.Action action, Map<String, Object> args) {
         LOGGER.debug("running action: %s", action.toString());
         if (action instanceof ConfigJson.RunMacroAction) {
-            runAction((ConfigJson.RunMacroAction) action);
+            runAction((ConfigJson.RunMacroAction) action, args);
         } else if (action instanceof ConfigJson.SimultaneousAction) {
-            runAction((ConfigJson.SimultaneousAction) action);
+            runAction((ConfigJson.SimultaneousAction) action, args);
         } else if (action instanceof ConfigJson.SequentialAction) {
-            runAction((ConfigJson.SequentialAction) action);
+            runAction((ConfigJson.SequentialAction) action, args);
         } else if (action instanceof ConfigJson.EnsureOffAction) {
-            runAction((ConfigJson.EnsureOffAction) action);
+            runAction((ConfigJson.EnsureOffAction) action, args);
         } else if (action instanceof ConfigJson.EnsureOnAction) {
-            runAction((ConfigJson.EnsureOnAction) action);
+            runAction((ConfigJson.EnsureOnAction) action, args);
         } else if (action instanceof ConfigJson.DeviceButtonPressAction) {
-            runAction((ConfigJson.DeviceButtonPressAction) action);
+            runAction((ConfigJson.DeviceButtonPressAction) action, args);
         } else if (action instanceof ConfigJson.ChangeInputAction) {
-            runAction((ConfigJson.ChangeInputAction) action);
+            runAction((ConfigJson.ChangeInputAction) action, args);
         } else if (action instanceof ConfigJson.SwitchModeAction) {
-            runAction((ConfigJson.SwitchModeAction) action);
+            runAction((ConfigJson.SwitchModeAction) action, args);
         } else {
             throw new UnisonhtException("Unhandled action type: " + action.getClass().getName());
         }
     }
 
-    public void runAction(ConfigJson.EnsureOffAction action) {
-        this.deviceService.ensureOff(action.getDevice());
+    public void runAction(ConfigJson.EnsureOffAction action, Map<String, Object> args) {
+        String deviceName = performSubstitutions(action.getDevice(), args);
+        this.deviceService.ensureOff(deviceName);
     }
 
-    public void runAction(ConfigJson.EnsureOnAction action) {
-        this.deviceService.ensureOn(action.getDevice());
+    public void runAction(ConfigJson.EnsureOnAction action, Map<String, Object> args) {
+        String deviceName = performSubstitutions(action.getDevice(), args);
+        this.deviceService.ensureOn(deviceName);
     }
 
-    public void runAction(ConfigJson.DeviceButtonPressAction action) {
-        this.deviceService.buttonPress(action.getDevice(), action.getButton());
+    public void runAction(ConfigJson.DeviceButtonPressAction action, Map<String, Object> args) {
+        String deviceName = performSubstitutions(action.getDevice(), args);
+        String buttonName = performSubstitutions(action.getButton(), args);
+        this.deviceService.buttonPress(deviceName, buttonName);
     }
 
-    public void runAction(ConfigJson.ChangeInputAction action) {
-        this.deviceService.changeInput(action.getDevice(), action.getInput());
+    public void runAction(ConfigJson.ChangeInputAction action, Map<String, Object> args) {
+        String deviceName = performSubstitutions(action.getDevice(), args);
+        String input = performSubstitutions(action.getInput(), args);
+        this.deviceService.changeInput(deviceName, input);
     }
 
-    public void runAction(ConfigJson.SwitchModeAction action) {
-        getModeService().switchMode(action.getMode());
+    public void runAction(ConfigJson.SwitchModeAction action, Map<String, Object> args) {
+        String modeName = performSubstitutions(action.getMode(), args);
+        getModeService().switchMode(modeName);
     }
 
     private ModeService getModeService() {
@@ -82,25 +94,28 @@ public class ActionService {
         return modeService;
     }
 
-    public void runAction(ConfigJson.RunMacroAction action) {
-        ConfigJson.Action macro = configuration.getConfigJson().getMacros().get(action.getName());
+    public void runAction(ConfigJson.RunMacroAction action, Map<String, Object> args) {
+        String macroName = performSubstitutions(action.getName(), args);
+        ConfigJson.Action macro = configuration.getConfigJson().getMacros().get(macroName);
         if (macro == null) {
-            throw new UnisonhtException("Could not find macro with name: " + action.getName());
+            throw new UnisonhtException("Could not find macro with name: " + macroName);
         }
-        runAction(macro);
+        Map<String, Object> newArgs = new HashMap<>(args);
+        newArgs.putAll(action.getArgs());
+        runAction(macro, newArgs);
     }
 
-    public void runAction(ConfigJson.SequentialAction action) {
+    public void runAction(ConfigJson.SequentialAction action, Map<String, Object> args) {
         for (ConfigJson.Action childAction : action.getActions()) {
-            runAction(childAction);
+            runAction(childAction, args);
         }
     }
 
-    public void runAction(ConfigJson.SimultaneousAction action) {
+    public void runAction(ConfigJson.SimultaneousAction action, Map<String, Object> args) {
         try {
             List<FutureTask<Void>> taskList = new ArrayList<>();
             for (ConfigJson.Action childAction : action.getActions()) {
-                FutureTask<Void> task = new FutureTask<>(new SimultaneousActionTask(childAction));
+                FutureTask<Void> task = new FutureTask<>(new SimultaneousActionTask(childAction, args));
                 executor.execute(task);
                 taskList.add(task);
             }
@@ -115,19 +130,47 @@ public class ActionService {
 
     private class SimultaneousActionTask implements Callable<Void> {
         private final ConfigJson.Action action;
+        private final Map<String, Object> args;
 
-        public SimultaneousActionTask(ConfigJson.Action action) {
+        public SimultaneousActionTask(ConfigJson.Action action, Map<String, Object> args) {
             this.action = action;
+            this.args = args;
         }
 
         @Override
         public Void call() throws Exception {
             try {
-                runAction(this.action);
+                runAction(this.action, this.args);
             } catch (Exception ex) {
                 LOGGER.error("Could not execute action: " + this.action, ex);
             }
             return null;
         }
+    }
+
+    private String performSubstitutions(String str, final Map<String, Object> args) {
+        Pattern regex = Pattern.compile("\\$\\{(.*?)\\}");
+        return StringReplacer.replace(str, regex, new StringReplacer.Callback() {
+            @Override
+            public String replace(Matcher m) {
+                String expr = m.group(1);
+                String result = evaluateSubstitutionExpression(expr, args);
+                LOGGER.debug("evaluated expression %s to %s", expr, result);
+                return result;
+            }
+        });
+    }
+
+    @SuppressWarnings("unchecked")
+    private String evaluateSubstitutionExpression(String expression, Map<String, Object> args) {
+        String[] parts = expression.split("\\.");
+        Object result = null;
+        for (String part : parts) {
+            result = args.get(part);
+            if (result instanceof Map) {
+                args = (Map<String, Object>) result;
+            }
+        }
+        return result == null ? "" : result.toString();
     }
 }

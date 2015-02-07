@@ -37,7 +37,8 @@
           "tivo": "hdmi1",
           "kodi": "hdmi2",
           "raspberrypi": "hdmi3",
-          "xbox": "hdmi4"
+          "xbox": "hdmi4",
+          "wii": "hdmi5"
         }
       }
     },
@@ -67,26 +68,15 @@
       }
     }
   },
+  "defaultMode": "off",
   "modes": {
-    "_": {
+    "global": {
       "buttonMap": {
         "tivo:POWER": {
-          "action": "runMacro",
-          "name": "allOff"
-        },
-        "A": {
           "action": "switchMode",
-          "mode": "tivo"
+          "mode": "off"
         },
-        "B": {
-          "action": "switchMode",
-          "mode": "bluray"
-        },
-        "C": {
-          "action": "switchMode",
-          "mode": "kodi"
-        },
-        "D": {
+        "tivo:INPUT": {
           "action": "switchMode",
           "mode": "help"
         },
@@ -107,130 +97,49 @@
         }
       }
     },
-    "tivo": {
+    "off": {
       "onEnter": {
         "action": "simultaneous",
         "actions": [
           {
-            "action": "ensureOn",
-            "device": "tivo"
+            "action": "ensureOff",
+            "device": "receiver"
           },
           {
-            "action": "sequential",
-            "actions": [
-              {
-                "action": "ensureOn",
-                "device": "projector"
-              },
-              {
-                "action": "changeInput",
-                "device": "projector",
-                "input": "hdmi"
-              }
-            ]
+            "action": "ensureOff",
+            "device": "projector"
           },
           {
-            "action": "sequential",
-            "actions": [
-              {
-                "action": "ensureOn",
-                "device": "receiver"
-              },
-              {
-                "action": "changeInput",
-                "device": "receiver",
-                "input": "tivo"
-              }
-            ]
-          }
-        ]
-      },
-      "defaultDevice": "tivo",
-      "buttonMap": {
-      }
-    },
-    "bluray": {
-      "onEnter": {
-        "action": "simultaneous",
-        "actions": [
-          {
-            "action": "ensureOn",
-            "device": "xbox"
-          },
-          {
-            "action": "sequential",
-            "actions": [
-              {
-                "action": "ensureOn",
-                "device": "projector"
-              },
-              {
-                "action": "changeInput",
-                "device": "projector",
-                "input": "hdmi"
-              }
-            ]
-          },
-          {
-            "action": "sequential",
-            "actions": [
-              {
-                "action": "ensureOn",
-                "device": "receiver"
-              },
-              {
-                "action": "changeInput",
-                "device": "receiver",
-                "input": "xbox"
-              }
-            ]
-          }
-        ]
-      },
-      "defaultDevice": "bluray",
-      "buttonMap": {
-      }
-    },
-    "kodi": {
-      "onEnter": {
-        "action": "simultaneous",
-        "actions": [
-          {
-            "action": "ensureOn",
+            "action": "ensureOff",
             "device": "kodi"
           },
           {
-            "action": "sequential",
-            "actions": [
-              {
-                "action": "ensureOn",
-                "device": "projector"
-              },
-              {
-                "action": "changeInput",
-                "device": "projector",
-                "input": "hdmi"
-              }
-            ]
-          },
-          {
-            "action": "sequential",
-            "actions": [
-              {
-                "action": "ensureOn",
-                "device": "receiver"
-              },
-              {
-                "action": "changeInput",
-                "device": "receiver",
-                "input": "kodi"
-              }
-            ]
+            "action": "ensureOff",
+            "device": "bluray"
           }
         ]
       },
-      "defaultDevice": "kodi",
       "buttonMap": {
+        "NUM1": {
+          "action": "switchMode",
+          "mode": "tivo"
+        },
+        "NUM2": {
+          "action": "switchMode",
+          "mode": "bluray"
+        },
+        "NUM3": {
+          "action": "switchMode",
+          "mode": "kodi"
+        },
+        "NUM4": {
+          "action": "switchMode",
+          "mode": "xbox"
+        },
+        "NUM5": {
+          "action": "switchMode",
+          "mode": "wii"
+        }
       }
     },
     "help": {
@@ -243,37 +152,11 @@
             "button": "HELP"
           },
           {
-            "action": "simultaneous",
-            "actions": [
-              {
-                "action": "sequential",
-                "actions": [
-                  {
-                    "action": "ensureOn",
-                    "device": "projector"
-                  },
-                  {
-                    "action": "changeInput",
-                    "device": "projector",
-                    "input": "hdmi"
-                  }
-                ]
-              },
-              {
-                "action": "sequential",
-                "actions": [
-                  {
-                    "action": "ensureOn",
-                    "device": "receiver"
-                  },
-                  {
-                    "action": "changeInput",
-                    "device": "receiver",
-                    "input": "raspberrypi"
-                  }
-                ]
-              }
-            ]
+            "action": "runMacro",
+            "name": "switchInputs",
+            "args": {
+              "input": "raspberrypi"
+            }
           }
         ]
       },
@@ -284,69 +167,130 @@
       "buttonMap": {
         "NUM1": {
           "action": "switchMode",
+          "mode": "tivo"
+        },
+        "NUM2": {
+          "action": "switchMode",
+          "mode": "bluray"
+        },
+        "NUM3": {
+          "action": "switchMode",
+          "mode": "kodi"
+        },
+        "NUM4": {
+          "action": "switchMode",
           "mode": "xbox"
+        },
+        "NUM5": {
+          "action": "switchMode",
+          "mode": "wii"
         }
+      }
+    },
+    "tivo": {
+      "onEnter": {
+        "action": "runMacro",
+        "name": "ensureOnAndSwitchInputs",
+        "args": {
+          "device": "tivo",
+          "input": "tivo"
+        }
+      },
+      "defaultDevice": "tivo",
+      "buttonMap": {
+      }
+    },
+    "bluray": {
+      "onEnter": {
+        "action": "runMacro",
+        "name": "ensureOnAndSwitchInputs",
+        "args": {
+          "device": "xbox",
+          "input": "xbox"
+        }
+      },
+      "defaultDevice": "bluray",
+      "buttonMap": {
+      }
+    },
+    "kodi": {
+      "onEnter": {
+        "action": "runMacro",
+        "name": "ensureOnAndSwitchInputs",
+        "args": {
+          "device": "kodi",
+          "input": "kodi"
+        }
+      },
+      "defaultDevice": "kodi",
+      "buttonMap": {
       }
     },
     "xbox": {
       "onEnter": {
-        "action": "simultaneous",
-        "actions": [
-          {
-            "action": "ensureOn",
-            "device": "xbox"
-          },
-          {
-            "action": "sequential",
-            "actions": [
-              {
-                "action": "ensureOn",
-                "device": "projector"
-              },
-              {
-                "action": "changeInput",
-                "device": "projector",
-                "input": "hdmi"
-              }
-            ]
-          },
-          {
-            "action": "sequential",
-            "actions": [
-              {
-                "action": "ensureOn",
-                "device": "receiver"
-              },
-              {
-                "action": "changeInput",
-                "device": "receiver",
-                "input": "xbox"
-              }
-            ]
-          }
-        ]
+        "action": "runMacro",
+        "name": "ensureOnAndSwitchInputs",
+        "args": {
+          "device": "xbox",
+          "input": "xbox"
+        }
+      }
+    },
+    "wii": {
+      "onEnter": {
+        "action": "runMacro",
+        "name": "ensureOnAndSwitchInputs",
+        "args": {
+          "device": "wii",
+          "input": "wii"
+        }
       }
     }
   },
   "macros": {
-    "allOff": {
+    "ensureOnAndSwitchInputs": {
       "action": "simultaneous",
       "actions": [
         {
-          "action": "ensureOff",
-          "device": "receiver"
+          "action": "ensureOn",
+          "device": "${device}"
         },
         {
-          "action": "ensureOff",
-          "device": "projector"
+          "action": "runMacro",
+          "name": "switchInputs"
+        }
+      ]
+    },
+    "switchInputs": {
+      "action": "simultaneous",
+      "actions": [
+        {
+          "action": "sequential",
+          "actions": [
+            {
+              "action": "ensureOn",
+              "device": "projector"
+            },
+            {
+              "action": "changeInput",
+              "device": "projector",
+              "input": "hdmi"
+            }
+          ]
         },
         {
-          "action": "ensureOff",
-          "device": "kodi"
-        },
-        {
-          "action": "ensureOff",
-          "device": "bluray"
+          "action": "sequential",
+          "actions": [
+            {
+              "action": "ensureOn",
+              "device": "receiver"
+            },
+            {
+              "action": "changeInput",
+              "device": "receiver",
+              "input": "${input}"
+            }
+          ]
         }
       ]
     }
