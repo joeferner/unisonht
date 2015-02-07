@@ -23,6 +23,7 @@
         <module>web</module>
         <module>image-viewer</module>
         <module>xbox</module>
+        <module>unisonht-plugin-wii</module>
     </modules>
 
 </project>

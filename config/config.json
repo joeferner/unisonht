@@ -59,11 +59,14 @@
     "xbox": {
       "deviceClass": "com.unisonht.plugin.xbox.XBoxDevicePlugin"
     },
+    "wii": {
+      "deviceClass": "com.unisonht.plugin.wii.WiiDevicePlugin"
+    },
     "imageViewer": {
       "deviceClass": "com.unisonht.plugin.imageViewer.ImageViewerDevicePlugin",
       "data": {
         "images": {
-          "HELP": "/home/jferner/dev/unisonht/config/tivo-roamio-pro-remote.jpg"
+          "HELP": "/home/jferner/dev/unisonht/config/help-input.png"
         }
       }
     }
