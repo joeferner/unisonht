@@ -1,9 +1,15 @@
 package com.unisonht.plugin.receiver.yamaha;
 
 import com.unisonht.plugin.Device;
+import com.unisonht.utils.UnisonhtException;
 import com.unisonht.utils.UnisonhtLogger;
 import com.unisonht.utils.UnisonhtLoggerFactory;
+import org.apache.commons.io.IOUtils;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,12 +31,14 @@ public class YamahaReceiverDevice extends Device {
 
     @Override
     public void ensureOff() {
-        LOGGER.error("TODO ensureOff");
+        String command = "<YAMAHA_AV cmd=\"PUT\"><Main_Zone><Power_Control><Power>Standby</Power></Power_Control></Main_Zone></YAMAHA_AV>";
+        sendXMLToReceiver(command);
     }
 
     @Override
     public void ensureOn() {
-        LOGGER.error("TODO ensureOn");
+        String command = "<YAMAHA_AV cmd=\"PUT\"><Main_Zone><Power_Control><Power>On</Power></Power_Control></Main_Zone></YAMAHA_AV>";
+        sendXMLToReceiver(command);
     }
 
     @Override
@@ -45,6 +53,42 @@ public class YamahaReceiverDevice extends Device {
             input = newInput;
         }
 
-        LOGGER.error("TODO changeInput(%s)", input);
+        changeInput("Main_Zone", input);
+    }
+
+    public void changeInput(String zone, String input) {
+        String command = "<YAMAHA_AV cmd=\"PUT\"><" + zone + "><Input><Input_Sel>" + input + "</Input_Sel></Input></" + zone + "></YAMAHA_AV>";
+        sendXMLToReceiver(command);
+    }
+
+    private void sendXMLToReceiver(String command) {
+        URL url;
+        try {
+            url = new URL("http://" + this.address + "/YamahaRemoteControl/ctrl");
+        } catch (MalformedURLException e) {
+            throw new UnisonhtException("Bad URL", e);
+        }
+
+        try {
+            LOGGER.debug("sending command to %s: %s", url.toString(), command);
+            byte[] bodyBytes = command.getBytes();
+
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setConnectTimeout(1000);
+            conn.setReadTimeout(10 * 1000);
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Connection", "close");
+            conn.setRequestProperty("User-Agent", "Dalvik/1.6.0 (Linux; U; Android 4.4.2; SM-G900V Build/KOT49H)");
+            conn.setRequestProperty("content-type", "text/xml; charset=utf-8");
+            conn.setRequestProperty("Content-Length", "" + bodyBytes.length);
+            conn.setDoOutput(true);
+
+            conn.getOutputStream().write(bodyBytes);
+
+            String result = IOUtils.toString(conn.getInputStream());
+            LOGGER.debug("result: " + result);
+        } catch (IOException e) {
+            throw new UnisonhtException("Could not get page: " + url + "(" + e.getMessage() + ")", e);
+        }
     }
 }

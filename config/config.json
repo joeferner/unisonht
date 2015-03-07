@@ -1,10 +1,6 @@
 {
   "inputPlugins": {
-    "lirc": {
-      "pluginClass": "com.unisonht.plugin.lirc.LircInputPlugin",
-      "data": {
-      }
-    },
+
     "web": {
       "pluginClass": "com.unisonht.plugin.web.WebInputPlugin",
       "data": {
@@ -32,13 +28,13 @@
     "receiver": {
       "deviceClass": "com.unisonht.plugin.receiver.yamaha.YamahaReceiverDevicePlugin",
       "data": {
-        "address": "localhost",
+        "address": "192.168.0.165",
         "inputs": {
-          "tivo": "hdmi1",
-          "kodi": "hdmi2",
-          "raspberrypi": "hdmi3",
-          "xbox": "hdmi4",
-          "wii": "hdmi5"
+          "raspberrypi": "HDMI1",
+          "tivo": "HDMI2",
+          "kodi": "HDMI3",
+          "xbox": "HDMI4",
+          "wii": "HDMI5"
         }
       }
     },
