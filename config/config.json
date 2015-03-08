@@ -1,6 +1,10 @@
 {
   "inputPlugins": {
-
+    "lirc": {
+      "pluginClass": "com.unisonht.plugin.lirc.LircInputPlugin",
+      "data": {
+      }
+    },
     "web": {
       "pluginClass": "com.unisonht.plugin.web.WebInputPlugin",
       "data": {

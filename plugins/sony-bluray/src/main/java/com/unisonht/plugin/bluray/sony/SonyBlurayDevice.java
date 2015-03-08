@@ -67,14 +67,14 @@ public class SonyBlurayDevice extends Device {
 
     @Override
     public void buttonPress(String buttonName) {
-        String sonyCommand = "Right";
+        String sonyCommand = buttonName;
 
         StringBuilder body = new StringBuilder();
         body.append("<?xml version=\"1.0\"?>\n");
         body.append("<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">\n");
         body.append("  <s:Body>\n");
         body.append("   <u:X_SendIRCC xmlns:u=\"urn:schemas-sony-com:service:IRCC:1\">\n");
-        body.append("      <IRCCCode>" + sonyCommand + "</IRCCCode>\n");
+        body.append("      <IRCCCode>").append(sonyCommand).append("</IRCCCode>\n");
         body.append("    </u:X_SendIRCC>\n");
         body.append("  </s:Body>\n");
         body.append("</s:Envelope>\n");

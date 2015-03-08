@@ -5,8 +5,13 @@ import com.unisonht.utils.UnisonhtException;
 import com.unisonht.utils.UnisonhtLogger;
 import com.unisonht.utils.UnisonhtLoggerFactory;
 import org.apache.commons.io.IOUtils;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
-import java.io.IOException;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -17,8 +22,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class YamahaReceiverDevice extends Device {
     private static final UnisonhtLogger LOGGER = UnisonhtLoggerFactory.getLogger(YamahaReceiverDevice.class);
+    public static final String ZONE_MAIN = "Main_Zone";
     private final String address;
     private final Map<String, String> inputMapping;
+    private final DocumentBuilder builder;
 
     public YamahaReceiverDevice(String address, Map<String, String> inputMapping) {
         checkNotNull(address, "address is required");
@@ -27,23 +34,93 @@ public class YamahaReceiverDevice extends Device {
             inputMapping = new HashMap<>();
         }
         this.inputMapping = inputMapping;
+
+        try {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            builder = factory.newDocumentBuilder();
+        } catch (Exception ex) {
+            throw new UnisonhtException("Could not create XML builder", ex);
+        }
     }
 
     @Override
     public void ensureOff() {
-        String command = "<YAMAHA_AV cmd=\"PUT\"><Main_Zone><Power_Control><Power>Standby</Power></Power_Control></Main_Zone></YAMAHA_AV>";
-        sendXMLToReceiver(command);
+        putXml(ZONE_MAIN, "<Power_Control><Power>Standby</Power></Power_Control>");
     }
 
     @Override
     public void ensureOn() {
-        String command = "<YAMAHA_AV cmd=\"PUT\"><Main_Zone><Power_Control><Power>On</Power></Power_Control></Main_Zone></YAMAHA_AV>";
+        putXml(ZONE_MAIN, "<Power_Control><Power>On</Power></Power_Control>");
+    }
+
+    private void putXml(String zone, String content) {
+        String command = "<YAMAHA_AV cmd=\"PUT\"><" + zone + ">" + content + "</" + zone + "></YAMAHA_AV>";
         sendXMLToReceiver(command);
+    }
+
+    private Document getXml(String zone, String content) {
+        String command = "<YAMAHA_AV cmd=\"GET\"><" + zone + ">" + content + "</" + zone + "></YAMAHA_AV>";
+        return sendXMLToReceiver(command);
     }
 
     @Override
     public void buttonPress(String buttonName) {
-        LOGGER.error("TODO buttonPress(%s)", buttonName);
+        if (buttonName.equalsIgnoreCase("MUTE")) {
+            toggleMute(ZONE_MAIN);
+        } else if (buttonName.equalsIgnoreCase("VOLUMEUP")) {
+            changeVolume(ZONE_MAIN, 0.5);
+        } else if (buttonName.equalsIgnoreCase("VOLUMEDOWN")) {
+            changeVolume(ZONE_MAIN, -0.5);
+        } else {
+            LOGGER.warn("Invalid button name: %s", buttonName);
+        }
+    }
+
+    private void changeVolume(String zone, double amount) {
+        String content = String.format(
+                "<Volume><Lvl><Val>%s%s</Val><Exp></Exp><Unit></Unit></Lvl></Volume>",
+                amount > 0 ? "Up" : "Down",
+                Math.abs(amount) == 0.5 ? "" : String.format(" %d dB ", Math.abs(amount))
+        );
+        putXml(zone, content);
+    }
+
+    public void toggleMute(String zone) {
+        if (isMuted(zone)) {
+            muteOff(zone);
+        } else {
+            muteOn(zone);
+        }
+    }
+
+    private void muteOn(String zone) {
+        putXml(zone, "<Volume><Mute>On</Mute></Volume>");
+    }
+
+    private void muteOff(String zone) {
+        putXml(zone, "<Volume><Mute>Off</Mute></Volume>");
+    }
+
+    private boolean isMuted(String zone) {
+        return isStatusParamOn(zone, "Mute");
+    }
+
+    private boolean isStatusParamOn(String zone, String param) {
+        String statusString = getStatusString(zone, param);
+        return statusString.equalsIgnoreCase("on");
+    }
+
+    private String getStatusString(String zone, String param) {
+        Document xml = getBasicStatus(zone);
+        NodeList elems = xml.getElementsByTagName(param);
+        if (elems.getLength() == 0) {
+            throw new UnisonhtException("Could not find param " + param + " in xml: " + xml);
+        }
+        return elems.item(0).getTextContent();
+    }
+
+    private Document getBasicStatus(String zone) {
+        return getXml(zone, "<Basic_Status>GetParam</Basic_Status>");
     }
 
     @Override
@@ -53,7 +130,7 @@ public class YamahaReceiverDevice extends Device {
             input = newInput;
         }
 
-        changeInput("Main_Zone", input);
+        changeInput(ZONE_MAIN, input);
     }
 
     public void changeInput(String zone, String input) {
@@ -61,7 +138,7 @@ public class YamahaReceiverDevice extends Device {
         sendXMLToReceiver(command);
     }
 
-    private void sendXMLToReceiver(String command) {
+    private Document sendXMLToReceiver(String command) {
         URL url;
         try {
             url = new URL("http://" + this.address + "/YamahaRemoteControl/ctrl");
@@ -87,7 +164,8 @@ public class YamahaReceiverDevice extends Device {
 
             String result = IOUtils.toString(conn.getInputStream());
             LOGGER.debug("result: " + result);
-        } catch (IOException e) {
+            return builder.parse(new InputSource(new StringReader(result)));
+        } catch (Exception e) {
             throw new UnisonhtException("Could not get page: " + url + "(" + e.getMessage() + ")", e);
         }
     }
