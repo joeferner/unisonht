@@ -1,10 +1,5 @@
 {
   "inputPlugins": {
-    "lirc": {
-      "pluginClass": "com.unisonht.plugin.lirc.LircInputPlugin",
-      "data": {
-      }
-    },
     "web": {
       "pluginClass": "com.unisonht.plugin.web.WebInputPlugin",
       "data": {
@@ -34,11 +29,12 @@
       "data": {
         "address": "192.168.0.165",
         "inputs": {
-          "raspberrypi": "HDMI1",
-          "tivo": "HDMI2",
-          "kodi": "HDMI3",
-          "xbox": "HDMI4",
-          "wii": "HDMI5"
+          "bluray": "HDMI1",
+          "raspberrypi": "HDMI2",
+          "tivo": "HDMI3",
+          "kodi": "HDMI4",
+          "xbox": "HDMI5",
+          "wii": "HDMI6"
         }
       }
     },
@@ -52,7 +48,7 @@
     "bluray": {
       "deviceClass": "com.unisonht.plugin.bluray.sony.SonyBlurayDevicePlugin",
       "data": {
-        "address": "192.168.0.164",
+        "address": "192.168.0.166",
         "mac": "78:61:7c:a9:cc:c9"
       }
     },
@@ -208,8 +204,8 @@
         "action": "runMacro",
         "name": "ensureOnAndSwitchInputs",
         "args": {
-          "device": "xbox",
-          "input": "xbox"
+          "device": "bluray",
+          "input": "bluray"
         }
       },
       "defaultDevice": "bluray",

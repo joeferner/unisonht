@@ -2,7 +2,7 @@
   <select ng-model="selectedRemoteName" ng-options="remoteName for remoteName in remoteNames" ng-change="loadRemote()">
   </select>
   <br/>
-  <img id="remote-image" usemap="#remote-image-map"/>
+  <img id="remote-image" usemap="#remote-image-map" unselectable='on' onselectstart='return false;' onmousedown='return false;'/>
   <map name="remote-image-map" id="remote-image-map">
 
   </map>

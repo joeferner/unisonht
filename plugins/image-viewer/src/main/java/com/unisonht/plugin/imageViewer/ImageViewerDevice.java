@@ -1,20 +1,24 @@
 package com.unisonht.plugin.imageViewer;
 
+import com.unisonht.config.Configuration;
 import com.unisonht.plugin.Device;
 import com.unisonht.utils.ThreadUtil;
 import com.unisonht.utils.UnisonhtException;
 import com.unisonht.utils.UnisonhtLogger;
 import com.unisonht.utils.UnisonhtLoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
 public class ImageViewerDevice extends Device {
     private static final UnisonhtLogger LOGGER = UnisonhtLoggerFactory.getLogger(ImageViewerDevice.class);
     private final Map<String, String> images;
+    private final Configuration configuration;
     private Process imageViewerProcess;
 
-    public ImageViewerDevice(Map<String, String> images) {
+    public ImageViewerDevice(Configuration configuration, Map<String, String> images) {
+        this.configuration = configuration;
         this.images = images;
     }
 
@@ -40,12 +44,13 @@ public class ImageViewerDevice extends Device {
     }
 
     private void displayImage(String imageFileName) {
-        LOGGER.debug("displaying image: %s", imageFileName);
+        File imageFile = this.configuration.resolveFileName(imageFileName);
+        LOGGER.debug("displaying image: %s", imageFile.getAbsolutePath());
         try {
-            run(new String[]{"pqiv", "-fit", imageFileName});
+            run(new String[]{"pqiv", "-fit", imageFile.getAbsolutePath()});
             bringWindowToTopAsync("pqiv");
         } catch (IOException ex) {
-            throw new UnisonhtException("Could not view image: " + imageFileName, ex);
+            throw new UnisonhtException("Could not view image: " + imageFile.getAbsolutePath(), ex);
         }
     }
 

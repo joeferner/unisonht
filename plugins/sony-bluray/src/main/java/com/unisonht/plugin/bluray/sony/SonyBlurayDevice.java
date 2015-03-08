@@ -6,13 +6,22 @@ import com.unisonht.services.RemoteService;
 import com.unisonht.utils.*;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.IOException;
+import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -25,8 +34,10 @@ public class SonyBlurayDevice extends Device {
     private final String address;
     private final String macAddress;
     private final RemoteService remoteService;
+    private final DocumentBuilder builder;
     private String deviceIdPrefix;
     private String deviceName = DEFAULT_DEVICE_NAME;
+    private Map<String, String> commandMap = new HashMap<>();
 
     public SonyBlurayDevice(RemoteService remoteService, String address, String macAddress) {
         this.remoteService = remoteService;
@@ -34,6 +45,13 @@ public class SonyBlurayDevice extends Device {
         this.address = address;
         this.macAddress = macAddress;
         this.deviceIdPrefix = DEFAULT_DEVICE_ID_PREFIX;
+
+        try {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            builder = factory.newDocumentBuilder();
+        } catch (Exception ex) {
+            throw new UnisonhtException("Could not create XML builder", ex);
+        }
     }
 
     @Override
@@ -47,6 +65,7 @@ public class SonyBlurayDevice extends Device {
         for (int i = 0; i < 60; i++) {
             try {
                 getStatus();
+                getRemoteCommandList();
                 return;
             } catch (Exception ex) {
                 LOGGER.debug("trying to get status: " + address + ":" + PORT, ex);
@@ -65,16 +84,47 @@ public class SonyBlurayDevice extends Device {
         }
     }
 
+    private void getRemoteCommandList() {
+        commandMap.clear();
+        String remoteCommandList = getPage("/getRemoteCommandList");
+        try {
+            Document doc = builder.parse(new InputSource(new StringReader(remoteCommandList)));
+            NodeList commandElements = doc.getElementsByTagName("command");
+            for (int i = 0; i < commandElements.getLength(); i++) {
+                Element commandElement = (Element) commandElements.item(i);
+                String commandName = commandElement.getAttribute("name").toUpperCase();
+                String commandValue = commandElement.getAttribute("value");
+                commandMap.put(commandName, commandValue);
+            }
+        } catch (Exception e) {
+            throw new UnisonhtException("Could not parse remove command line", e);
+        }
+    }
+
     @Override
     public void buttonPress(String buttonName) {
         String sonyCommand = buttonName;
+
+        if (sonyCommand.equalsIgnoreCase("SELECT")) {
+            sonyCommand = "Confirm";
+        } else if (sonyCommand.equalsIgnoreCase("FASTFORWARD")) {
+            sonyCommand = "Forward";
+        } else if (sonyCommand.equalsIgnoreCase("SKIP")) {
+            sonyCommand = "Next";
+        } else if (sonyCommand.equalsIgnoreCase("REPLAY")) {
+            sonyCommand = "Prev";
+        }
+        String commandValue = commandMap.get(sonyCommand.toUpperCase());
+        if (commandValue == null) {
+            throw new UnisonhtException("Could not find sony command with name: " + sonyCommand);
+        }
 
         StringBuilder body = new StringBuilder();
         body.append("<?xml version=\"1.0\"?>\n");
         body.append("<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">\n");
         body.append("  <s:Body>\n");
         body.append("   <u:X_SendIRCC xmlns:u=\"urn:schemas-sony-com:service:IRCC:1\">\n");
-        body.append("      <IRCCCode>").append(sonyCommand).append("</IRCCCode>\n");
+        body.append("      <IRCCCode>").append(commandValue).append("</IRCCCode>\n");
         body.append("    </u:X_SendIRCC>\n");
         body.append("  </s:Body>\n");
         body.append("</s:Envelope>\n");
