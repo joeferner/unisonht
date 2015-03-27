@@ -1,8 +1,8 @@
 (export (version D)
   (design
-    (source /home/jferner/dev/basement-control/pi-ir/hardware/pi-ir.sch)
-    (date "Fri 30 May 2014 07:39:42 PM EDT")
-    (tool "Eeschema (2014-05-22 BZR 4881)-product"))
+    (source /home/jferner/dev/unisonht/pi-ir/hardware/pi-ir.sch)
+    (date "Fri 27 Mar 2015 07:25:52 PM EDT")
+    (tool "Eeschema (2014-jul-16 BZR unknown)-product"))
   (components
     (comp (ref P1)
       (value RASPBERRYPI)
@@ -55,15 +55,35 @@
       (sheetpath (names /) (tstamps /))
       (tstamp 53887433)))
   (libparts
+    (libpart (lib pi-ir) (part MOSFET-N)
+      (footprints
+        (fp SOT95P237X112_123-3N))
+      (fields
+        (field (name Reference) U)
+        (field (name Value) MOSFET-N))
+      (pins
+        (pin (num 1) (name ~) (type passive))
+        (pin (num 2) (name ~) (type passive))
+        (pin (num 3) (name ~) (type passive))))
     (libpart (lib pi-ir) (part CP)
       (footprints
-        (fp CAPAE660X790N))
+        (fp CAPAE*)
+        (fp CAPCP*)
+        (fp CAPPR*))
       (fields
         (field (name Reference) C)
         (field (name Value) CP))
       (pins
         (pin (num 1) (name ~) (type passive))
         (pin (num 2) (name ~) (type passive))))
+    (libpart (lib pi-ir) (part AUDIO-JACK-3)
+      (fields
+        (field (name Reference) P)
+        (field (name Value) AUDIO-JACK-3))
+      (pins
+        (pin (num 1) (name SLEEVE) (type passive))
+        (pin (num 2) (name TIP) (type passive))
+        (pin (num 3) (name RING) (type passive))))
     (libpart (lib pi-ir) (part RASPBERRYPI)
       (fields
         (field (name Reference) P)
@@ -95,36 +115,19 @@
         (pin (num 24) (name GPIO8_CE0) (type passive))
         (pin (num 25) (name NC) (type NotConnected))
         (pin (num 26) (name GPIO7_CE1) (type passive))))
-    (libpart (lib pi-ir) (part AUDIO-JACK-3)
-      (fields
-        (field (name Reference) P)
-        (field (name Value) AUDIO-JACK-3))
-      (pins
-        (pin (num 1) (name SLEEVE) (type passive))
-        (pin (num 2) (name TIP) (type passive))
-        (pin (num 3) (name RING) (type passive))))
     (libpart (lib pi-ir) (part R)
       (footprints
-        (fp RESC2012X100N))
+        (fp RESC2012X100N)
+        (fp RESAD1690W80L890D400P))
       (fields
         (field (name Reference) R)
         (field (name Value) R))
       (pins
         (pin (num 1) (name ~) (type passive))
-        (pin (num 2) (name ~) (type passive))))
-    (libpart (lib pi-ir) (part MOSFET-N)
-      (footprints
-        (fp SOT95P237X112_123-3N))
-      (fields
-        (field (name Reference) U)
-        (field (name Value) MOSFET-N))
-      (pins
-        (pin (num 1) (name ~) (type passive))
-        (pin (num 2) (name ~) (type passive))
-        (pin (num 3) (name ~) (type passive)))))
+        (pin (num 2) (name ~) (type passive)))))
   (libraries
     (library (logical pi-ir)
-      (uri pi-ir.lib)))
+      (uri /home/jferner/dev/unisonht/pi-ir/hardware/pi-ir.lib)))
   (nets
     (net (code 1) (name GNDPWR)
       (node (ref U2) (pin 2))

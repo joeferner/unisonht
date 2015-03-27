@@ -1,4 +1,4 @@
-update=Thu 29 May 2014 10:09:40 PM EDT
+update=Fri 27 Mar 2015 07:26:51 PM EDT
 version=1
 last_client=kicad
 [cvpcb]
@@ -47,14 +47,6 @@ LibName16=valves
 version=1
 [eeschema]
 version=1
-PageLayoutDescrFile=
-SubpartIdSeparator=0
-SubpartFirstId=65
 LibDir=
-NetFmtName=
-RptD_X=0
-RptD_Y=100
-RptLab=1
-LabSize=60
 [eeschema/libraries]
 LibName1=pi-ir
