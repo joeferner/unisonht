@@ -13,7 +13,7 @@
     sudo apt-get install lirc oracle-java7-jdk wmctrl autoconf git libgtk2.0-dev
     ```
 
-1. Install fixed version of pqiv
+1. Install fixed version of pqiv (image viewer)
 
     ```
     sudo apt-get remove pqiv
