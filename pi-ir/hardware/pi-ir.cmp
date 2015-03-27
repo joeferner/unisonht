@@ -1,0 +1,73 @@
+Cmp-Mod V01 Created by Cvpcb (2014-05-22 BZR 4881)-product   date = Fri 30 May 2014 08:38:30 AM EDT
+
+BeginCmp
+TimeStamp = /5387FDB6;
+Reference = C1;
+ValeurCmp = 47uF;
+IdModule  = pi-ir:CAPAE660X790N;
+EndCmp
+
+BeginCmp
+TimeStamp = /5387F090;
+Reference = P1;
+ValeurCmp = RASPBERRYPI;
+IdModule  = pi-ir:HDRV26W66P254_2X13_3297X503X838P;
+EndCmp
+
+BeginCmp
+TimeStamp = /5387F86E;
+Reference = P2;
+ValeurCmp = IROUT;
+IdModule  = pi-ir:SJ1-352XNG;
+EndCmp
+
+BeginCmp
+TimeStamp = /5387FB2D;
+Reference = P3;
+ValeurCmp = IRIN;
+IdModule  = pi-ir:SJ1-352XNG;
+EndCmp
+
+BeginCmp
+TimeStamp = /53887433;
+Reference = P4;
+ValeurCmp = IROUT;
+IdModule  = pi-ir:SJ1-352XNG;
+EndCmp
+
+BeginCmp
+TimeStamp = /5387F4BB;
+Reference = R1;
+ValeurCmp = 51R;
+IdModule  = pi-ir:RESC2012X100N;
+EndCmp
+
+BeginCmp
+TimeStamp = /5387FC10;
+Reference = R2;
+ValeurCmp = 51R;
+IdModule  = pi-ir:RESC2012X100N;
+EndCmp
+
+BeginCmp
+TimeStamp = /538873C2;
+Reference = R3;
+ValeurCmp = 51R;
+IdModule  = pi-ir:RESC2012X100N;
+EndCmp
+
+BeginCmp
+TimeStamp = /5387F2A6;
+Reference = U1;
+ValeurCmp = MOSFET-N;
+IdModule  = pi-ir:SOT95P237X112_123-3N;
+EndCmp
+
+BeginCmp
+TimeStamp = /538870EF;
+Reference = U2;
+ValeurCmp = MOSFET-N;
+IdModule  = pi-ir:SOT95P237X112_123-3N;
+EndCmp
+
+EndListe
