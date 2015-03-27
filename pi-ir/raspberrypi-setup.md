@@ -2,52 +2,52 @@
 
 * Upgrade Firmware
 
-    sudo rpi-update
+      sudo rpi-update
 
 * Install packages
 
-    sudo apt-get update
-    sudo apt-get upgrade
-    sudo apt-get install lirc oracle-java7-jdk wmctrl autoconf git libgtk2.0-dev
+      sudo apt-get update
+      sudo apt-get upgrade
+      sudo apt-get install lirc oracle-java7-jdk wmctrl autoconf git libgtk2.0-dev
 
 * Install fixed version of pqiv
 
-    sudo apt-get remove pqiv
-    git clone https://github.com/phillipberndt/pqiv.git -b 0.12
-    cd pqiv
-    ./configure
-    # in pqiv.c change "gchar option;" to "gint option;"
-    sudo make all install
+      sudo apt-get remove pqiv
+      git clone https://github.com/phillipberndt/pqiv.git -b 0.12
+      cd pqiv
+      ./configure
+      # in pqiv.c change "gchar option;" to "gint option;"
+      sudo make all install
 
 * Add the following to `~/.bashrc`
 
-    export JAVA_HOME=/usr/lib/jvm/jdk-7-oracle-armhf
+      export JAVA_HOME=/usr/lib/jvm/jdk-7-oracle-armhf
     
 * Make UnisonHT directory
 
-    mkdir -p /opt/unisonht/
-    chmod a+w /opt/unisonht/
+      mkdir -p /opt/unisonht/
+      chmod a+w /opt/unisonht/
     
 * Install JUDS
 
-    git clone https://github.com/mcfunley/juds.git
-    cd juds
-    ./autoconf.sh
-    ./configure
-    # modify Makefile. Remove values for M32 and M64
-    make
-    sudo make install
-    sudo ln -s /usr/lib/libunixdomainsocket-linux-arm.so /opt/unisonht/libunixdomainsocket-linux-arm.so
+      git clone https://github.com/mcfunley/juds.git
+      cd juds
+      ./autoconf.sh
+      ./configure
+      # modify Makefile. Remove values for M32 and M64
+      make
+      sudo make install
+      sudo ln -s /usr/lib/libunixdomainsocket-linux-arm.so /opt/unisonht/libunixdomainsocket-linux-arm.so
     
 * Configure LIRC Hardware.
 ** Add the following to `/etc/modules`
 
-    lirc_dev
-    lirc_rpi gpio_in_pin=23 gpio_out_pin=22
+      lirc_dev
+      lirc_rpi gpio_in_pin=23 gpio_out_pin=22
     
 ** Add the following to `/boot/config.txt`
 
-    dtoverlay=lirc-rpi,gpio_in_pin=23,gpio_out_pin=22
+      dtoverlay=lirc-rpi,gpio_in_pin=23,gpio_out_pin=22
 
 * Configure LIRC to use the Hardware `/etc/lirc/hardware.conf`
 
@@ -83,10 +83,9 @@ LIRCMD_CONF=""
 
 * Create run script `/opt/unisonht/run.sh`
 
-```
-#!/bin/bash
+      #!/bin/bash
 
-java -classpath '*' com.unisonht.UnisonHT
-```
+      java -classpath '*' com.unisonht.UnisonHT
 
-# reboot
+
+* reboot
