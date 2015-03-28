@@ -14,7 +14,11 @@ public class UnisonHT {
     private static final UnisonhtLogger LOGGER = UnisonhtLoggerFactory.getLogger(UnisonHT.class);
 
     public static void main(String[] args) {
-        new UnisonHT().run(args);
+        try {
+            new UnisonHT().run(args);
+        } catch (Throwable ex) {
+            LOGGER.error("Failed in run", ex);
+        }
     }
 
     private void run(String[] args) {

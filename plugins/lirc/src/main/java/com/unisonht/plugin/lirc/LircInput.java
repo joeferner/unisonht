@@ -90,8 +90,8 @@ public class LircInput extends Input {
                         }
                     }
                 } catch (Throwable e) {
-                    LOGGER.error("LIRC failure", e);
-                    ThreadUtil.sleep(1000);
+                    // TODO this gets thrown a lot... LOGGER.error("LIRC failure", e);
+                    ThreadUtil.sleep(100);
                 }
             }
             try {

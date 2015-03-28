@@ -1,4 +1,5 @@
 1. Change `/etc/hostname` to `unionht-pi`
+1. Add `127.0.0.1 unionht-pi` to `/etc/hosts`
 1. Upgrade Firmware
 
     ```
@@ -59,31 +60,11 @@
 1. Configure LIRC to use the Hardware `/etc/lirc/hardware.conf`
 
     ```
-    ########################################################
-    # /etc/lirc/hardware.conf
-    #
-    # Arguments which will be used when launching lircd
-    LIRCD_ARGS="--uinput"
-    
-    # Don't start lircmd even if there seems to be a good config file
-    # START_LIRCMD=false
-    
-    # Don't start irexec, even if a good config file seems to exist.
-    # START_IREXEC=false
-    
-    # Try to load appropriate kernel modules
-    LOAD_MODULES=true
-    
-    # Run "lircd --driver=help" for a list of supported drivers.
     DRIVER="default"
-    # usually /dev/lirc0 is the correct setting for systems using udev
     DEVICE="/dev/lirc0"
     MODULES="lirc_rpi"
-    
-    # Default configuration files for your hardware if any
     LIRCD_CONF=""
     LIRCMD_CONF=""
-    ########################################################
     ```
 
 1. Run `deploy-to-pi.sh` in the UnisonHT project.
@@ -91,7 +72,11 @@
 
     ```
     #!/bin/bash
-    java -classpath '*' com.unisonht.UnisonHT
+    sudo java -classpath '*' com.unisonht.UnisonHT
     ```
 
 1. reboot
+1. Record your remote `sudo irrecord -d /dev/lirc0 -f /etc/lirc/tivo.conf`
+1. Backup lircd.conf `sudo cp /etc/lirc/lircd.conf /etc/lirc/lircd.conf.bak`
+1. Use your remote `sudo cp /etc/lirc/tivo.conf /etc/lirc/lircd.conf`
+1. Restart LIRC `sudo /etc/init.d/lirc restart`
