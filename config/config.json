@@ -21,11 +21,11 @@
       }
     },
     "projector": {
-      "deviceClass": "com.unisonht.plugin.projector.benq.BenqProjectorDevicePlugin",
+      "deviceClass": "com.unisonht.plugin.projector.epsonNetworkRS232.EpsonNetworkRS232ProjectorDevicePlugin",
       "data": {
         "address": "localhost",
         "inputs": {
-          "hdmi": "hdmi"
+          "hdmi": "HDMI1"
         }
       }
     },

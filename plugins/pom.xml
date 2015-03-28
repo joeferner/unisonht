@@ -15,7 +15,7 @@
 
     <modules>
         <module>tivo</module>
-        <module>benq-projector</module>
+        <module>epson-network-rs232-projector</module>
         <module>yamaha-receiver</module>
         <module>kodi</module>
         <module>sony-bluray</module>
