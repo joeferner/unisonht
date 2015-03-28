@@ -50,19 +50,11 @@
     sudo ln -s /usr/lib/libunixdomainsocket-linux-arm.so /opt/unisonht/libunixdomainsocket-linux-arm.so
     ```
 
-1. Configure LIRC Hardware.
-    1. Add the following to `/etc/modules`
+1. Configure LIRC Hardware. Add the following to `/boot/config.txt`
 
-        ```
-        lirc_dev
-        lirc_rpi gpio_in_pin=23 gpio_out_pin=22
-        ```
-
-    1. Add the following to `/boot/config.txt`
-
-        ```
-        dtoverlay=lirc-rpi,gpio_in_pin=23,gpio_out_pin=22
-        ```
+    ```
+    dtoverlay=lirc-rpi,gpio_in_pin=23,gpio_out_pin=22,gpio_in_pull=up
+    ```
 
 1. Configure LIRC to use the Hardware `/etc/lirc/hardware.conf`
 
