@@ -36,10 +36,10 @@
         "inputs": {
           "bluray": "HDMI1",
           "raspberrypi": "HDMI2",
-          "tivo": "HDMI3",
-          "kodi": "HDMI4",
-          "xbox": "HDMI5",
-          "wii": "HDMI6"
+          "kodi": "HDMI3",
+          "xbox": "HDMI4",
+          "tivo": "HDMI5",
+          "wii": "VIDEO1"
         }
       }
     },
