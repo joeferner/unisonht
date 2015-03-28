@@ -76,7 +76,7 @@
     ```
 
 1. reboot
-1. Record your remote `sudo irrecord -d /dev/lirc0 -f /etc/lirc/tivo.conf`
+1. Record your remote `sudo irrecord -d /dev/lirc0 -f /etc/lirc/tivo.conf --disable-namespace`
 1. Backup lircd.conf `sudo cp /etc/lirc/lircd.conf /etc/lirc/lircd.conf.bak`
 1. Use your remote `sudo cp /etc/lirc/tivo.conf /etc/lirc/lircd.conf`
 1. Restart LIRC `sudo /etc/init.d/lirc restart`
