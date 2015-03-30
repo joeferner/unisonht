@@ -71,6 +71,7 @@ public class ImageViewerDevice extends Device {
     }
 
     private void run(String[] args) throws IOException {
-        imageViewerProcess = Runtime.getRuntime().exec(args);
+        File dir = new File(".");
+        imageViewerProcess = Runtime.getRuntime().exec(args, new String[]{"DISPLAY=:0.0"}, dir);
     }
 }

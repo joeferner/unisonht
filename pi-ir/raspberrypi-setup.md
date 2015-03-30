@@ -14,6 +14,15 @@
     sudo apt-get install lirc oracle-java7-jdk wmctrl autoconf git libgtk2.0-dev
     ```
 
+1. Disable screen blanking. Add the following line to `/etc/xdg/lxsession/LXDE-pi/autostart`
+
+    ```
+    # REMOVE THIS LINE: @xscreensaver -no-splash
+    @xset s off         # don't activate screensaver
+    @xset -dpms         # disable DPMS (Energy Star) features.
+    @xset s noblank     # don't blank the video device
+    ```
+
 1. Install fixed version of pqiv (image viewer)
 
     ```
@@ -72,7 +81,13 @@
 
     ```
     #!/bin/bash
-    sudo java -classpath '*' com.unisonht.UnisonHT
+    cd /opt/unisonht
+    java -classpath '*' com.unisonht.UnisonHT
+    ```
+1. Start run script on boot. Add the following to `/etc/xdg/lxsession/LXDE-pi/autostart`
+
+    ```
+    @/opt/unisonht/run.sh
     ```
 
 1. reboot
