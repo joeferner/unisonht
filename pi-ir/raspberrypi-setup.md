@@ -14,14 +14,23 @@
     sudo apt-get install lirc oracle-java7-jdk wmctrl autoconf git libgtk2.0-dev
     ```
 
-1. Disable screen blanking. Add the following line to `/etc/xdg/lxsession/LXDE-pi/autostart`
+1. Disable screen blanking. 
 
-    ```
-    # REMOVE THIS LINE: @xscreensaver -no-splash
-    @xset s off         # don't activate screensaver
-    @xset -dpms         # disable DPMS (Energy Star) features.
-    @xset s noblank     # don't blank the video device
-    ```
+    1. Add the following line to `/etc/xdg/lxsession/LXDE-pi/autostart`
+
+        ```
+        # REMOVE THIS LINE: @xscreensaver -no-splash
+        @xset s off         # don't activate screensaver
+        @xset -dpms         # disable DPMS (Energy Star) features.
+        @xset s noblank     # don't blank the video device
+        ```
+        
+    1. Edit the following value in this file `/etc/kbd/config`
+
+        ```
+        BLANK_TIME=0
+        POWERDOWN_TIME=0
+        ```
 
 1. Install fixed version of pqiv (image viewer)
 
@@ -91,6 +100,7 @@
     ```
 
 1. reboot
+1. If you are using a TiVo remote. Switch the remote to IR only. Press/Hold Tivo + C, should blink red. For RF mode, Press/Hold Tivo + D, light blinks yellow.
 1. Record your remote `sudo irrecord -d /dev/lirc0 -f /etc/lirc/tivo.conf --disable-namespace`
 1. Backup lircd.conf `sudo cp /etc/lirc/lircd.conf /etc/lirc/lircd.conf.bak`
 1. Use your remote `sudo cp /etc/lirc/tivo.conf /etc/lirc/lircd.conf`
