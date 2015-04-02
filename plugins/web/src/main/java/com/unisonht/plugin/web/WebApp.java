@@ -1,8 +1,8 @@
 package com.unisonht.plugin.web;
 
 import com.google.inject.Injector;
-import io.lumify.miniweb.App;
-import io.lumify.miniweb.Handler;
+import org.neolumin.webster.App;
+import org.neolumin.webster.Handler;
 
 import javax.servlet.ServletContext;
 

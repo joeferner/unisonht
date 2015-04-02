@@ -27,7 +27,7 @@
     <url>http://unisonht.com/</url>
 
     <properties>
-        <miniweb.version>0.5.1</miniweb.version>
+        <webster.version>0.9.0</webster.version>
         <javax.servlet.api.version>3.1.0</javax.servlet.api.version>
         <log4j.version>1.2.17</log4j.version>
         <slf4j.version>1.6.5</slf4j.version>
@@ -44,28 +44,24 @@
     </properties>
 
     <repositories>
-        <repository>
-            <id>lumify-releases</id>
-            <url>http://bits.lumify.io/m2/releases/</url>
-        </repository>
+        <!-- FOR: Webster Snapshots -->
         <repository>
             <snapshots>
                 <enabled>true</enabled>
                 <updatePolicy>interval:60</updatePolicy>
             </snapshots>
-            <id>lumify-snapshots</id>
-            <url>http://bits.lumify.io/m2/snapshots/</url>
+            <id>sonatype-snapshots</id>
+            <url>http://oss.sonatype.org/content/repositories/snapshots/</url>
         </repository>
     </repositories>
 
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>io.lumify</groupId>
-                <artifactId>miniweb</artifactId>
-                <version>${miniweb.version}</version>
+                <groupId>org.neolumin.webster</groupId>
+                <artifactId>webster</artifactId>
+                <version>${webster.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-server</artifactId>

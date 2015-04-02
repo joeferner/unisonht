@@ -38,6 +38,10 @@ public class TivoDevice extends Device {
 
         if (buttonName.equalsIgnoreCase("HOME")) {
             buttonName = "TIVO";
+        } else if (buttonName.equalsIgnoreCase("FASTFORWARD")) {
+            buttonName = "FORWARD";
+        } else if (buttonName.equalsIgnoreCase("REWIND")) {
+            buttonName = "REVERSE";
         }
 
         String data = "IRCODE " + buttonName + "\r";

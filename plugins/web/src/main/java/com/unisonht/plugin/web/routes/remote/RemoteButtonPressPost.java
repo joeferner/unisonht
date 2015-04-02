@@ -2,9 +2,9 @@ package com.unisonht.plugin.web.routes.remote;
 
 import com.google.inject.Inject;
 import com.unisonht.config.Configuration;
-import com.unisonht.services.RemoteService;
 import com.unisonht.plugin.web.routes.BaseRequestHandler;
-import io.lumify.miniweb.HandlerChain;
+import com.unisonht.services.RemoteService;
+import org.neolumin.webster.HandlerChain;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;

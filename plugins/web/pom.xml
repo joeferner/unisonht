@@ -20,8 +20,8 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>io.lumify</groupId>
-            <artifactId>miniweb</artifactId>
+            <groupId>org.neolumin.webster</groupId>
+            <artifactId>webster</artifactId>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>

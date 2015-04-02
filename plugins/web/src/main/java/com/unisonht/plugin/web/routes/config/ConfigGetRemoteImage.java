@@ -4,8 +4,8 @@ import com.google.inject.Inject;
 import com.unisonht.clientapi.ConfigJson;
 import com.unisonht.config.Configuration;
 import com.unisonht.plugin.web.routes.BaseRequestHandler;
-import io.lumify.miniweb.HandlerChain;
 import org.apache.commons.io.IOUtils;
+import org.neolumin.webster.HandlerChain;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
