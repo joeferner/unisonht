@@ -1,5 +1,5 @@
-1. Change `/etc/hostname` to `unionht-pi`
-1. Add `127.0.0.1 unionht-pi` to `/etc/hosts`
+1. Change `/etc/hostname` to `unisonht-pi`
+1. Add `127.0.0.1 unisonht-pi` to `/etc/hosts`
 1. Upgrade Firmware
 
     ```
@@ -52,8 +52,8 @@
 1. Make UnisonHT directory
 
     ```
-    mkdir -p /opt/unisonht/
-    chmod a+w /opt/unisonht/
+    mkdir -p /opt/unisonht/config
+    chmod -R a+w /opt/unisonht
     ```
 
 1. Install JUDS
