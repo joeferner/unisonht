@@ -7,3 +7,4 @@ libs/CP.lib
 libs/RASPBERRYPI.lib
 libs/MOSFET-N.lib
 libs/AUDIO-JACK-3.lib
+libs/MECH.lib
