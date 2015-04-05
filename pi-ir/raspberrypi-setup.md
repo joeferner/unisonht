@@ -73,13 +73,7 @@
     ```
 
 1. Run `deploy-to-pi.sh` in the UnisonHT project.
-1. Create run script `/opt/unisonht/run.sh`
-
-    ```
-    #!/bin/bash
-    cd /opt/unisonht
-    java -classpath '*' com.unisonht.UnisonHT
-    ```
+1. Copy files from the `/config` directory to `/opt/unisonht/config` as a starting point.
 1. Start run script on boot. Add the following to `/etc/xdg/lxsession/LXDE-pi/autostart`
 
     ```

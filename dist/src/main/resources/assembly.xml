@@ -25,9 +25,9 @@
         <fileSet>
             <directory>../config</directory>
             <outputDirectory>/config</outputDirectory>
-            <includes>
-                <include>**/*</include>
-            </includes>
+            <excludes>
+                <exclude>*</exclude>
+            </excludes>
         </fileSet>
         <fileSet>
             <directory>../plugins/web/src/main/webapp</directory>
