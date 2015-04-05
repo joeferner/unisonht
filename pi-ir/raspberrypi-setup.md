@@ -83,7 +83,7 @@
 1. Start run script on boot. Add the following to `/etc/xdg/lxsession/LXDE-pi/autostart`
 
     ```
-    @/opt/unisonht/run.sh
+    @/opt/unisonht/bin/server.sh
     ```
 
 1. reboot
