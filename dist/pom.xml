@@ -9,8 +9,8 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>unisonht-command-line</artifactId>
-    <name>UnisonHT: Command Line</name>
+    <artifactId>unisonht-dist</artifactId>
+    <name>UnisonHT: Dist</name>
 
     <dependencies>
         <dependency>
@@ -18,26 +18,18 @@
             <artifactId>unisonht-core</artifactId>
             <version>${project.version}</version>
         </dependency>
-
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-
         <dependency>
             <groupId>com.unisonht</groupId>
-            <artifactId>unisonht-plugin-tivo</artifactId>
+            <artifactId>unisonht-client-api</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.unisonht</groupId>
+            <artifactId>unisonht-command-line</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- Plugins -->
         <dependency>
             <groupId>com.unisonht</groupId>
             <artifactId>epson-network-rs232-projector</artifactId>
@@ -45,7 +37,7 @@
         </dependency>
         <dependency>
             <groupId>com.unisonht</groupId>
-            <artifactId>unisonht-plugin-yamaha-receiver</artifactId>
+            <artifactId>unisonht-plugin-image-viewer</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -55,12 +47,17 @@
         </dependency>
         <dependency>
             <groupId>com.unisonht</groupId>
+            <artifactId>unisonht-plugin-lirc</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.unisonht</groupId>
             <artifactId>unisonht-plugin-sony-bluray</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.unisonht</groupId>
-            <artifactId>unisonht-plugin-lirc</artifactId>
+            <artifactId>unisonht-plugin-tivo</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -70,18 +67,41 @@
         </dependency>
         <dependency>
             <groupId>com.unisonht</groupId>
-            <artifactId>unisonht-plugin-xbox</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.unisonht</groupId>
             <artifactId>unisonht-plugin-wii</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.unisonht</groupId>
-            <artifactId>unisonht-plugin-image-viewer</artifactId>
+            <artifactId>unisonht-plugin-xbox</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.unisonht</groupId>
+            <artifactId>unisonht-plugin-yamaha-receiver</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <appendAssemblyId>false</appendAssemblyId>
+                    <descriptors>
+                        <descriptor>src/main/resources/assembly.xml</descriptor>
+                    </descriptors>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

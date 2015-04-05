@@ -1,11 +1,13 @@
 #!/bin/bash
 
+DIR=$(cd $(dirname "$0") && pwd)
+cd ${DIR}
+
 DEST=pi@unisonht-pi
+
+echo "Building..."
+mvn package -am -pl dist
+
 echo "Deploying to $DEST"
-
-mvn package dependency:copy-dependencies
-
-rsync -u `find . | grep jar` $DEST:/opt/unisonht
-scp config/* $DEST:/opt/unisonht/config
-rsync -ur plugins/web/src/main/java/webapp pi@unisonht-pi:/opt/unisonht
-
+rsync --exclude 'juds*' -ur dist/target/unisonht-dist-*/ $DEST:/opt/unisonht
+rsync -ur pi-ir/lib/ $DEST:/opt/unisonht/lib

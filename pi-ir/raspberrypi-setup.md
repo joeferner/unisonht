@@ -56,19 +56,6 @@
     chmod -R a+w /opt/unisonht
     ```
 
-1. Install JUDS
-
-    ```
-    git clone https://github.com/mcfunley/juds.git
-    cd juds
-    ./autoconf.sh
-    ./configure
-    # modify Makefile. Remove values for M32 and M64
-    make
-    sudo make install
-    sudo ln -s /usr/lib/libunixdomainsocket-linux-arm.so /opt/unisonht/libunixdomainsocket-linux-arm.so
-    ```
-
 1. Configure LIRC Hardware. Add the following to `/boot/config.txt`
 
     ```
