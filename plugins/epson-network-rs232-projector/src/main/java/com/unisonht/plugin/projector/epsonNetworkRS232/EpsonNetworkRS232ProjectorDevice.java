@@ -121,6 +121,7 @@ public class EpsonNetworkRS232ProjectorDevice extends Device {
     private void writeData(String command) {
         ensureConnected();
         try {
+            LOGGER.debug("writing command: %s", command);
             socket.getOutputStream().write(command.getBytes());
         } catch (IOException ex) {
             throw new UnisonhtException("Could not write data: " + command, ex);
