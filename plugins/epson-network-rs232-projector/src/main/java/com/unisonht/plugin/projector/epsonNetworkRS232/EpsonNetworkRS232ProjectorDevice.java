@@ -4,10 +4,15 @@ import com.unisonht.plugin.Device;
 import com.unisonht.utils.UnisonhtException;
 import com.unisonht.utils.UnisonhtLogger;
 import com.unisonht.utils.UnisonhtLoggerFactory;
+import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
-import java.net.Socket;
-import java.net.SocketTimeoutException;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,10 +20,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class EpsonNetworkRS232ProjectorDevice extends Device {
     private static final UnisonhtLogger LOGGER = UnisonhtLoggerFactory.getLogger(EpsonNetworkRS232ProjectorDevice.class);
-    private static final int PORT = 23;
     private final String address;
     private final Map<String, String> inputMapping;
-    private Socket socket;
 
     public EpsonNetworkRS232ProjectorDevice(String address, Map<String, String> inputMapping) {
         checkNotNull(address, "address is required");
@@ -99,44 +102,42 @@ public class EpsonNetworkRS232ProjectorDevice extends Device {
         }
     }
 
-    private Socket ensureConnected() {
-        if (socket == null || socket.isClosed() || !socket.isConnected() || socket.isOutputShutdown()) {
+    private String writeCommand(String command) {
+        try {
+            return writeData(("q=" + URLEncoder.encode(command + "\n", "utf8")).getBytes());
+        } catch (UnsupportedEncodingException e) {
+            throw new UnisonhtException("Could not encode data", e);
+        }
+    }
+
+    private String writeData(byte[] data) {
+        try {
+            LOGGER.debug("writing data: %s", new String(data));
+            String urlString = String.format("http://%s/send", address);
+            URL url;
             try {
-                LOGGER.info("Connecting to projector: " + address + ":" + PORT);
-                socket = new Socket(address, PORT);
-                socket.setSoTimeout(100);
-                LOGGER.info("Connected to projector: " + address + ":" + PORT);
-            } catch (IOException ex) {
-                throw new UnisonhtException("Could not connect: " + address + ":" + PORT, ex);
+                url = new URL(urlString);
+            } catch (MalformedURLException e) {
+                throw new UnisonhtException("Bad URL", e);
             }
-        }
-        readData();
-        return socket;
-    }
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setConnectTimeout(1000);
+            conn.setReadTimeout(30 * 1000);
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Length", "" + Integer.toString(data.length));
+            conn.setDoInput(true);
+            conn.setDoOutput(true);
 
-    private void writeCommand(String command) {
-        writeData(command + "\n");
-    }
+            OutputStream out = conn.getOutputStream();
+            out.write(data);
+            out.flush();
+            out.close();
 
-    private void writeData(String command) {
-        ensureConnected();
-        try {
-            LOGGER.debug("writing command: %s", command);
-            socket.getOutputStream().write(command.getBytes());
+            String result = IOUtils.toString(conn.getInputStream()).trim();
+            LOGGER.debug("page result:\n%s", result);
+            return result;
         } catch (IOException ex) {
-            throw new UnisonhtException("Could not write data: " + command, ex);
-        }
-    }
-
-    private void readData() {
-        byte[] data = new byte[10 * 1024];
-        try {
-            int count = socket.getInputStream().read(data);
-            LOGGER.debug("read %s (count: %d)", new String(data, 0, count), count);
-        } catch (SocketTimeoutException ex) {
-            // OK
-        } catch (IOException e) {
-            throw new UnisonhtException("Failed to read data from socket", e);
+            throw new UnisonhtException("Could not write data: " + new String(data), ex);
         }
     }
 }
