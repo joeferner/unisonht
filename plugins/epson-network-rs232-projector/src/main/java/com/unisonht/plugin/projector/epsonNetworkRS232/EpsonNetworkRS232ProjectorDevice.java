@@ -107,12 +107,14 @@ public class EpsonNetworkRS232ProjectorDevice extends Device {
             powerState = PowerState.OFF;
         }
 
-        result = writeCommand("SOURCE?");
-        StatusInput.Input input;
-        if (result.startsWith("SOURCE=")) {
-            input = fromSourceCode(result.substring("SOURCE=".length()));
-        } else {
-            input = new StatusInput.Input(result, null);
+        StatusInput.Input input = null;
+        if (powerState == PowerState.ON) {
+            result = writeCommand("SOURCE?");
+            if (result.startsWith("SOURCE=")) {
+                input = fromSourceCode(result.substring("SOURCE=".length()));
+            } else {
+                input = new StatusInput.Input(result, null);
+            }
         }
 
         return new EpsonNetworkRS232ProjectorDeviceStatus(powerState, input);
