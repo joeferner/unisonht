@@ -2,6 +2,8 @@ package com.unisonht.plugin.imageViewer;
 
 import com.unisonht.config.Configuration;
 import com.unisonht.plugin.Device;
+import com.unisonht.plugin.status.Status;
+import com.unisonht.plugin.status.StatusUnknown;
 import com.unisonht.utils.ThreadUtil;
 import com.unisonht.utils.UnisonhtException;
 import com.unisonht.utils.UnisonhtLogger;
@@ -41,6 +43,11 @@ public class ImageViewerDevice extends Device {
             throw new UnisonhtException("Could not find image in image map for button: " + buttonName);
         }
         displayImage(imageFileName);
+    }
+
+    @Override
+    public Status getStatus() {
+        return new StatusUnknown();
     }
 
     private void displayImage(String imageFileName) {

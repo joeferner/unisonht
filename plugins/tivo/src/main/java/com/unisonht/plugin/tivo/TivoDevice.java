@@ -1,6 +1,7 @@
 package com.unisonht.plugin.tivo;
 
 import com.unisonht.plugin.Device;
+import com.unisonht.plugin.status.Status;
 import com.unisonht.utils.UnisonhtException;
 import com.unisonht.utils.UnisonhtLogger;
 import com.unisonht.utils.UnisonhtLoggerFactory;
@@ -52,6 +53,11 @@ public class TivoDevice extends Device {
             throw new UnisonhtException("Could not send button press: " + buttonName, e);
         }
         readData();
+    }
+
+    @Override
+    public Status getStatus() {
+        return new TivoDeviceStatus(socket.isConnected());
     }
 
     private Socket ensureConnected() {

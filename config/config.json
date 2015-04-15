@@ -1,15 +1,10 @@
 {
   "inputPlugins": {
-    "lirc": {
-      "pluginClass": "com.unisonht.plugin.lirc.LircInputPlugin",
-      "data": {
-      }
-    },
     "web": {
       "pluginClass": "com.unisonht.plugin.web.WebInputPlugin",
       "data": {
         "port": 10080,
-        "webAppDir": "/home/jferner/dev/unisonht/plugins/web/src/main/java/webapp"
+        "webAppDir": "plugins/web/src/main/webapp"
       }
     }
   },
@@ -17,13 +12,13 @@
     "tivo": {
       "deviceClass": "com.unisonht.plugin.tivo.TivoDevicePlugin",
       "data": {
-        "address": "localhost"
+        "address": "192.168.0.160"
       }
     },
     "projector": {
       "deviceClass": "com.unisonht.plugin.projector.epsonNetworkRS232.EpsonNetworkRS232ProjectorDevicePlugin",
       "data": {
-        "address": "localhost",
+        "address": "192.168.0.101",
         "inputs": {
           "hdmi": "HDMI1"
         }
@@ -67,7 +62,7 @@
       "deviceClass": "com.unisonht.plugin.imageViewer.ImageViewerDevicePlugin",
       "data": {
         "images": {
-          "HELP": "/home/jferner/dev/unisonht/config/help-input.png"
+          "HELP": "help-input.png"
         }
       }
     }

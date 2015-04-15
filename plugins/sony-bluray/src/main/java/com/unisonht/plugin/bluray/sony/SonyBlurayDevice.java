@@ -1,6 +1,7 @@
 package com.unisonht.plugin.bluray.sony;
 
 import com.unisonht.plugin.Device;
+import com.unisonht.plugin.status.Status;
 import com.unisonht.services.ButtonPressListener;
 import com.unisonht.services.RemoteService;
 import com.unisonht.utils.*;
@@ -171,8 +172,9 @@ public class SonyBlurayDevice extends Device {
         WakeOnLan.send(macAddress);
     }
 
-    private void getStatus() {
-        getPage("getStatus");
+    public Status getStatus() {
+        String statusPage = getPage("getStatus");
+        return new SonyBlurayDeviceStatus();
     }
 
     private String getPage(String page) {

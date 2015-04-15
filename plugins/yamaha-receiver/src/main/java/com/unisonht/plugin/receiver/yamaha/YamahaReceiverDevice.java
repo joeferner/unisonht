@@ -1,9 +1,13 @@
 package com.unisonht.plugin.receiver.yamaha;
 
 import com.unisonht.plugin.Device;
+import com.unisonht.plugin.status.PowerState;
+import com.unisonht.plugin.status.Status;
+import com.unisonht.plugin.status.StatusInput;
 import com.unisonht.utils.UnisonhtException;
 import com.unisonht.utils.UnisonhtLogger;
 import com.unisonht.utils.UnisonhtLoggerFactory;
+import com.unisonht.utils.XmlUtils;
 import org.apache.commons.io.IOUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
@@ -80,7 +84,7 @@ public class YamahaReceiverDevice extends Device {
         String content = String.format(
                 "<Volume><Lvl><Val>%s%s</Val><Exp></Exp><Unit></Unit></Lvl></Volume>",
                 amount > 0 ? "Up" : "Down",
-                Math.abs(amount) == 0.5 ? "" : String.format(" %d dB ", Math.abs(amount))
+                Math.abs(amount) == 0.5 ? "" : String.format(" %f dB ", Math.abs(amount))
         );
         putXml(zone, content);
     }
@@ -131,6 +135,39 @@ public class YamahaReceiverDevice extends Device {
         }
 
         changeInput(ZONE_MAIN, input);
+    }
+
+    @Override
+    public Status getStatus() {
+        Document xml = getBasicStatus(ZONE_MAIN);
+        String powerString = XmlUtils.getString(xml, "/YAMAHA_AV/Main_Zone/Basic_Status/Power_Control/Power");
+        PowerState powerState = PowerState.UNKNOWN;
+        if (powerString.equalsIgnoreCase("on")) {
+            powerState = PowerState.ON;
+        } else if (powerString.equalsIgnoreCase("off")) {
+            powerState = PowerState.OFF;
+        }
+
+        String volumeString = XmlUtils.getString(xml, "/YAMAHA_AV/Main_Zone/Basic_Status/Volume/Lvl/Val");
+        double volume = parseVolume(volumeString);
+
+        String inputString = XmlUtils.getString(xml, "/YAMAHA_AV/Main_Zone/Basic_Status/Input/Input_Sel");
+        StatusInput.Input input = fromDeviceInput(inputString);
+
+        return new YamahaReceiverDeviceStatus(powerState, volume, input);
+    }
+
+    private StatusInput.Input fromDeviceInput(String inputString) {
+        for (Map.Entry<String, String> e : this.inputMapping.entrySet()) {
+            if (e.getValue().equalsIgnoreCase(inputString)) {
+                return new StatusInput.Input(e.getKey(), e.getValue());
+            }
+        }
+        return new StatusInput.Input(inputString, null);
+    }
+
+    private double parseVolume(String volumeString) {
+        return Double.parseDouble(volumeString) / 10.0;
     }
 
     public void changeInput(String zone, String input) {

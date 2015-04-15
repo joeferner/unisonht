@@ -1,5 +1,6 @@
 package com.unisonht.plugin;
 
+import com.unisonht.plugin.status.Status;
 import com.unisonht.utils.UnisonhtException;
 
 public abstract class Device {
@@ -12,4 +13,6 @@ public abstract class Device {
     public void changeInput(String input) {
         throw new UnisonhtException("Changing input for this device Not support");
     }
+
+    public abstract Status getStatus();
 }

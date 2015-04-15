@@ -6,6 +6,8 @@ import com.unisonht.clientapi.ConfigJson;
 import com.unisonht.config.Configuration;
 import com.unisonht.plugin.Device;
 import com.unisonht.plugin.DevicePlugin;
+import com.unisonht.plugin.status.StatusError;
+import com.unisonht.plugin.status.Status;
 import com.unisonht.utils.*;
 
 import java.util.HashMap;
@@ -71,5 +73,18 @@ public class DeviceService {
         Class<? extends DevicePlugin> devicePluginClass = ClassUtil.forName(deviceConfiguration.getDeviceClass(), DevicePlugin.class);
         DevicePlugin devicePlugin = InjectHelper.getInstance(devicePluginClass);
         return devicePlugin.createDevice(deviceConfiguration.getData());
+    }
+
+    public Map<String, Status> getAllDevicesStatus() {
+        Map<String, Status> results = new HashMap<>();
+        for (Map.Entry<String, Device> deviceEntry : devices.entrySet()) {
+            try {
+                results.put(deviceEntry.getKey(), deviceEntry.getValue().getStatus());
+            } catch (Throwable ex) {
+                LOGGER.error("Could not get status of device: %s", deviceEntry.getKey(), ex);
+                results.put(deviceEntry.getKey(), new StatusError(ex));
+            }
+        }
+        return results;
     }
 }

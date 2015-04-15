@@ -104,12 +104,13 @@ public class KodiDevice extends Device {
         return sendJsonRequest(json);
     }
 
-    private JSONObject getStatus() {
+    public KodiDeviceStatus getStatus() {
         JSONObject json = new JSONObject();
         json.put("jsonrpc", "2.0");
         json.put("method", "JSONRPC.Version");
         json.put("id", (int) System.currentTimeMillis());
-        return sendJsonRequest(json);
+        JSONObject result = sendJsonRequest(json);
+        return new KodiDeviceStatus();
     }
 
     private JSONObject sendJsonRequest(JSONObject json) {

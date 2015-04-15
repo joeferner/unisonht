@@ -1,9 +1,10 @@
 package com.unisonht.plugin.web;
 
 import com.google.inject.Injector;
-import com.unisonht.plugin.web.routes.remote.RemoteButtonPressPost;
 import com.unisonht.plugin.web.routes.config.ConfigGet;
 import com.unisonht.plugin.web.routes.config.ConfigGetRemoteImage;
+import com.unisonht.plugin.web.routes.remote.RemoteButtonPressPost;
+import com.unisonht.plugin.web.routes.status.StatusGet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,6 +33,8 @@ public class Router extends HttpServlet {
 
         app.get("/config", ConfigGet.class);
         app.get("/config/remote/{remoteName}/image", ConfigGetRemoteImage.class);
+
+        app.get("/status", StatusGet.class);
 
         app.post("/remote/{remoteName}/{buttonName}/press", RemoteButtonPressPost.class);
     }

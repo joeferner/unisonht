@@ -1,6 +1,8 @@
 package com.unisonht.plugin.projector.epsonNetworkRS232;
 
 import com.unisonht.plugin.Device;
+import com.unisonht.plugin.status.PowerState;
+import com.unisonht.plugin.status.StatusInput;
 import com.unisonht.utils.UnisonhtException;
 import com.unisonht.utils.UnisonhtLogger;
 import com.unisonht.utils.UnisonhtLoggerFactory;
@@ -39,7 +41,12 @@ public class EpsonNetworkRS232ProjectorDevice extends Device {
 
     @Override
     public void ensureOn() {
-        writeCommand("PWR ON");
+        try {
+            writeCommand("PWR ON");
+        } catch (Exception ex) {
+            LOGGER.warn("Could not power on first try.");
+            writeCommand("PWR ON");
+        }
     }
 
     @Override
@@ -90,6 +97,48 @@ public class EpsonNetworkRS232ProjectorDevice extends Device {
         writeCommand("SOURCE " + Integer.toHexString(sourceCode));
     }
 
+    @Override
+    public EpsonNetworkRS232ProjectorDeviceStatus getStatus() {
+        String result = writeCommand("PWR?");
+        PowerState powerState = PowerState.UNKNOWN;
+        if (result.equalsIgnoreCase("PWR=01")) {
+            powerState = PowerState.ON;
+        } else if (result.equalsIgnoreCase("PWR=00")) {
+            powerState = PowerState.OFF;
+        }
+
+        result = writeCommand("SOURCE?");
+        StatusInput.Input input;
+        if (result.startsWith("SOURCE=")) {
+            input = fromSourceCode(result.substring("SOURCE=".length()));
+        } else {
+            input = new StatusInput.Input(result, null);
+        }
+
+        return new EpsonNetworkRS232ProjectorDeviceStatus(powerState, input);
+    }
+
+    private StatusInput.Input fromSourceCode(String sourceCode) {
+        sourceCode = sourceCode.toLowerCase();
+        String input;
+        switch (sourceCode) {
+            case "30":
+                input = "hdmi1";
+                break;
+            case "a0":
+                input = "hdmi2";
+                break;
+            default:
+                return new StatusInput.Input(sourceCode, null);
+        }
+        for (Map.Entry<String, String> entry : this.inputMapping.entrySet()) {
+            if (entry.getValue().equalsIgnoreCase(input)) {
+                return new StatusInput.Input(entry.getValue(), entry.getKey());
+            }
+        }
+        return new StatusInput.Input(input, null);
+    }
+
     private Integer toSourceCode(String input) {
         input = input.toLowerCase();
         switch (input) {
@@ -104,7 +153,7 @@ public class EpsonNetworkRS232ProjectorDevice extends Device {
 
     private String writeCommand(String command) {
         try {
-            return writeData(("q=" + URLEncoder.encode(command + "\n", "utf8")).getBytes());
+            return writeData(("q=" + URLEncoder.encode(command + "\r", "utf8")).getBytes());
         } catch (UnsupportedEncodingException e) {
             throw new UnisonhtException("Could not encode data", e);
         }

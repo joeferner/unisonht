@@ -8,6 +8,8 @@ import org.eclipse.jetty.server.*;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.webapp.WebAppContext;
 
+import java.io.File;
+
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class WebInput extends Input {
@@ -28,7 +30,7 @@ public class WebInput extends Input {
 
         WebAppContext webAppContext = new WebAppContext();
         webAppContext.setContextPath(contextPath);
-        webAppContext.setWar(webAppDir);
+        webAppContext.setWar(new File(webAppDir).getAbsolutePath());
 
         ContextHandlerCollection contexts = new ContextHandlerCollection();
         contexts.setHandlers(new Handler[]{webAppContext});
