@@ -153,7 +153,7 @@ public class EpsonNetworkRS232ProjectorDevice extends Device {
 
     private String writeCommand(String command) {
         try {
-            return writeData(("q=" + URLEncoder.encode(command + "\r", "utf8")).getBytes());
+            return writeData(("q=" + URLEncoder.encode(command + "\r\n", "utf8")).getBytes());
         } catch (UnsupportedEncodingException e) {
             throw new UnisonhtException("Could not encode data", e);
         }

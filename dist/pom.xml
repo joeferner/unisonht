@@ -32,7 +32,7 @@
         <!-- Plugins -->
         <dependency>
             <groupId>com.unisonht</groupId>
-            <artifactId>epson-network-rs232-projector</artifactId>
+            <artifactId>unisonht-plugin-epson-network-rs232-projector</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

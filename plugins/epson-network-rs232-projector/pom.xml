@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>epson-network-rs232-projector</artifactId>
+    <artifactId>unisonht-plugin-epson-network-rs232-projector</artifactId>
     <name>UnisonHT: Plugin: Epson Network RS232 Projector</name>
 
     <dependencies>
