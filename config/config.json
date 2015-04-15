@@ -53,7 +53,10 @@
       }
     },
     "xbox": {
-      "deviceClass": "com.unisonht.plugin.xbox.XBoxDevicePlugin"
+      "deviceClass": "com.unisonht.plugin.xbox.XBoxDevicePlugin",
+      "data": {
+        "address": "192.168.0.161"
+      }
     },
     "wii": {
       "deviceClass": "com.unisonht.plugin.wii.WiiDevicePlugin"

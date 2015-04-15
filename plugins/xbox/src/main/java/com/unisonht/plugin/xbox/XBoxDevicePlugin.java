@@ -8,6 +8,7 @@ import java.util.Map;
 public class XBoxDevicePlugin extends DevicePlugin {
     @Override
     public Device createDevice(Map<String, Object> configuration) {
-        return new XBoxDevice();
+        String address = (String) configuration.get("address");
+        return new XBoxDevice(address);
     }
 }
