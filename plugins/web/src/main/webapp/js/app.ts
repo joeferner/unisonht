@@ -7,9 +7,9 @@ module unisonht {
     .config([
       '$routeProvider', function ($routeProvider) {
         $routeProvider
-          .when('/remotes', {
-            templateUrl: 'partials/remotes.html',
-            controller: 'RemotesCtrl',
+          .when('/', {
+            templateUrl: 'partials/main.html',
+            controller: 'RemoteCtrl',
             resolve: {
               remoteNames: function (configService:ConfigService) {
                 return configService.getRemoteNames();
@@ -17,12 +17,14 @@ module unisonht {
             }
           })
           .otherwise({
-            redirectTo: '/remotes'
+            redirectTo: '/'
           });
       }
     ])
     .controller('MainCtrl', MainCtrl)
-    .controller('RemotesCtrl', RemotesCtrl)
+    .controller('StatusCtrl', StatusCtrl)
+    .controller('RemoteCtrl', RemoteCtrl)
     .service('configService', ConfigService)
-    .service('remoteService', RemoteService);
+    .service('remoteService', RemoteService)
+    .service('statusService', StatusService);
 }

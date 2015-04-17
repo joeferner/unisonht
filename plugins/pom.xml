@@ -23,7 +23,6 @@
         <module>web</module>
         <module>image-viewer</module>
         <module>xbox</module>
-        <module>wii</module>
     </modules>
 
 </project>

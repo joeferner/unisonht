@@ -3,9 +3,11 @@
 /// <reference path="./ext/definitelyTyped/bootstrap/bootstrap.d.ts" />
 /// <reference path="./ext/definitelyTyped/es6-promise/es6-promise.d.ts" />
 /// <reference path="./controllers/main.ts" />
-/// <reference path="./controllers/remotes.ts" />
+/// <reference path="./controllers/status.ts" />
+/// <reference path="./controllers/remote.ts" />
 /// <reference path="./services/config.ts" />
 /// <reference path="./services/remote.ts" />
+/// <reference path="./services/status.ts" />
 
 module unisonht {
   export interface IAlert {
@@ -41,5 +43,13 @@ module unisonht {
 
   export interface IConfigRemoteButton {
     coords: number[];
+  }
+
+  export interface IStatus {
+    deviceStatuses: { [name: string]: IStatusDevice; };
+  }
+
+  export interface IStatusDevice {
+
   }
 }

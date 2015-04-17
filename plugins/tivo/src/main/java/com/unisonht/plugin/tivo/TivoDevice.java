@@ -1,6 +1,7 @@
 package com.unisonht.plugin.tivo;
 
 import com.unisonht.plugin.Device;
+import com.unisonht.plugin.status.PowerState;
 import com.unisonht.plugin.status.Status;
 import com.unisonht.utils.UnisonhtException;
 import com.unisonht.utils.UnisonhtLogger;
@@ -57,7 +58,7 @@ public class TivoDevice extends Device {
 
     @Override
     public Status getStatus() {
-        return new TivoDeviceStatus(socket.isConnected());
+        return new TivoDeviceStatus(socket.isConnected() ? PowerState.ON : PowerState.OFF);
     }
 
     private Socket ensureConnected() {

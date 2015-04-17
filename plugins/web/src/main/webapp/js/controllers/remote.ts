@@ -2,7 +2,8 @@
 
 module unisonht {
   'use strict';
-  export interface IRemotesCtrlScope extends ng.IScope {
+  export interface IRemoteCtrlScope extends ng.IScope {
+    config: IConfig;
     remoteNames: string[];
     selectedRemoteName: string;
     loadRemote: ()=>void;
@@ -12,8 +13,8 @@ module unisonht {
     remoteButtonPress:(buttonKey:string)=>void;
   }
 
-  export class RemotesCtrl {
-    constructor(private $scope:IRemotesCtrlScope,
+  export class RemoteCtrl {
+    constructor(private $scope:IRemoteCtrlScope,
                 private configService:ConfigService,
                 private remoteService:RemoteService,
                 remoteNames:string[]) {

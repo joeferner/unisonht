@@ -4,15 +4,15 @@ import com.unisonht.plugin.Device;
 import com.unisonht.plugin.status.PowerState;
 import com.unisonht.plugin.status.Status;
 import com.unisonht.utils.UnisonhtException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.unisonht.utils.UnisonhtLogger;
+import com.unisonht.utils.UnisonhtLoggerFactory;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
 public class XBoxDevice extends Device {
-    private static final Logger LOGGER = LoggerFactory.getLogger(XBoxDevice.class);
+    private static final UnisonhtLogger LOGGER = UnisonhtLoggerFactory.getLogger(XBoxDevice.class);
     public static final int LISTENING_PORT = 1025;
     private final String address;
 

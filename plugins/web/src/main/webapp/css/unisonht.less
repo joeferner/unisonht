@@ -9,3 +9,36 @@
   user-select: none;
   -o-user-select: none;
 }
+
+ul.status-list {
+  list-style-type: none;
+  padding-left: 0;
+  margin-left: 0;
+
+  li {
+    .title {
+      font-weight: bold;
+    }
+
+    .details {
+      border: 1px solid #e1e1e8;
+      border-radius: 2px;
+      margin-bottom: 5px;
+      padding: 5px;
+      height: 60px;
+
+      .power-state {
+        float: left;
+        padding-right: 10px;
+        width: 100px;
+        text-align: center;
+      }
+
+      .error-message {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+  }
+}

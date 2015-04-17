@@ -4,7 +4,6 @@ module unisonht {
   'use strict';
   export interface IMainCtrlScope extends ng.IScope {
     alert: IAlert;
-    config: IConfig;
   }
 
   export class MainCtrl {

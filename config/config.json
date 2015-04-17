@@ -33,8 +33,7 @@
           "raspberrypi": "HDMI2",
           "kodi": "HDMI3",
           "xbox": "HDMI4",
-          "tivo": "HDMI5",
-          "wii": "VIDEO1"
+          "tivo": "HDMI5"
         }
       }
     },
@@ -57,9 +56,6 @@
       "data": {
         "address": "192.168.0.161"
       }
-    },
-    "wii": {
-      "deviceClass": "com.unisonht.plugin.wii.WiiDevicePlugin"
     },
     "imageViewer": {
       "deviceClass": "com.unisonht.plugin.imageViewer.ImageViewerDevicePlugin",
@@ -137,10 +133,6 @@
         "NUM4": {
           "action": "switchMode",
           "mode": "xbox"
-        },
-        "NUM5": {
-          "action": "switchMode",
-          "mode": "wii"
         }
       }
     },
@@ -182,10 +174,6 @@
         "NUM4": {
           "action": "switchMode",
           "mode": "xbox"
-        },
-        "NUM5": {
-          "action": "switchMode",
-          "mode": "wii"
         }
       }
     },
@@ -235,16 +223,6 @@
         "args": {
           "device": "xbox",
           "input": "xbox"
-        }
-      }
-    },
-    "wii": {
-      "onEnter": {
-        "action": "runMacro",
-        "name": "ensureOnAndSwitchInputs",
-        "args": {
-          "device": "wii",
-          "input": "wii"
         }
       }
     }

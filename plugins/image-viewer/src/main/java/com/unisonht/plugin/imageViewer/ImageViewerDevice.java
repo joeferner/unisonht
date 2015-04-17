@@ -47,7 +47,7 @@ public class ImageViewerDevice extends Device {
 
     @Override
     public Status getStatus() {
-        return new StatusUnknown();
+        return null;
     }
 
     private void displayImage(String imageFileName) {

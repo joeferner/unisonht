@@ -2,8 +2,8 @@
 var unisonht;
 (function (unisonht) {
     'use strict';
-    var RemotesCtrl = (function () {
-        function RemotesCtrl($scope, configService, remoteService, remoteNames) {
+    var RemoteCtrl = (function () {
+        function RemoteCtrl($scope, configService, remoteService, remoteNames) {
             this.$scope = $scope;
             this.configService = configService;
             this.remoteService = remoteService;
@@ -12,7 +12,7 @@ var unisonht;
             $scope.loadRemote = this.loadRemote.bind(this);
             this.$scope.loadRemote();
         }
-        RemotesCtrl.prototype.loadRemote = function () {
+        RemoteCtrl.prototype.loadRemote = function () {
             var _this = this;
             var remoteName = this.$scope.selectedRemoteName;
             document.remoteButtonPress = this.remoteButtonPress.bind(this, remoteName);
@@ -21,7 +21,7 @@ var unisonht;
                 $('#remote-image-map').html(_this.generateImageMap(remoteName, remote));
             });
         };
-        RemotesCtrl.prototype.generateImageMap = function (remoteName, remote) {
+        RemoteCtrl.prototype.generateImageMap = function (remoteName, remote) {
             var result = '';
             Object.keys(remote.buttonMap).forEach(function (buttonKey) {
                 var button = remote.buttonMap[buttonKey];
@@ -30,11 +30,11 @@ var unisonht;
             });
             return result;
         };
-        RemotesCtrl.prototype.remoteButtonPress = function (remoteName, buttonKey) {
+        RemoteCtrl.prototype.remoteButtonPress = function (remoteName, buttonKey) {
             this.remoteService.doButtonPress(remoteName, buttonKey);
         };
-        return RemotesCtrl;
+        return RemoteCtrl;
     })();
-    unisonht.RemotesCtrl = RemotesCtrl;
+    unisonht.RemoteCtrl = RemoteCtrl;
 })(unisonht || (unisonht = {}));
-//# sourceMappingURL=remotes.js.map
+//# sourceMappingURL=remote.js.map
