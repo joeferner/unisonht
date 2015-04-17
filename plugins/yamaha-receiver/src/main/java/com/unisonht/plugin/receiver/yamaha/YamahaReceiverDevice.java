@@ -144,7 +144,7 @@ public class YamahaReceiverDevice extends Device {
         PowerState powerState = PowerState.UNKNOWN;
         if (powerString.equalsIgnoreCase("on")) {
             powerState = PowerState.ON;
-        } else if (powerString.equalsIgnoreCase("off")) {
+        } else if (powerString.equalsIgnoreCase("off") || powerString.equalsIgnoreCase("standby")) {
             powerState = PowerState.OFF;
         }
 

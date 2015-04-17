@@ -1,6 +1,7 @@
 package com.unisonht.plugin.bluray.sony;
 
 import com.unisonht.plugin.Device;
+import com.unisonht.plugin.status.PowerState;
 import com.unisonht.plugin.status.Status;
 import com.unisonht.services.ButtonPressListener;
 import com.unisonht.services.RemoteService;
@@ -17,10 +18,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLEncoder;
+import java.net.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -173,8 +171,15 @@ public class SonyBlurayDevice extends Device {
     }
 
     public Status getStatus() {
-        String statusPage = getPage("getStatus");
-        return new SonyBlurayDeviceStatus();
+        try {
+            String statusPage = getPage("getStatus");
+            return new SonyBlurayDeviceStatus(PowerState.UNKNOWN);
+        } catch (UnisonhtException ex) {
+            if (ex.getCause() != null && ex.getCause() instanceof ConnectException && ex.getCause().getMessage().equals("Connection refused")) {
+                return new SonyBlurayDeviceStatus(PowerState.OFF);
+            }
+            throw ex;
+        }
     }
 
     private String getPage(String page) {

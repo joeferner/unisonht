@@ -40,15 +40,17 @@
               <div ng-switch-when="UNKNOWN">UNKNOWN</div>
               <div ng-switch-default>UNKNOWN</div>
             </div>
-            <div ng-if="deviceStatus.errorMessage">
-              <div class="error-message">{{deviceStatus.errorMessage}}</div>
-            </div>
-            <div ng-if="deviceStatus.volume">
-              VOLUME: {{deviceStatus.volume}}
-            </div>
-            <div ng-if="deviceStatus.input">
-              INPUT: {{deviceStatus.input}}
-            </div>
+            <ul class="details-right">
+              <li ng-if="deviceStatus.errorMessage">
+                <div class="error-message">{{deviceStatus.errorMessage}}</div>
+              </li>
+              <li ng-if="deviceStatus.volume">
+                Volume: {{deviceStatus.volume}}
+              </li>
+              <li ng-if="deviceStatus.input">
+                Input: {{deviceStatus.input.deviceInput}} ({{deviceStatus.input.mappedInput}})
+              </li>
+            </ul>
           </div>
         </li>
       </ul>

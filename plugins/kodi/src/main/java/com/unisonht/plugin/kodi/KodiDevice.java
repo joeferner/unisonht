@@ -1,6 +1,7 @@
 package com.unisonht.plugin.kodi;
 
 import com.unisonht.plugin.Device;
+import com.unisonht.plugin.status.PowerState;
 import com.unisonht.utils.UnisonhtException;
 import com.unisonht.utils.UnisonhtLogger;
 import com.unisonht.utils.UnisonhtLoggerFactory;
@@ -10,6 +11,7 @@ import org.json.JSONObject;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.net.SocketTimeoutException;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -105,12 +107,19 @@ public class KodiDevice extends Device {
     }
 
     public KodiDeviceStatus getStatus() {
-        JSONObject json = new JSONObject();
-        json.put("jsonrpc", "2.0");
-        json.put("method", "JSONRPC.Version");
-        json.put("id", (int) System.currentTimeMillis());
-        JSONObject result = sendJsonRequest(json);
-        return new KodiDeviceStatus();
+        try {
+            JSONObject json = new JSONObject();
+            json.put("jsonrpc", "2.0");
+            json.put("method", "JSONRPC.Version");
+            json.put("id", (int) System.currentTimeMillis());
+            JSONObject result = sendJsonRequest(json);
+            return new KodiDeviceStatus(PowerState.UNKNOWN);
+        } catch (UnisonhtException ex) {
+            if (ex.getCause() != null && ex.getCause() instanceof SocketTimeoutException && ex.getCause().getMessage().equals("connect timed out")) {
+                return new KodiDeviceStatus(PowerState.OFF);
+            }
+            throw ex;
+        }
     }
 
     private JSONObject sendJsonRequest(JSONObject json) {

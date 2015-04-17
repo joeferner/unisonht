@@ -172,7 +172,7 @@ public class EpsonNetworkRS232ProjectorDevice extends Device {
                 throw new UnisonhtException("Bad URL", e);
             }
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setConnectTimeout(1000);
+            conn.setConnectTimeout(5000);
             conn.setReadTimeout(30 * 1000);
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Length", "" + Integer.toString(data.length));

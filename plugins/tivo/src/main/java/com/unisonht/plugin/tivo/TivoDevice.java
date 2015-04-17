@@ -58,7 +58,7 @@ public class TivoDevice extends Device {
 
     @Override
     public Status getStatus() {
-        return new TivoDeviceStatus(socket.isConnected() ? PowerState.ON : PowerState.OFF);
+        return new TivoDeviceStatus(socket != null && socket.isConnected() ? PowerState.ON : PowerState.OFF);
     }
 
     private Socket ensureConnected() {
