@@ -67,11 +67,6 @@
         </dependency>
         <dependency>
             <groupId>com.unisonht</groupId>
-            <artifactId>unisonht-plugin-wii</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.unisonht</groupId>
             <artifactId>unisonht-plugin-xbox</artifactId>
             <version>${project.version}</version>
         </dependency>
