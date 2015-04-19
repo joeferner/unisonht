@@ -3,7 +3,6 @@ package com.unisonht.plugin.imageViewer;
 import com.unisonht.config.Configuration;
 import com.unisonht.plugin.Device;
 import com.unisonht.plugin.status.Status;
-import com.unisonht.plugin.status.StatusUnknown;
 import com.unisonht.utils.ThreadUtil;
 import com.unisonht.utils.UnisonhtException;
 import com.unisonht.utils.UnisonhtLogger;
@@ -18,6 +17,7 @@ public class ImageViewerDevice extends Device {
     private final Map<String, String> images;
     private final Configuration configuration;
     private Process imageViewerProcess;
+    private int lastXMouseMove = 0;
 
     public ImageViewerDevice(Configuration configuration, Map<String, String> images) {
         this.configuration = configuration;
@@ -55,9 +55,18 @@ public class ImageViewerDevice extends Device {
         LOGGER.debug("displaying image: %s", imageFile.getAbsolutePath());
         try {
             run(new String[]{"pqiv", "-fit", imageFile.getAbsolutePath()});
+            wakeup();
             bringWindowToTopAsync("pqiv");
         } catch (IOException ex) {
             throw new UnisonhtException("Could not view image: " + imageFile.getAbsolutePath(), ex);
+        }
+    }
+
+    private void wakeup() throws IOException {
+        run(new String[]{"xdotool", "mousemove", Integer.toString(lastXMouseMove), "0"});
+        lastXMouseMove++;
+        if (lastXMouseMove > 100) {
+            lastXMouseMove = 0;
         }
     }
 

@@ -31,6 +31,8 @@
         BLANK_TIME=0
         POWERDOWN_TIME=0
         ```
+        
+    1. Edit `/boot/config.txt` uncomment out `hdmi_force_hotplug=1`
 
 1. Install fixed version of pqiv (image viewer)
 
@@ -74,6 +76,8 @@
 
 1. Run `deploy-to-pi.sh` in the UnisonHT project.
 1. Copy files from the `/config` directory to `/opt/unisonht/config` as a starting point.
+1. Change the default backgroud to be the help screen. Right click desktop and change background to
+   `/opt/unisonht/config/help-input.png`. Set to fill desktop area.        
 1. Start run script on boot. Add the following to `/etc/xdg/lxsession/LXDE-pi/autostart`
 
     ```

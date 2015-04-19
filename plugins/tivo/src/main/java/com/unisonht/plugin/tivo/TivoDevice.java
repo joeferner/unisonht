@@ -8,6 +8,8 @@ import com.unisonht.utils.UnisonhtLogger;
 import com.unisonht.utils.UnisonhtLoggerFactory;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 
@@ -18,6 +20,8 @@ public class TivoDevice extends Device {
     private static final int TIVO_PORT = 31339;
     private final String address;
     private Socket socket;
+    private OutputStream socketOut;
+    private InputStream socketIn;
 
     public TivoDevice(String address) {
         checkNotNull(address, "address is required");
@@ -36,7 +40,7 @@ public class TivoDevice extends Device {
 
     @Override
     public void buttonPress(String buttonName) {
-        Socket s = ensureConnected();
+        ensureConnected();
 
         if (buttonName.equalsIgnoreCase("HOME")) {
             buttonName = "TIVO";
@@ -49,9 +53,22 @@ public class TivoDevice extends Device {
         String data = "IRCODE " + buttonName + "\r";
         try {
             LOGGER.debug("Sending: %s", data);
-            s.getOutputStream().write(data.getBytes());
+            socketOut.write(data.getBytes());
         } catch (IOException e) {
-            throw new UnisonhtException("Could not send button press: " + buttonName, e);
+            LOGGER.error("Could not send %s", data, e);
+            if (e.getMessage().equals("Broken pipe")) {
+                try {
+                    socket.close();
+                    socket = null;
+                    ensureConnected();
+                    LOGGER.debug("Sending (again): %s", data);
+                    socketOut.write(data.getBytes());
+                } catch (IOException ex) {
+                    throw new UnisonhtException("Could not send button press (again): " + buttonName, ex);
+                }
+            } else {
+                throw new UnisonhtException("Could not send button press: " + buttonName, e);
+            }
         }
         readData();
     }
@@ -69,6 +86,8 @@ public class TivoDevice extends Device {
                 socket = new Socket(address, TIVO_PORT);
                 socket.setSoTimeout(100);
                 LOGGER.info("Connected to TiVo: " + address + ":" + TIVO_PORT);
+                socketOut = socket.getOutputStream();
+                socketIn = socket.getInputStream();
             } catch (IOException e) {
                 throw new UnisonhtException("Could not connect: " + address + ":" + TIVO_PORT, e);
             }
@@ -80,7 +99,7 @@ public class TivoDevice extends Device {
     private void readData() {
         byte[] data = new byte[10 * 1024];
         try {
-            int count = socket.getInputStream().read(data);
+            int count = socketIn.read(data);
             if (count > 0) {
                 LOGGER.debug("read %s (count: %d)", new String(data, 0, count), count);
             }
