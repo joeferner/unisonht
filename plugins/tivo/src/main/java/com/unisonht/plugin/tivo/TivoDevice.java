@@ -58,6 +58,7 @@ public class TivoDevice extends Device {
 
     @Override
     public Status getStatus() {
+        ensureConnected();
         return new TivoDeviceStatus(socket != null && socket.isConnected() ? PowerState.ON : PowerState.OFF);
     }
 
@@ -80,7 +81,9 @@ public class TivoDevice extends Device {
         byte[] data = new byte[10 * 1024];
         try {
             int count = socket.getInputStream().read(data);
-            LOGGER.debug("read %s (count: %d)", new String(data, 0, count), count);
+            if (count > 0) {
+                LOGGER.debug("read %s (count: %d)", new String(data, 0, count), count);
+            }
         } catch (SocketTimeoutException ex) {
             // OK
         } catch (IOException e) {

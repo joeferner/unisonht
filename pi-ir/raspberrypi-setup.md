@@ -11,7 +11,7 @@
     ```
     sudo apt-get update
     sudo apt-get upgrade
-    sudo apt-get install lirc oracle-java7-jdk wmctrl autoconf git libgtk2.0-dev
+    sudo apt-get install lirc oracle-java7-jdk wmctrl autoconf git libgtk2.0-dev xdotool x11-xserver-utils
     ```
 
 1. Disable screen blanking. 

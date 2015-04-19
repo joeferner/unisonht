@@ -7,7 +7,6 @@ import com.unisonht.utils.UnisonhtException;
 import com.unisonht.utils.UnisonhtLogger;
 import com.unisonht.utils.UnisonhtLoggerFactory;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
@@ -40,11 +39,14 @@ public class XBoxDevice extends Device {
         PowerState powerState = PowerState.OFF;
 
         try {
-            Socket sock = new Socket();
-            sock.connect(new InetSocketAddress(this.address, LISTENING_PORT), 5000);
-            sock.close();
-            powerState = PowerState.ON;
-        } catch (IOException e) {
+            InetSocketAddress addr = new InetSocketAddress(address, LISTENING_PORT);
+            try (Socket socket = new Socket()) {
+                socket.connect(addr, 3000);
+                if (socket.isConnected()) {
+                    powerState = PowerState.ON;
+                }
+            }
+        } catch (Exception e) {
             LOGGER.warn("Could not connect to xbox %s at %d", this.address, LISTENING_PORT);
         }
 

@@ -54,7 +54,7 @@
     "xbox": {
       "deviceClass": "com.unisonht.plugin.xbox.XBoxDevicePlugin",
       "data": {
-        "address": "192.168.0.161"
+        "address": "192.168.0.163"
       }
     },
     "imageViewer": {
