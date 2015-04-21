@@ -23,4 +23,12 @@ public class EpsonNetworkRS232ProjectorDeviceStatus extends Status implements St
     public StatusInput.Input getInput() {
         return this.input;
     }
+
+    @Override
+    public String toString() {
+        return EpsonNetworkRS232ProjectorDeviceStatus.class.getSimpleName() + "{" +
+                "powerState=" + powerState +
+                ", input=" + input +
+                '}';
+    }
 }
