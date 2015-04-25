@@ -8,7 +8,6 @@ import com.unisonht.utils.UnisonhtLogger;
 import com.unisonht.utils.UnisonhtLoggerFactory;
 import org.apache.commons.io.IOUtils;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
@@ -22,6 +21,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class EpsonNetworkRS232ProjectorDevice extends Device {
     private static final UnisonhtLogger LOGGER = UnisonhtLoggerFactory.getLogger(EpsonNetworkRS232ProjectorDevice.class);
+    private static final Object lock = new Object();
+    private long nextSendTime;
     private final String address;
     private final Map<String, String> inputMapping;
 
@@ -57,6 +58,15 @@ public class EpsonNetworkRS232ProjectorDevice extends Device {
 
     @Override
     public void ensureOn() {
+        try {
+            EpsonNetworkRS232ProjectorDeviceStatus status = getStatus();
+            if (status.getPowerState() == PowerState.ON) {
+                LOGGER.debug("skipping set power. power already on.");
+                return;
+            }
+        } catch (Exception ex) {
+            LOGGER.error("Failed to get status", ex);
+        }
         try {
             writeCommand("PWR ON");
         } catch (Exception ex) {
@@ -110,14 +120,23 @@ public class EpsonNetworkRS232ProjectorDevice extends Device {
         if (sourceCode == null) {
             throw new UnisonhtException("Invalid source: " + input);
         }
-        writeCommand("SOURCE " + Integer.toHexString(sourceCode));
+        String destSource = Integer.toHexString(sourceCode);
+        String currentSource = writeCommand("SOURCE?");
+        if (currentSource.startsWith("SOURCE=")) {
+            currentSource = currentSource.substring("SOURCE=".length()).trim();
+            if (destSource.equalsIgnoreCase(currentSource)) {
+                LOGGER.debug("Skipping set source. source already set to: %s", destSource);
+                return;
+            }
+        }
+        writeCommand("SOURCE " + destSource);
     }
 
     @Override
     public EpsonNetworkRS232ProjectorDeviceStatus getStatus() {
         String result = writeCommand("PWR?");
         PowerState powerState = PowerState.UNKNOWN;
-        if (result.equalsIgnoreCase("PWR=01")) {
+        if (result.equalsIgnoreCase("PWR=01") || result.equalsIgnoreCase("PWR=02")) {
             powerState = PowerState.ON;
         } else if (result.equalsIgnoreCase("PWR=00")) {
             powerState = PowerState.OFF;
@@ -171,40 +190,49 @@ public class EpsonNetworkRS232ProjectorDevice extends Device {
 
     private String writeCommand(String command) {
         try {
-            return writeData(("q=" + URLEncoder.encode(command + "\r\n", "utf8")).getBytes());
+            boolean wait = !command.contains("PWR ON");
+            return writeData(("q=" + URLEncoder.encode(command + "\r\n", "utf8")).getBytes(), wait);
         } catch (UnsupportedEncodingException e) {
             throw new UnisonhtException("Could not encode data", e);
         }
     }
 
-    private String writeData(byte[] data) {
-        try {
-            LOGGER.debug("writing data: %s", new String(data));
-            String urlString = String.format("http://%s/send", address);
-            URL url;
+    private String writeData(byte[] data, boolean wait) {
+        synchronized (lock) {
             try {
-                url = new URL(urlString);
-            } catch (MalformedURLException e) {
-                throw new UnisonhtException("Bad URL", e);
+                while (System.currentTimeMillis() < nextSendTime) {
+                    Thread.sleep(100);
+                }
+
+                LOGGER.debug("writing data: %s", new String(data));
+                String urlString = String.format("http://%s/send", address);
+                URL url;
+                try {
+                    url = new URL(urlString);
+                } catch (MalformedURLException e) {
+                    throw new UnisonhtException("Bad URL", e);
+                }
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setConnectTimeout(5000);
+                conn.setReadTimeout(wait ? 30 * 1000 : 500);
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Length", "" + Integer.toString(data.length));
+                conn.setDoInput(true);
+                conn.setDoOutput(true);
+
+                OutputStream out = conn.getOutputStream();
+                out.write(data);
+                out.flush();
+                out.close();
+
+                String result = IOUtils.toString(conn.getInputStream()).trim();
+                LOGGER.debug("page result:\n%s", result);
+                return result;
+            } catch (Exception ex) {
+                throw new UnisonhtException("Could not write data: " + new String(data), ex);
+            } finally {
+                nextSendTime = System.currentTimeMillis() + 1000;
             }
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setConnectTimeout(5000);
-            conn.setReadTimeout(30 * 1000);
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Length", "" + Integer.toString(data.length));
-            conn.setDoInput(true);
-            conn.setDoOutput(true);
-
-            OutputStream out = conn.getOutputStream();
-            out.write(data);
-            out.flush();
-            out.close();
-
-            String result = IOUtils.toString(conn.getInputStream()).trim();
-            LOGGER.debug("page result:\n%s", result);
-            return result;
-        } catch (IOException ex) {
-            throw new UnisonhtException("Could not write data: " + new String(data), ex);
         }
     }
 }
