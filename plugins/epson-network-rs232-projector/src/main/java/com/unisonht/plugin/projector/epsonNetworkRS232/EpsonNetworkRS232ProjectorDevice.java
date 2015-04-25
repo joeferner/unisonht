@@ -25,6 +25,22 @@ public class EpsonNetworkRS232ProjectorDevice extends Device {
     private final String address;
     private final Map<String, String> inputMapping;
 
+    public static void main(String[] args) {
+        if (args.length != 1) {
+            throw new UnisonhtException("Expected 1 argument. Address");
+        }
+        String address = args[0];
+        EpsonNetworkRS232ProjectorDevice d = new EpsonNetworkRS232ProjectorDevice(address, new HashMap<String, String>());
+        while (true) {
+            try {
+                EpsonNetworkRS232ProjectorDeviceStatus st = d.getStatus();
+                System.out.println(st);
+            } catch (Exception ex) {
+                LOGGER.error("bad", ex);
+            }
+        }
+    }
+
     public EpsonNetworkRS232ProjectorDevice(String address, Map<String, String> inputMapping) {
         checkNotNull(address, "address is required");
         this.address = address;
