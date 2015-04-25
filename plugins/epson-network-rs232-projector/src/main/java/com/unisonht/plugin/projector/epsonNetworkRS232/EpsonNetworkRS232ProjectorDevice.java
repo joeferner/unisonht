@@ -59,8 +59,7 @@ public class EpsonNetworkRS232ProjectorDevice extends Device {
     @Override
     public void ensureOn() {
         try {
-            EpsonNetworkRS232ProjectorDeviceStatus status = getStatus();
-            if (status.getPowerState() == PowerState.ON) {
+            if (getPowerState() == PowerState.ON) {
                 LOGGER.debug("skipping set power. power already on.");
                 return;
             }
@@ -121,19 +120,36 @@ public class EpsonNetworkRS232ProjectorDevice extends Device {
             throw new UnisonhtException("Invalid source: " + input);
         }
         String destSource = Integer.toHexString(sourceCode);
-        String currentSource = writeCommand("SOURCE?");
-        if (currentSource.startsWith("SOURCE=")) {
-            currentSource = currentSource.substring("SOURCE=".length()).trim();
-            if (destSource.equalsIgnoreCase(currentSource)) {
-                LOGGER.debug("Skipping set source. source already set to: %s", destSource);
-                return;
-            }
+        Input currentInput = getInput();
+        if (currentInput.getRawCode().equalsIgnoreCase(destSource)) {
+            LOGGER.debug("Skipping set source. source already set to: %s", destSource);
+            return;
         }
         writeCommand("SOURCE " + destSource);
     }
 
     @Override
     public EpsonNetworkRS232ProjectorDeviceStatus getStatus() {
+        PowerState powerState = getPowerState();
+        StatusInput.Input input = null;
+        if (powerState == PowerState.ON) {
+            input = getInput();
+        }
+        return new EpsonNetworkRS232ProjectorDeviceStatus(powerState, input);
+    }
+
+    private Input getInput() {
+        Input input;
+        String result = writeCommand("SOURCE?");
+        if (result.startsWith("SOURCE=")) {
+            input = fromSourceCode(result.substring("SOURCE=".length()));
+        } else {
+            input = new Input(result, result, null);
+        }
+        return input;
+    }
+
+    private PowerState getPowerState() {
         String result = writeCommand("PWR?");
         PowerState powerState = PowerState.UNKNOWN;
         if (result.equalsIgnoreCase("PWR=01") || result.equalsIgnoreCase("PWR=02")) {
@@ -141,21 +157,10 @@ public class EpsonNetworkRS232ProjectorDevice extends Device {
         } else if (result.equalsIgnoreCase("PWR=00")) {
             powerState = PowerState.OFF;
         }
-
-        StatusInput.Input input = null;
-        if (powerState == PowerState.ON) {
-            result = writeCommand("SOURCE?");
-            if (result.startsWith("SOURCE=")) {
-                input = fromSourceCode(result.substring("SOURCE=".length()));
-            } else {
-                input = new StatusInput.Input(result, null);
-            }
-        }
-
-        return new EpsonNetworkRS232ProjectorDeviceStatus(powerState, input);
+        return powerState;
     }
 
-    private StatusInput.Input fromSourceCode(String sourceCode) {
+    private Input fromSourceCode(String sourceCode) {
         sourceCode = sourceCode.toLowerCase();
         String input;
         switch (sourceCode) {
@@ -166,14 +171,27 @@ public class EpsonNetworkRS232ProjectorDevice extends Device {
                 input = "hdmi2";
                 break;
             default:
-                return new StatusInput.Input(sourceCode, null);
+                return new Input(sourceCode, sourceCode, null);
         }
         for (Map.Entry<String, String> entry : this.inputMapping.entrySet()) {
             if (entry.getValue().equalsIgnoreCase(input)) {
-                return new StatusInput.Input(entry.getValue(), entry.getKey());
+                return new Input(sourceCode, entry.getValue(), entry.getKey());
             }
         }
-        return new StatusInput.Input(input, null);
+        return new Input(sourceCode, input, null);
+    }
+
+    public static class Input extends StatusInput.Input {
+        private final String rawCode;
+
+        public Input(String rawCode, String deviceInput, String mappedInput) {
+            super(deviceInput, mappedInput);
+            this.rawCode = rawCode;
+        }
+
+        public String getRawCode() {
+            return rawCode;
+        }
     }
 
     private Integer toSourceCode(String input) {
