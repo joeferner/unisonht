@@ -237,13 +237,14 @@
     "emulation": {
       "onEnter": {
         "action": "run",
-        "command": "EmulationStation",
-        "args": [
+        "command": [
+          "/usr/bin/kate",
+          "/opt/unisonht/config/config.json"
         ]
       },
       "onExit": {
         "action": "kill",
-        "processName": "EmulationStation"
+        "processName": "kate"
       }
     }
   },
