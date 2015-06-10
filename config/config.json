@@ -133,6 +133,10 @@
         "NUM4": {
           "action": "switchMode",
           "mode": "xbox"
+        },
+        "NUM5": {
+          "action": "switchMode",
+          "mode": "emulation"
         }
       }
     },
@@ -174,6 +178,10 @@
         "NUM4": {
           "action": "switchMode",
           "mode": "xbox"
+        },
+        "NUM5": {
+          "action": "switchMode",
+          "mode": "emulation"
         }
       }
     },
@@ -224,6 +232,18 @@
           "device": "xbox",
           "input": "xbox"
         }
+      }
+    },
+    "emulation": {
+      "onEnter": {
+        "action": "run",
+        "command": "EmulationStation",
+        "args": [
+        ]
+      },
+      "onExit": {
+        "action": "kill",
+        "processName": "EmulationStation"
       }
     }
   },

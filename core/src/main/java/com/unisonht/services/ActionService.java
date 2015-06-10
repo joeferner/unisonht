@@ -1,10 +1,12 @@
 package com.unisonht.services;
 
+import com.google.common.base.Joiner;
 import com.google.inject.Inject;
 import com.unisonht.clientapi.ConfigJson;
 import com.unisonht.config.Configuration;
 import com.unisonht.utils.*;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -55,6 +57,10 @@ public class ActionService {
             runAction((ConfigJson.ChangeInputAction) action, args);
         } else if (action instanceof ConfigJson.SwitchModeAction) {
             runAction((ConfigJson.SwitchModeAction) action, args);
+        } else if (action instanceof ConfigJson.RunAction) {
+            runAction((ConfigJson.RunAction) action, args);
+        } else if (action instanceof ConfigJson.KillAction) {
+            runAction((ConfigJson.KillAction) action, args);
         } else {
             throw new UnisonhtException("Unhandled action type: " + action.getClass().getName());
         }
@@ -85,6 +91,27 @@ public class ActionService {
     public void runAction(ConfigJson.SwitchModeAction action, Map<String, Object> args) {
         String modeName = performSubstitutions(action.getMode(), args);
         getModeService().switchMode(modeName);
+    }
+
+    public void runAction(ConfigJson.RunAction action, Map<String, Object> args) {
+        try {
+            Runtime.getRuntime().exec(action.getCommand());
+        } catch (IOException e) {
+            throw new UnisonhtException("Could not run command: " + Joiner.on(" ").join(action.getCommand()), e);
+        }
+    }
+
+    public void runAction(ConfigJson.KillAction action, Map<String, Object> args) {
+        try {
+            Runtime rt = Runtime.getRuntime();
+            if (System.getProperty("os.name").toLowerCase().contains("windows")) {
+                rt.exec("taskkill " + action.getProcessName());
+            } else {
+                rt.exec("kill -9 " + action.getProcessName());
+            }
+        } catch (IOException e) {
+            throw new UnisonhtException("Could not run kill: " + action.getProcessName(), e);
+        }
     }
 
     private ModeService getModeService() {

@@ -165,7 +165,9 @@ public class ConfigJson extends ClientApiObject {
             @JsonSubTypes.Type(value = EnsureOnAction.class, name = "ensureOn"),
             @JsonSubTypes.Type(value = RunMacroAction.class, name = "runMacro"),
             @JsonSubTypes.Type(value = SwitchModeAction.class, name = "switchMode"),
-            @JsonSubTypes.Type(value = ChangeInputAction.class, name = "changeInput")
+            @JsonSubTypes.Type(value = ChangeInputAction.class, name = "changeInput"),
+            @JsonSubTypes.Type(value = RunAction.class, name = "run"),
+            @JsonSubTypes.Type(value = KillAction.class, name = "kill")
     })
     public abstract static class Action extends ClientApiObject {
     }
@@ -313,6 +315,33 @@ public class ConfigJson extends ClientApiObject {
 
         public String getInput() {
             return input;
+        }
+    }
+
+    public static class RunAction extends Action {
+        private final String[] command;
+
+        public RunAction(
+                @JsonProperty("command") String[] command
+        ) {
+            checkNotNull(command, "command is required");
+            this.command = command;
+        }
+
+        public String[] getCommand() {
+            return command;
+        }
+    }
+
+    public static class KillAction extends Action {
+        private final String processName;
+
+        public KillAction(@JsonProperty("processName") String processName) {
+            this.processName = processName;
+        }
+
+        public String getProcessName() {
+            return processName;
         }
     }
 
