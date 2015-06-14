@@ -6,14 +6,8 @@ import com.unisonht.plugin.status.StatusInput;
 import com.unisonht.utils.UnisonhtException;
 import com.unisonht.utils.UnisonhtLogger;
 import com.unisonht.utils.UnisonhtLoggerFactory;
-import org.apache.commons.io.IOUtils;
 
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLEncoder;
+import java.net.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,33 +16,41 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class EpsonNetworkRS232ProjectorDevice extends Device {
     private static final UnisonhtLogger LOGGER = UnisonhtLoggerFactory.getLogger(EpsonNetworkRS232ProjectorDevice.class);
     private static final Object lock = new Object();
-    private long nextSendTime;
-    private final String address;
+    private static final int UDP_PORT = 9000;
+    private final DatagramSocket socket;
+    private final InetAddress address;
     private final Map<String, String> inputMapping;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws UnknownHostException {
         if (args.length != 1) {
             throw new UnisonhtException("Expected 1 argument. Address");
         }
-        String address = args[0];
+        InetAddress address = InetAddress.getByName(args[0]);
         EpsonNetworkRS232ProjectorDevice d = new EpsonNetworkRS232ProjectorDevice(address, new HashMap<String, String>());
         while (true) {
             try {
                 EpsonNetworkRS232ProjectorDeviceStatus st = d.getStatus();
                 System.out.println(st);
+                Thread.sleep(1000);
             } catch (Exception ex) {
                 LOGGER.error("bad", ex);
             }
         }
     }
 
-    public EpsonNetworkRS232ProjectorDevice(String address, Map<String, String> inputMapping) {
+    public EpsonNetworkRS232ProjectorDevice(InetAddress address, Map<String, String> inputMapping) {
         checkNotNull(address, "address is required");
         this.address = address;
         if (inputMapping == null) {
             inputMapping = new HashMap<>();
         }
         this.inputMapping = inputMapping;
+        try {
+            this.socket = new DatagramSocket();
+            socket.setSoTimeout(500);
+        } catch (SocketException e) {
+            throw new UnisonhtException("Failed to create socket", e);
+        }
     }
 
     @Override
@@ -207,49 +209,27 @@ public class EpsonNetworkRS232ProjectorDevice extends Device {
     }
 
     private String writeCommand(String command) {
-        try {
-            boolean wait = !command.contains("PWR ON");
-            return writeData(("q=" + URLEncoder.encode(command + "\r\n", "utf8")).getBytes(), wait);
-        } catch (UnsupportedEncodingException e) {
-            throw new UnisonhtException("Could not encode data", e);
-        }
+        boolean wait = !command.contains("PWR ON");
+        return writeData((command + "\r\n").getBytes(), wait);
     }
 
     private String writeData(byte[] data, boolean wait) {
         synchronized (lock) {
             try {
-                while (System.currentTimeMillis() < nextSendTime) {
-                    Thread.sleep(100);
-                }
-
                 LOGGER.debug("writing data: %s", new String(data));
-                String urlString = String.format("http://%s/send", address);
-                URL url;
-                try {
-                    url = new URL(urlString);
-                } catch (MalformedURLException e) {
-                    throw new UnisonhtException("Bad URL", e);
-                }
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setConnectTimeout(5000);
-                conn.setReadTimeout(wait ? 30 * 1000 : 500);
-                conn.setRequestMethod("POST");
-                conn.setRequestProperty("Content-Length", "" + Integer.toString(data.length));
-                conn.setDoInput(true);
-                conn.setDoOutput(true);
 
-                OutputStream out = conn.getOutputStream();
-                out.write(data);
-                out.flush();
-                out.close();
+                DatagramPacket packet = new DatagramPacket(data, 0, data.length, address, UDP_PORT);
+                socket.send(packet);
 
-                String result = IOUtils.toString(conn.getInputStream()).trim();
-                LOGGER.debug("page result:\n%s", result);
+                byte[] buffer = new byte[5000];
+                packet = new DatagramPacket(buffer, 0, buffer.length);
+                socket.receive(packet);
+
+                String result = new String(packet.getData(), 0, packet.getLength()).trim();
+                LOGGER.debug("result:\n%s", result);
                 return result;
             } catch (Exception ex) {
                 throw new UnisonhtException("Could not write data: " + new String(data), ex);
-            } finally {
-                nextSendTime = System.currentTimeMillis() + 1000;
             }
         }
     }
