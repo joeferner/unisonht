@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<statusList>
-    <status name="party">
-        <statusItem field="status" value="nr"/>
-    </status>
-</statusList>

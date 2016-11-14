@@ -1,0 +1,30 @@
+{
+  "name": "unisonht",
+  "version": "1.0.0",
+  "description": "UnisonHT - Unified Home Theatre",
+  "main": "index.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joeferner/unisonht.git"
+  },
+  "keywords": [
+    "home",
+    "theatre",
+    "raspberry",
+    "pi",
+    "ir",
+    "lirc"
+  ],
+  "author": "Joe Ferner <joe@fernsroth.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/joeferner/unisonht/issues"
+  },
+  "homepage": "https://github.com/joeferner/unisonht#readme",
+  "dependencies": {
+    "bunyan": "^1.8.5",
+    "typescript": "^2.0.9",
+    "typings": "^2.0.0"
+  }
+}
