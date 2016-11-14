@@ -31,7 +31,7 @@ public class EpsonNetworkRS232ProjectorDevice extends Device {
             try {
                 EpsonNetworkRS232ProjectorDeviceStatus st = d.getStatus();
                 System.out.println(st);
-                Thread.sleep(1000);
+                Thread.sleep(60 * 1000);
             } catch (Exception ex) {
                 LOGGER.error("bad", ex);
             }
