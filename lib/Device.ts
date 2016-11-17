@@ -8,19 +8,19 @@ export class Device {
   }
 
   changeInput(input: string): Promise<void> {
-    throw new Error('Changing input is not supported for this device');
+    return Promise.reject(new Error('Changing input to ' + input + ' is not supported for this device (' + this.constructor.name + ')'));
   }
 
   buttonPress(button: string): Promise<void> {
-    throw new Error('button press is not supported for this device');
+    return Promise.reject(new Error('button ' + button + ' is not supported for this device (' + this.constructor.name + ')'));
   }
 
   ensureOn(): Promise<void> {
-    throw new Error('ensure on is not supported for this device');
+    return Promise.resolve();
   }
 
   ensureOff(): Promise<void> {
-    throw new Error('ensure off is not supported for this device');
+    return Promise.resolve();
   }
 }
 

@@ -9,12 +9,12 @@ export class Input {
 
   }
 
-  start(unisonHT: UnisonHT) {
-
+  start(unisonHT: UnisonHT): Promise<void> {
+    return Promise.resolve();
   }
 
-  stop(unisonHT: UnisonHT) {
-
+  stop(unisonHT: UnisonHT): Promise<void> {
+    return Promise.resolve();
   }
 }
 

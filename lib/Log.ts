@@ -1,10 +1,10 @@
 /// <reference path="../unisonht.d.ts" />
 
-import {createLogger} from "bunyan";
+import {createLogger as bunyanCreateLogger} from "bunyan";
 
-const log = createLogger({
-  name: "unisonht",
-  level: 'debug'
-});
-
-export default log;
+export default function createLogger(name: string) {
+  return bunyanCreateLogger({
+    name: name,
+    level: 'debug'
+  });
+}
