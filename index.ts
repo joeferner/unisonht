@@ -47,6 +47,7 @@ export class UnisonHT {
   private modes: {[name: string]: Mode} = {};
   private defaultMode: string;
   private currentMode: string;
+  private keepAliveInterval: NodeJS.Timer;
 
   static get MODE_GLOBAL() {
     return 'GLOBAL';
@@ -118,10 +119,18 @@ export class UnisonHT {
     return Promise.all(promises)
       .then(()=> {
         log.info('UnisonHT Started');
+        this.keepAliveInterval = setInterval(()=> {
+
+        }, 1000);
       });
   }
 
   stop(): Promise<void> {
+    if (this.keepAliveInterval) {
+      clearInterval(this.keepAliveInterval);
+      this.keepAliveInterval = null;
+    }
+
     const promises = [];
     for (let pluginName in this.plugins) {
       let plugin = this.plugins[pluginName];
