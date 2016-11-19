@@ -1,14 +1,49 @@
-/// <reference path="./unisonht.d.ts" />
+/// <reference path="./typings/index.d.ts" />
 
-import {Device} from "./lib/Device";
-import {Input} from "./lib/Input";
 import createLogger from "./lib/Log";
 
 const log = createLogger('unisonht');
+type ButtonFunction = ()=>Promise<void>;
 
-export default class UnisonHT {
-  private inputs: {[name: string]: Input} = {};
-  private devices: {[name: string]: Device} = {};
+export interface UnisonHTPlugin {
+  getName(): string
+  start?(unisonht: UnisonHT): Promise<void>;
+  stop?(): Promise<void>;
+}
+
+export interface Mode {
+  buttonMap?: {
+    [name: string]: ButtonFunction
+  },
+  onEnter?: ()=>Promise<void>,
+  onExit?: ()=>Promise<void>,
+  defaultDevice?: string
+}
+
+export interface InputData {
+  remote?: string,
+  button: string,
+  repeat?: number
+}
+
+export interface DeviceInput {
+  deviceInput: string,
+  mappedInput: string
+}
+
+export interface UnisonHTDevice extends UnisonHTPlugin {
+  changeInput?(input: string): Promise<void>;
+  buttonPress(button: string): Promise<void>;
+  ensureOn(): Promise<void>;
+  ensureOff(): Promise<void>;
+}
+
+export interface UnisonHTInput extends UnisonHTPlugin {
+
+}
+
+export class UnisonHT {
+  private plugins: {[name: string]: UnisonHTPlugin} = {};
   private modes: {[name: string]: Mode} = {};
   private defaultMode: string;
   private currentMode: string;
@@ -17,14 +52,9 @@ export default class UnisonHT {
     return 'GLOBAL';
   }
 
-  addInput(name: string, input: Input): void {
-    log.debug('Add input: %s', name);
-    this.inputs[name] = input;
-  }
-
-  addDevice(name: string, device: Device): void {
-    log.debug('Add device: %s', name);
-    this.devices[name] = device;
+  use(plugin: UnisonHTPlugin): void {
+    log.debug('Add plugin: %s', plugin.getName());
+    this.plugins[plugin.getName()] = plugin;
   }
 
   setDefaultMode(mode: string): void {
@@ -65,26 +95,44 @@ export default class UnisonHT {
     return this.modes[name];
   }
 
-  getDevice(deviceName: string): Device {
-    return this.devices[deviceName];
+  getDevice(deviceName: string): UnisonHTDevice {
+    const plugin = this.plugins[deviceName];
+    if ('pressButton' in plugin) {
+      return <UnisonHTDevice> plugin;
+    }
+    return null;
   }
 
-  start(): void {
-    for (let inputName in this.inputs) {
-      let input = this.inputs[inputName];
-      input.start(this);
-    }
-
+  start(): Promise<void> {
+    const startFunctions = [];
     this.currentMode = this.defaultMode;
-    log.info('UnisonHT Started');
+
+    for (let pluginName in this.plugins) {
+      let plugin = this.plugins[pluginName];
+      if (plugin.start) {
+        startFunctions.push(plugin.start);
+      }
+    }
+
+    return Promise.all(startFunctions)
+      .then(()=> {
+        log.info('UnisonHT Started');
+      });
   }
 
-  stop(): void {
-    for (let inputName in this.inputs) {
-      let input = this.inputs[inputName];
-      input.stop(this);
+  stop(): Promise<void> {
+    const stopFunctions = [];
+    for (let pluginName in this.plugins) {
+      let plugin = this.plugins[pluginName];
+      if (plugin.stop) {
+        stopFunctions.push(plugin.stop);
+      }
     }
-    log.info('UnisonHT Stopped');
+
+    return Promise.all(stopFunctions)
+      .then(()=> {
+        log.info('UnisonHT Stopped');
+      });
   }
 
   processInput(inputData: InputData): Promise<void> {
