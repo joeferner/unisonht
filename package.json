@@ -23,8 +23,6 @@
   },
   "homepage": "https://github.com/joeferner/unisonht#readme",
   "dependencies": {
-    "bunyan": "^1.8.5",
-    "typescript": "^2.0.9",
-    "typings": "^2.0.0"
+    "bunyan": "^1.8.5"
   }
 }
