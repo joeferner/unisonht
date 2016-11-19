@@ -97,39 +97,40 @@ export class UnisonHT {
 
   getDevice(deviceName: string): UnisonHTDevice {
     const plugin = this.plugins[deviceName];
-    if ('pressButton' in plugin) {
+    if ('buttonPress' in plugin) {
       return <UnisonHTDevice> plugin;
     }
     return null;
   }
 
   start(): Promise<void> {
-    const startFunctions = [];
+    const promises = [];
     this.currentMode = this.defaultMode;
 
     for (let pluginName in this.plugins) {
       let plugin = this.plugins[pluginName];
       if (plugin.start) {
-        startFunctions.push(plugin.start);
+        log.debug(`starting ${plugin.getName()}`);
+        promises.push(plugin.start(this));
       }
     }
 
-    return Promise.all(startFunctions)
+    return Promise.all(promises)
       .then(()=> {
         log.info('UnisonHT Started');
       });
   }
 
   stop(): Promise<void> {
-    const stopFunctions = [];
+    const promises = [];
     for (let pluginName in this.plugins) {
       let plugin = this.plugins[pluginName];
       if (plugin.stop) {
-        stopFunctions.push(plugin.stop);
+        promises.push(plugin.stop());
       }
     }
 
-    return Promise.all(stopFunctions)
+    return Promise.all(promises)
       .then(()=> {
         log.info('UnisonHT Stopped');
       });
