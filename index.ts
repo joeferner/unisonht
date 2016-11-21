@@ -1,5 +1,3 @@
-/// <reference path="./typings/index.d.ts" />
-
 import createLogger from "./lib/Log";
 
 const log = createLogger('unisonht');
@@ -13,7 +11,7 @@ export interface UnisonHTPlugin {
 
 export interface Mode {
   buttonMap?: {
-    [name: string]: ButtonFunction
+    [name: string]: ButtonFunction|string
   },
   onEnter?: ()=>Promise<void>,
   onExit?: ()=>Promise<void>,
@@ -65,6 +63,7 @@ export class UnisonHT {
 
   addMode(name: string, options: Mode): void {
     log.debug('Add mode: %s', name);
+    options.buttonMap = options.buttonMap || {};
     this.modes[name] = options;
   }
 
@@ -85,7 +84,15 @@ export class UnisonHT {
     return Promise.all([
       currentModeExitPromise,
       newModeEnterPromise
-    ]);
+    ])
+      .then(()=> {
+        log.debug(`new mode now: ${modeName}`);
+        this.currentMode = modeName;
+      })
+      .catch((err)=> {
+        log.error('failed to switch mode', err);
+        throw err;
+      })
   }
 
   getCurrentMode(): Mode {
@@ -147,13 +154,21 @@ export class UnisonHT {
 
   processInput(inputData: InputData): Promise<void> {
     const button = this.findButton(inputData);
-    if (!button) {
+    if (!button || typeof button === 'string') {
+      const mode = this.getCurrentMode();
+      if (mode && mode.defaultDevice) {
+        const device = this.getDevice(mode.defaultDevice);
+        if (device) {
+          var b: string = button ? <string>button : inputData.button;
+          return device.buttonPress(b);
+        }
+      }
       return Promise.resolve();
     }
     return button();
   }
 
-  private findButton(inputData: InputData): ButtonFunction {
+  private findButton(inputData: InputData): ButtonFunction|string {
     var mode = this.getCurrentMode();
     if (mode) {
       var button = UnisonHT.findButtonInMode(mode, inputData);
@@ -173,7 +188,7 @@ export class UnisonHT {
     return null;
   }
 
-  private static findButtonInMode(mode: Mode, inputData: InputData): ButtonFunction {
+  private static findButtonInMode(mode: Mode, inputData: InputData): ButtonFunction|string {
     if (inputData.button) {
       var button = mode.buttonMap[inputData.button];
       if (button) {
