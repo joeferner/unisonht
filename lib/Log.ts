@@ -9,10 +9,8 @@ export default function createLogger(name: string) {
         stream: process.stdout
       },
       {
-        type: 'rotating-file',
-        path: '/var/log/unisonht/unisonht.log',
-        period: '1h',
-        count: 3
+        type: 'file',
+        path: '/var/log/unisonht/unisonht.log'
       }
     ]
   });
