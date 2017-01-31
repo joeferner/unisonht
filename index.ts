@@ -1,32 +1,34 @@
 import createLogger from "./lib/Log";
 
 const log = createLogger('unisonht');
-type ButtonFunction = ()=>Promise<void>;
+type ButtonFunction = (inputData: InputData) => Promise<void>;
 
 export interface UnisonHTPlugin {
   getName(): string
   start?(unisonht: UnisonHT): Promise<void>;
   stop?(): Promise<void>;
+  onDeviceButtonPress?: (device: UnisonHTDevice, button: string) => Promise<boolean>;
 }
 
 export interface Mode {
   buttonMap?: {
     [name: string]: ButtonFunction|string
-  },
-  onEnter?: ()=>Promise<void>,
-  onExit?: ()=>Promise<void>,
-  defaultDevice?: string
+  };
+  onEnter?: () => Promise<void>;
+  onExit?: () => Promise<void>;
+  onDeviceButtonPress?: (device: UnisonHTDevice, button: string) => Promise<boolean>;
+  defaultDevice?: string;
 }
 
 export interface InputData {
-  remote?: string,
-  button: string,
-  repeat?: number
+  remote?: string;
+  button: string;
+  repeat?: number;
 }
 
 export interface DeviceInput {
-  deviceInput: string,
-  mappedInput: string
+  deviceInput: string;
+  mappedInput: string;
 }
 
 export interface UnisonHTDevice extends UnisonHTPlugin {
@@ -85,11 +87,11 @@ export class UnisonHT {
       currentModeExitPromise,
       newModeEnterPromise
     ])
-      .then(()=> {
+      .then(() => {
         log.debug(`new mode now: ${modeName}`);
         this.currentMode = modeName;
       })
-      .catch((err)=> {
+      .catch((err) => {
         log.error('failed to switch mode', err);
         throw err;
       })
@@ -124,9 +126,9 @@ export class UnisonHT {
     }
 
     return Promise.all(promises)
-      .then(()=> {
+      .then(() => {
         log.info('UnisonHT Started');
-        this.keepAliveInterval = setInterval(()=> {
+        this.keepAliveInterval = setInterval(() => {
 
         }, 1000);
       });
@@ -147,7 +149,7 @@ export class UnisonHT {
     }
 
     return Promise.all(promises)
-      .then(()=> {
+      .then(() => {
         log.info('UnisonHT Stopped');
       });
   }
@@ -155,23 +157,46 @@ export class UnisonHT {
   processInput(inputData: InputData): Promise<void> {
     const button = this.findButton(inputData);
     if (!button || typeof button === 'string') {
-      const mode = this.getCurrentMode();
-      if (mode && mode.defaultDevice) {
-        const device = this.getDevice(mode.defaultDevice);
-        if (device) {
-          var b: string = button ? <string>button : inputData.button;
-          return device.buttonPress(b);
-        }
-      }
-      return Promise.resolve();
+      return this.processButtonPress(<string>button || inputData.button);
     }
-    return button();
+    return button(inputData);
+  }
+
+  processButtonPress(button: string): Promise<void> {
+    const mode = this.getCurrentMode();
+    if (mode && mode.defaultDevice) {
+      const device = this.getDevice(mode.defaultDevice);
+      if (device) {
+        let promise = Promise.resolve(true);
+        if (this.getCurrentMode() && this.getCurrentMode().onDeviceButtonPress) {
+          promise = this.getCurrentMode().onDeviceButtonPress(device, button);
+        }
+        for (let pluginName in this.plugins) {
+          let plugin = this.plugins[pluginName];
+          if (plugin.onDeviceButtonPress) {
+            promise = promise.then((cont) => {
+              if (cont) {
+                return plugin.onDeviceButtonPress(device, button);
+              }
+              return false;
+            });
+          }
+        }
+        return promise
+          .then((cont) => {
+            if (cont) {
+              return device.buttonPress(button);
+            }
+          });
+      }
+    }
+    return Promise.resolve();
   }
 
   private findButton(inputData: InputData): ButtonFunction|string {
-    var mode = this.getCurrentMode();
+    let mode = this.getCurrentMode();
     if (mode) {
-      var button = UnisonHT.findButtonInMode(mode, inputData);
+      const button = UnisonHT.findButtonInMode(mode, inputData);
       if (button) {
         return button;
       }
@@ -179,7 +204,7 @@ export class UnisonHT {
 
     mode = this.getMode(UnisonHT.MODE_GLOBAL);
     if (mode) {
-      var button = UnisonHT.findButtonInMode(mode, inputData);
+      const button = UnisonHT.findButtonInMode(mode, inputData);
       if (button) {
         return button;
       }
@@ -190,7 +215,7 @@ export class UnisonHT {
 
   private static findButtonInMode(mode: Mode, inputData: InputData): ButtonFunction|string {
     if (inputData.button) {
-      var button = mode.buttonMap[inputData.button];
+      const button = mode.buttonMap[inputData.button];
       if (button) {
         return button;
       }
