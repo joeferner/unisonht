@@ -1,7 +1,7 @@
-import {createLogger as bunyanCreateLogger} from "bunyan";
+import * as Logger from "bunyan";
 
-export default function createLogger(name: string) {
-  return bunyanCreateLogger({
+export default function createLogger(name: string): Logger {
+  return Logger.createLogger({
     name: name,
     level: 'debug',
     streams: [
