@@ -11,7 +11,15 @@ export class Plugin {
     return Promise.resolve();
   }
 
+  stop(): Promise<void> {
+    return Promise.resolve();
+  }
+
   getPathPrefix(): string {
+    return this.pathPrefix;
+  }
+
+  toString(): string {
     return this.pathPrefix;
   }
 }

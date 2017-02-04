@@ -1,6 +1,6 @@
 import * as Logger from "bunyan";
 
-export default function createLogger(name: string): Logger {
+export function createLogger(name: string): Logger {
   return Logger.createLogger({
     name: name,
     level: 'debug',

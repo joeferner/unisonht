@@ -2,7 +2,7 @@ import * as express from "express";
 import * as HttpStatusCodes from "http-status-codes";
 import * as Boom from "boom";
 import * as Logger from "bunyan";
-import createLogger from "./Log";
+import {createLogger} from "./Log";
 import {Plugin} from "../";
 import * as sourceMapSupport from "source-map-support";
 sourceMapSupport.install();
@@ -36,7 +36,11 @@ export class UnisonHT {
     this.app.post('/mode', this.modeAction.bind(this));
 
     return Promise.all(this.plugins.map((plugin) => {
-      return plugin.start(this);
+      return plugin.start(this)
+        .catch((err) => {
+          this.log.error(`failed to start plugin: ${plugin.toString()}:`, err);
+          throw err;
+        });
     })).then(() => {
       this.app.use(this.unhandledRequest.bind(this));
       this.app.use(this.errorHandler.bind(this));
@@ -156,6 +160,14 @@ export class UnisonHT {
 
   use(plugin: Plugin) {
     this.plugins.push(plugin);
+  }
+
+  currentModeButtonPress(buttonName: string): Promise<void> {
+    return this.modeButtonPress('current', buttonName);
+  }
+
+  modeButtonPress(mode: string, buttonName: string): Promise<void> {
+    return this.postToSelf(`/mode/${mode}/button-press?button=${encodeURIComponent(buttonName)}`);
   }
 
   protected postToSelf(url: string): Promise<any> {

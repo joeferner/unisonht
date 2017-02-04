@@ -3,7 +3,7 @@ import * as Logger from "bunyan";
 import * as Boom from "boom";
 import {Plugin} from "./Plugin";
 import {UnisonHT, UnisonHTResponse} from "./UnisonHT";
-import createLogger from "./Log";
+import {createLogger} from "./Log";
 
 export interface ButtonMapHandler {
   (req: express.Request, res: UnisonHTResponse, next: express.NextFunction): any;

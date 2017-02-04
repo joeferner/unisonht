@@ -2,7 +2,7 @@ import * as express from "express";
 import * as Logger from "bunyan";
 import {Plugin} from "./Plugin";
 import {UnisonHT} from "./UnisonHT";
-import createLogger from "./Log";
+import {createLogger} from "./Log";
 
 export abstract class Device extends Plugin {
   private deviceName: string;

@@ -10,6 +10,7 @@
     "index.ts",
     "lib/Log.ts",
     "lib/Mode.ts",
+    "lib/Input.ts",
     "lib/Device.ts",
     "lib/GlobalMode.ts",
     "lib/TemporaryGlobalMode.ts",
