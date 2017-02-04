@@ -31,6 +31,8 @@ export class TemporaryGlobalMode extends GlobalMode {
               res.status(HttpStatusCodes.NO_CONTENT).send();
             })
             .catch(next);
+        } else {
+          next();
         }
         break;
       case State.ON:
@@ -44,6 +46,7 @@ export class TemporaryGlobalMode extends GlobalMode {
         break;
       default:
         next(new Error(`Invalid TemporaryGlobalMode state: ${this.state}`));
+        break;
     }
   }
 
@@ -73,13 +76,13 @@ export class TemporaryGlobalMode extends GlobalMode {
   }
 
   protected getOptions(): TemporaryGlobalMode.Options {
-    return <TemporaryGlobalMode.Options>this.getOptions();
+    return <TemporaryGlobalMode.Options>super.getOptions();
   }
 }
 
 export module TemporaryGlobalMode {
   export interface Options extends Mode.Options {
-    timeout: number;
+    timeout?: number;
     activateButton: string;
   }
 }

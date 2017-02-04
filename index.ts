@@ -5,4 +5,3 @@ export * from "./lib/Mode";
 export * from "./lib/Plugin";
 export * from "./lib/TemporaryGlobalMode";
 export * from "./lib/UnisonHT";
-export {PromiseResponderResponse} from "./lib/PromiseResponder";

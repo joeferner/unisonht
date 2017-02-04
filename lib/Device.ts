@@ -32,6 +32,10 @@ export abstract class Device extends Plugin {
 
   abstract getStatus(): Promise<Device.Status>;
 
+  public getDeviceName(): string {
+    return this.deviceName;
+  }
+
   protected abstract handleButtonPress(req: express.Request, res: express.Response, next: express.NextFunction): void;
 }
 

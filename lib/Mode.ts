@@ -2,12 +2,11 @@ import * as express from "express";
 import * as Logger from "bunyan";
 import * as Boom from "boom";
 import {Plugin} from "./Plugin";
-import {UnisonHT} from "./UnisonHT";
+import {UnisonHT, UnisonHTResponse} from "./UnisonHT";
 import createLogger from "./Log";
-import {PromiseResponderResponse} from "./PromiseResponder";
 
 export interface ButtonMapHandler {
-  (req: express.Request, res: express.Response, next: express.NextFunction): any;
+  (req: express.Request, res: UnisonHTResponse, next: express.NextFunction): any;
 }
 
 export class Mode extends Plugin {
@@ -38,11 +37,11 @@ export class Mode extends Plugin {
   }
 
   private enterHandler(req: express.Request, res: express.Response, next: express.NextFunction) {
-    (<PromiseResponderResponse>res).promiseNoContent(this.enter());
+    (<UnisonHTResponse>res).promiseNoContent(this.enter());
   }
 
   private exitHandler(req: express.Request, res: express.Response, next: express.NextFunction) {
-    (<PromiseResponderResponse>res).promiseNoContent(this.exit());
+    (<UnisonHTResponse>res).promiseNoContent(this.exit());
   }
 
   protected canEnter(): boolean {
@@ -61,16 +60,19 @@ export class Mode extends Plugin {
 
   protected handleButtonPress(req: express.Request, res: express.Response, next: express.NextFunction): void {
     const buttonName = req.query.button;
+    this.log.debug(`handleButtonPress: ${buttonName}`);
     const button = this.options.buttonMap[buttonName];
     if (button) {
-      button(req, res, next);
+      button(req, <UnisonHTResponse>res, next);
       return;
     }
 
     const deviceName = this.options.defaultDevice;
     if (deviceName) {
       this.log.debug(`forwarding button press "${buttonName}" to device "${deviceName}"`);
-      return res.redirect(UnisonHT.urlDeviceButtonPress(deviceName, buttonName));
+
+      (<UnisonHTResponse>res).deviceButtonPress(deviceName, buttonName);
+      return;
     }
 
     if (this.options.nextOnNotFound) {
