@@ -4,6 +4,7 @@ import * as Boom from "boom";
 import * as request from "request-promise";
 import createLogger from "./Log";
 import {Plugin} from "../";
+import {promiseResponder} from "./PromiseResponder";
 
 const log = createLogger('UnisonHT');
 
@@ -21,6 +22,7 @@ export class UnisonHT {
 
   listen(port: number): Promise<void> {
     this.port = port;
+    this.app.use(promiseResponder);
     this.app.use(this.currentModeRedirect.bind(this));
 
     return Promise.all(this.plugins.map((plugin) => {

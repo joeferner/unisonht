@@ -1,10 +1,10 @@
 import * as express from "express";
-import * as HttpStatusCodes from "http-status-codes";
 import * as Logger from "bunyan";
 import * as Boom from "boom";
 import {Plugin} from "./Plugin";
 import {UnisonHT} from "./UnisonHT";
 import createLogger from "./Log";
+import {PromiseResponderResponse} from "./PromiseResponder";
 
 export interface ButtonMapHandler {
   (req: express.Request, res: express.Response, next: express.NextFunction): any;
@@ -38,19 +38,11 @@ export class Mode extends Plugin {
   }
 
   private enterHandler(req: express.Request, res: express.Response, next: express.NextFunction) {
-    this.enter()
-      .then(() => {
-        res.status(HttpStatusCodes.NO_CONTENT).send();
-      })
-      .catch(next);
+    (<PromiseResponderResponse>res).promiseNoContent(this.enter());
   }
 
   private exitHandler(req: express.Request, res: express.Response, next: express.NextFunction) {
-    this.exit()
-      .then(() => {
-        res.status(HttpStatusCodes.NO_CONTENT).send();
-      })
-      .catch(next);
+    (<PromiseResponderResponse>res).promiseNoContent(this.exit());
   }
 
   protected canEnter(): boolean {
