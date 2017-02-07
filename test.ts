@@ -1,10 +1,9 @@
 import * as express from "express";
-import {UnisonHT, TemporaryGlobalMode, Device, GlobalMode, Mode} from "./index";
-import {UnisonHTResponse} from "./lib/UnisonHT";
+import {UnisonHT, TemporaryGlobalMode, Device, GlobalMode, Mode, UnisonHTResponse} from "./index";
 
 class TestDevice extends Device {
   constructor(deviceName: string) {
-    super(deviceName);
+    super(deviceName, {});
   }
 
   getStatus(): Promise<Device.Status> {

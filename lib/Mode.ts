@@ -2,7 +2,8 @@ import * as express from "express";
 import * as Logger from "bunyan";
 import * as Boom from "boom";
 import {Plugin} from "./Plugin";
-import {UnisonHT, UnisonHTResponse} from "./UnisonHT";
+import {UnisonHT} from "./UnisonHT";
+import {UnisonHTResponse} from "./UnisonHTResponse";
 import {createLogger} from "./Log";
 
 export interface ButtonMapHandler {

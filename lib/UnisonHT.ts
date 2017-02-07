@@ -2,16 +2,11 @@ import * as express from "express";
 import * as HttpStatusCodes from "http-status-codes";
 import * as Boom from "boom";
 import * as Logger from "bunyan";
+import {UnisonHTResponse} from "./UnisonHTResponse";
 import {createLogger} from "./Log";
 import {Plugin} from "../";
 import * as sourceMapSupport from "source-map-support";
 sourceMapSupport.install();
-
-export interface UnisonHTResponse extends express.Response {
-  deviceButtonPress: (deviceName: string, buttonName: string) => void;
-  changeMode: (newMode: string) => void;
-  promiseNoContent: (promise: Promise<any>) => void;
-}
 
 export class UnisonHT {
   private app: express.Express;
@@ -130,7 +125,7 @@ export class UnisonHT {
     this.exitCurrentMode()
       .then(() => {
         this.mode = null;
-        return this.postToSelf(`/mode/${newMode}/enter`);
+        return this.execute(`/mode/${newMode}/enter`);
       })
       .then(() => {
         this.mode = newMode;
@@ -146,7 +141,7 @@ export class UnisonHT {
     if (!this.mode) {
       return Promise.resolve();
     }
-    return this.postToSelf(`/mode/${this.mode}/exit`);
+    return this.execute(`/mode/${this.mode}/exit`);
   }
 
   protected currentModeRedirect(req: express.Request, res: express.Response, next: express.NextFunction): void {
@@ -167,10 +162,10 @@ export class UnisonHT {
   }
 
   modeButtonPress(mode: string, buttonName: string): Promise<void> {
-    return this.postToSelf(`/mode/${mode}/button-press?button=${encodeURIComponent(buttonName)}`);
+    return this.execute(`/mode/${mode}/button-press?button=${encodeURIComponent(buttonName)}`);
   }
 
-  protected postToSelf(url: string): Promise<any> {
+  execute(url: string): Promise<any> {
     return new Promise((resolve, reject) => {
       const req = {
         method: 'POST',

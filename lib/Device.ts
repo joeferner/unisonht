@@ -6,10 +6,12 @@ import {createLogger} from "./Log";
 
 export abstract class Device extends Plugin {
   private deviceName: string;
+  private options: Device.Options;
   protected log: Logger;
 
-  constructor(deviceName: string) {
+  constructor(deviceName: string, options: Device.Options) {
     super(`/device/${deviceName}`);
+    this.options = options;
     this.log = createLogger(`UnisonHT.Device[${deviceName}]`);
     this.deviceName = deviceName;
   }
@@ -20,6 +22,10 @@ export abstract class Device extends Plugin {
         unisonht.getApp().get(`${this.getPathPrefix()}`, this.handleGetStatus.bind(this));
         unisonht.getApp().post(`${this.getPathPrefix()}/button-press`, this.handleButtonPress.bind(this));
       });
+  }
+
+  stop(): Promise<void> {
+    return Promise.resolve();
   }
 
   protected handleGetStatus(req: express.Request, res: express.Response, next: express.NextFunction): void {
@@ -36,10 +42,18 @@ export abstract class Device extends Plugin {
     return this.deviceName;
   }
 
+  public getOptions(): Device.Options {
+    return this.options;
+  }
+
   protected abstract handleButtonPress(req: express.Request, res: express.Response, next: express.NextFunction): void;
 }
 
 export module Device {
+  export interface Options {
+
+  }
+
   export interface Status {
     power?: PowerState;
   }

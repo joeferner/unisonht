@@ -6,3 +6,4 @@ export * from "./lib/Input";
 export * from "./lib/Plugin";
 export * from "./lib/TemporaryGlobalMode";
 export * from "./lib/UnisonHT";
+export * from "./lib/UnisonHTResponse";
