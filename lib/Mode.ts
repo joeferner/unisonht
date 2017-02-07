@@ -60,11 +60,11 @@ export class Mode extends Plugin {
   }
 
   protected handleButtonPress(req: express.Request, res: express.Response, next: express.NextFunction): void {
-    const buttonName = req.query.button;
+    let buttonName = this.resolveButtonName(req.query.button);
     this.log.debug(`handleButtonPress: ${buttonName}`);
     const button = this.options.buttonMap[buttonName];
     if (button) {
-      button(req, <UnisonHTResponse>res, next);
+      (<ButtonMapHandler>button)(req, <UnisonHTResponse>res, next);
       return;
     }
 
@@ -83,6 +83,13 @@ export class Mode extends Plugin {
     next(Boom.badRequest(`Invalid button ${buttonName}`));
   }
 
+  protected resolveButtonName(buttonName: string): string {
+    if (typeof this.options.buttonMap[buttonName] === 'string') {
+      return <string>this.options.buttonMap[buttonName];
+    }
+    return buttonName;
+  }
+
   protected getOptions(): Mode.Options {
     return this.options;
   }
@@ -91,7 +98,7 @@ export class Mode extends Plugin {
 export module Mode {
   export interface Options {
     defaultDevice?: string;
-    buttonMap?: {[key: string]: ButtonMapHandler};
+    buttonMap?: {[key: string]: ButtonMapHandler|string};
     nextOnNotFound?: boolean;
   }
 }

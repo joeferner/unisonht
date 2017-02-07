@@ -28,6 +28,7 @@ export class UnisonHT {
     this.app.use(this.expressResponseHelpers.bind(this));
     this.app.use(this.currentModeRedirect.bind(this));
     this.app.get('/devices', this.handleListDevices.bind(this));
+    this.app.get('/inputs', this.handleListInputs.bind(this));
     this.app.post('/mode', this.modeAction.bind(this));
 
     return Promise.all(this.plugins.map((plugin) => {
@@ -94,6 +95,19 @@ export class UnisonHT {
       }
     });
     res.json(Array.from(devices));
+  }
+
+  private handleListInputs(req: express.Request, res: express.Response, next: express.NextFunction): void {
+    const inputs = new Set();
+    this.app._router.stack.forEach((r) => {
+      if (r.route && r.route.path) {
+        const m = r.route.path.match(/\/input\/(.*?)\//);
+        if (m) {
+          inputs.add(m[1]);
+        }
+      }
+    });
+    res.json(Array.from(inputs));
   }
 
   protected modeAction(req: express.Request, res: express.Response, next: express.NextFunction): void {

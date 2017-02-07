@@ -15,6 +15,7 @@
     "lib/GlobalMode.ts",
     "lib/TemporaryGlobalMode.ts",
     "lib/Plugin.ts",
+    "lib/WebImageMapInput.ts",
     "lib/UnisonHT.ts",
     "test.ts"
   ]

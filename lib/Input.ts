@@ -22,6 +22,10 @@ export class Input extends Plugin {
   protected getOptions(): Input.Options {
     return this.options;
   }
+
+  public getInputName(): string {
+    return this.inputName;
+  }
 }
 
 export module Input {
