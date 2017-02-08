@@ -19,7 +19,7 @@ export class UnisonHT {
     this.log = createLogger(`UnisonHT`);
     this.app = express();
     this.plugins = [];
-    this.mode = 'default';
+    this.mode = null;
   }
 
   listen(port: number): Promise<void> {
@@ -29,6 +29,7 @@ export class UnisonHT {
     this.app.use(this.currentModeRedirect.bind(this));
     this.app.get('/devices', this.handleListDevices.bind(this));
     this.app.get('/inputs', this.handleListInputs.bind(this));
+    this.app.get('/modes', this.handleListModes.bind(this));
     this.app.post('/mode', this.modeAction.bind(this));
 
     return Promise.all(this.plugins.map((plugin) => {
@@ -108,6 +109,19 @@ export class UnisonHT {
       }
     });
     res.json(Array.from(inputs));
+  }
+
+  private handleListModes(req: express.Request, res: express.Response, next: express.NextFunction): void {
+    const modes = new Set();
+    this.app._router.stack.forEach((r) => {
+      if (r.route && r.route.path) {
+        const m = r.route.path.match(/\/mode\/(.*?)\//);
+        if (m) {
+          modes.add(m[1]);
+        }
+      }
+    });
+    res.json(Array.from(modes));
   }
 
   protected modeAction(req: express.Request, res: express.Response, next: express.NextFunction): void {

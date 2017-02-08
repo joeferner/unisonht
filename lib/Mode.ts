@@ -71,7 +71,6 @@ export class Mode extends Plugin {
     const deviceName = this.options.defaultDevice;
     if (deviceName) {
       this.log.debug(`forwarding button press "${buttonName}" to device "${deviceName}"`);
-
       (<UnisonHTResponse>res).deviceButtonPress(deviceName, buttonName);
       return;
     }

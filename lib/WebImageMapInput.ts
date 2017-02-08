@@ -20,12 +20,12 @@ export class WebImageMapInput extends Input {
   start(unisonht: UnisonHT): Promise<void> {
     return super.start(unisonht)
       .then(() => {
-        unisonht.getApp().get(`${this.getPathPrefix()}/`, this.handleHome.bind(this));
+        unisonht.getApp().get(`${this.getPathPrefix()}/ui`, this.handleUI.bind(this));
         unisonht.getApp().get(`${this.getPathPrefix()}/image`, this.handleImage.bind(this));
       });
   }
 
-  private handleHome(req: express.Request, res: UnisonHTResponse, next: express.NextFunction): void {
+  private handleUI(req: express.Request, res: UnisonHTResponse, next: express.NextFunction): void {
     const options = {
       title: this.getInputName(),
       imagePath: `${this.getPathPrefix()}/image`,

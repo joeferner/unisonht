@@ -19,24 +19,17 @@ export abstract class Device extends Plugin {
   start(unisonht: UnisonHT): Promise<void> {
     return super.start(unisonht)
       .then(() => {
-        unisonht.getApp().get(`${this.getPathPrefix()}`, this.handleGetStatus.bind(this));
         unisonht.getApp().post(`${this.getPathPrefix()}/button-press`, this.handleButtonPress.bind(this));
       });
+  }
+
+  getStatus(): Promise<Device.Status> {
+    return Promise.resolve({});
   }
 
   stop(): Promise<void> {
     return Promise.resolve();
   }
-
-  protected handleGetStatus(req: express.Request, res: express.Response, next: express.NextFunction): void {
-    this.getStatus()
-      .then((status) => {
-        res.json(status);
-      })
-      .catch(next);
-  }
-
-  abstract getStatus(): Promise<Device.Status>;
 
   public getDeviceName(): string {
     return this.deviceName;
