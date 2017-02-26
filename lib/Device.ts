@@ -52,7 +52,7 @@ export module Device {
   }
 
   export enum PowerState {
-    ON,
-    OFF
+    OFF,
+    ON
   }
 }
