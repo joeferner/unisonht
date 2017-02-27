@@ -173,7 +173,7 @@ export class UnisonHT {
   }
 
   protected currentModeRedirect(req: express.Request, res: express.Response, next: express.NextFunction): void {
-    if (req.url.startsWith('/mode/current/')) {
+    if (req.url.startsWith('/mode/current/') && this.mode) {
       this.log.debug(`redirecting to current mode "${this.mode}"`);
       const restOfUrl = req.url.substr('/mode/current/'.length);
       req.url = `/mode/${this.mode}/${restOfUrl}`;
