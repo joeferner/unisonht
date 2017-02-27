@@ -15,11 +15,12 @@ export class UnisonHT {
   private port: number;
   protected log: Logger;
 
-  constructor() {
+  constructor(options?: UnisonHT.Options) {
+    options = options || {};
     this.log = createLogger(`UnisonHT`);
     this.app = express();
     this.plugins = [];
-    this.mode = null;
+    this.mode = options.defaultMode;
   }
 
   listen(port: number): Promise<void> {
@@ -255,5 +256,11 @@ export class UnisonHT {
 
   getApp(): express.Express {
     return this.app;
+  }
+}
+
+export module UnisonHT {
+  export interface Options {
+    defaultMode?: string;
   }
 }
