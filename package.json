@@ -31,6 +31,7 @@
     "@types/request-promise-native": "^1.0.2",
     "boom": "^4.2.0",
     "bunyan": "^1.8.5",
+    "bunyan-logstash": "^0.3.4",
     "ejs": "^2.5.5",
     "express": "^4.14.1",
     "http-status-codes": "^1.1.6",
