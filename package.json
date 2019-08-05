@@ -2,11 +2,10 @@
   "name": "unisonht",
   "version": "0.0.1",
   "description": "UnisonHT - Unified Home Theatre",
-  "main": "index.js",
+  "main": "src/index.ts",
   "scripts": {
-    "start": "node --inspect=5858 -r ts-node/register ./src/server.ts",
-    "start:watch": "nodemon",
-    "build": "tsc"
+    "build": "tsc",
+    "build:watch": "tsc --watch"
   },
   "repository": {
     "type": "git",
@@ -25,11 +24,13 @@
   },
   "homepage": "https://github.com/joeferner/unisonht#readme",
   "dependencies": {
-    "express": "^4.17.1"
+    "debug": "^4.1.1",
+    "path-to-regexp": "^3.0.0",
+    "yargs": "^13.3.0"
   },
   "devDependencies": {
+    "@types/debug": "^4.1.4",
     "@types/node": "^12.6.9",
-    "nodemon": "^1.19.1",
     "ts-node": "^8.3.0",
     "typescript": "^3.5.3"
   },
