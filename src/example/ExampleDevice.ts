@@ -1,7 +1,8 @@
 import {UnisonHTDevice} from "../UnisonHTDevice";
-import {UnisonHT} from "../UnisonHT";
+import {NextFunction, UnisonHT} from "../UnisonHT";
 import {DeviceStatus} from "../DeviceStatus";
 import {RouteHandlerRequest} from "../RouteHandlerRequest";
+import {RouteHandlerResponse} from "../RouteHandlerResponse";
 
 export class ExampleDevice implements UnisonHTDevice {
     getDeviceName(): string {
@@ -15,7 +16,13 @@ export class ExampleDevice implements UnisonHTDevice {
         return {};
     }
 
-    async handleKeyPress(key: string, request: RouteHandlerRequest): Promise<void> {
-        request.next(request);
+    async handleKeyPress(
+        key: string,
+        request: RouteHandlerRequest,
+        response: RouteHandlerResponse,
+        next: NextFunction
+    ): Promise<void> {
+        console.log(`key press: ${key}`);
+        next();
     }
 }

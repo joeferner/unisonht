@@ -8,8 +8,4 @@ export interface RouteHandlerRequest {
     url: string;
     parameters: { [id: string]: any };
     httpRequest?: IncomingMessage;
-    httpResponse?: ServerResponse;
-    next: (request: RouteHandlerRequest) => void;
-    resolve: (result: any) => void;
-    error: (err: Error) => void;
 }

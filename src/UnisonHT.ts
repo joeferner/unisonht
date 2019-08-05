@@ -6,6 +6,7 @@ import {instanceOfUnisonHTDevice, UnisonHTDevice} from "./UnisonHTDevice";
 import {RouteHandlerRequest} from "./RouteHandlerRequest";
 import {Method} from "./Method";
 import Debug from 'debug';
+import {RouteHandlerResponse} from "./RouteHandlerResponse";
 
 const debug = Debug('UnisonHT');
 
@@ -22,7 +23,13 @@ interface InternalRouterHandler {
     options: RouteOptions;
 }
 
-type RouteHandler = (request: RouteHandlerRequest) => Promise<void>;
+export type NextFunction = (err?: Error) => void;
+
+export type RouteHandler = (
+    request: RouteHandlerRequest,
+    response: RouteHandlerResponse,
+    next: NextFunction
+) => Promise<void>;
 
 export interface RouteOptions {
     handler: RouteHandler;
@@ -111,31 +118,44 @@ export class UnisonHT {
         }
     }
 
-    private async handleKeyPress(plugin: UnisonHTPlugin, request: RouteHandlerRequest): Promise<void> {
+    private async handleKeyPress(
+        plugin: UnisonHTPlugin,
+        request: RouteHandlerRequest,
+        response: RouteHandlerResponse,
+        next: NextFunction
+    ): Promise<void> {
         const key = request.parameters['key'];
         if (!key) {
             throw Error(`Missing 'key' parameter`);
         }
         debug(`handleKeyPress(key=${key})`);
-        const originalNext = request.next;
-        request.next = async (request: RouteHandlerRequest) => {
+        const newNext = async (err?: Error) => {
+            if (err) {
+                next(err);
+                return;
+            }
             try {
                 if (instanceOfUnisonHTDevice(plugin)) {
-                    await this.internalExecute({
+                    let req = {
                         ...request,
                         url: `/mode/current/key/${key}`
-                    });
+                    };
+                    await this.internalExecute(req, response, next);
                 } else {
-                    originalNext(request);
+                    next();
                 }
             } catch (err) {
-                request.error(err);
+                next(err);
             }
         };
-        await plugin.handleKeyPress(key, request);
+        await plugin.handleKeyPress(key, request, response, newNext);
     }
 
-    private async handleDeviceStatus(device: UnisonHTDevice, request: RouteHandlerRequest): Promise<void> {
+    private async handleDeviceStatus(
+        device: UnisonHTDevice,
+        request: RouteHandlerRequest,
+        response: RouteHandlerResponse
+    ): Promise<void> {
         let status;
         try {
             status = await device.getStatus();
@@ -153,7 +173,7 @@ export class UnisonHT {
                     path: handler.path
                 };
             });
-        await request.resolve({
+        await response.send({
             type: device.constructor.name,
             handlers,
             ...status
@@ -178,61 +198,87 @@ export class UnisonHT {
                 method,
                 url,
                 unisonht: this,
-                parameters: {},
-                next: (request: RouteHandlerRequest) => {
-                    reject(new Error(`url not found: ${request.url}`));
-                },
-                resolve: (result: any) => {
+                parameters: {}
+            };
+            const response: RouteHandlerResponse = {
+                send: (result?: any) => {
                     resolve(result);
-                },
-                error: (err: Error) => {
-                    reject(err);
                 }
             };
-            this.internalExecute(request)
+            const next = (err?: Error) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                reject(new Error(`url not found: ${request.url}`));
+            };
+            this.internalExecute(request, response, next)
                 .catch((err) => {
                     reject(err);
                 });
         });
     }
 
-    async internalExecute(request: RouteHandlerRequest): Promise<void> {
+    async internalExecute(
+        request: RouteHandlerRequest,
+        response: RouteHandlerResponse,
+        next: NextFunction
+    ): Promise<void> {
         debug(`internalExecute(url=${request.url})`);
-        const originalNext = request.next;
-        request.next = (request: RouteHandlerRequest) => {
-            throw new Error('fail');
-        };
         const parsedUrl = new URL(request.url, 'http://unisonht.com');
-        for (const handler of this.handlers) {
-            if (handler.method !== request.method) {
-                continue;
-            }
-            const m = handler.regex.exec(parsedUrl.pathname);
-            if (m) {
-                request.parameters = {};
-                for (let i = 0; i < handler.keys.length; i++) {
-                    const key = handler.keys[i];
-                    request.parameters[key.name] = m[i + 1];
-                }
-                parsedUrl.searchParams.forEach((value, key) => {
-                    request.parameters[key] = value;
-                });
-                try {
-                    await handler.options.handler(request);
-                } catch (err) {
-                    request.error(err);
-                }
+        const run = async (i: number) => {
+            const handler = this.handlers[i];
+            if (!handler) {
+                next();
                 return;
             }
-        }
-        try {
-            request.next(request);
-        } catch (err) {
-            request.error(err);
-        }
+            if (handler.method !== request.method) {
+                run(i + 1);
+                return;
+            }
+            const m = handler.regex.exec(parsedUrl.pathname);
+            if (!m) {
+                run(i + 1);
+                return;
+            }
+
+            const req: RouteHandlerRequest = {
+                ...request,
+                parameters: {}
+            };
+            for (let i = 0; i < handler.keys.length; i++) {
+                const key = handler.keys[i];
+                req.parameters[key.name] = m[i + 1];
+            }
+            parsedUrl.searchParams.forEach((value, key) => {
+                req.parameters[key] = value;
+            });
+
+            const res: RouteHandlerResponse = {
+                ...response
+            };
+
+            const n: NextFunction = (err?: Error) => {
+                if (err) {
+                    next(err);
+                    return;
+                }
+                run(i + 1);
+            };
+
+            try {
+                await handler.options.handler(req, res, n);
+            } catch (err) {
+                next(err);
+            }
+        };
+        run(0);
     }
 
-    private async handleHttpRequest(req: IncomingMessage, res: ServerResponse) {
+    private async handleHttpRequest(
+        req: IncomingMessage,
+        res: ServerResponse
+    ) {
         if (!req.url) {
             res.statusCode = 400;
             res.end();
@@ -243,25 +289,28 @@ export class UnisonHT {
             url: req.url,
             parameters: {},
             method: req.method as Method,
-            httpRequest: req,
+            httpRequest: req
+        };
+        const response: RouteHandlerResponse = {
             httpResponse: res,
-            error: (err: Error) => {
+            send: (result?: any) => {
+                res.statusCode = 200;
+                res.setHeader('Content-Type', 'application/json');
+                res.end(result ? JSON.stringify(result) : undefined);
+            }
+        };
+        const next: NextFunction = (err?: Error) => {
+            if (err) {
                 console.error(`failed to handle request: ${req.url}`, err);
                 res.statusCode = 500;
                 res.end();
-            },
-            resolve: (result: any) => {
-                res.statusCode = 200;
-                res.setHeader('Content-Type', 'application/json');
-                res.end(JSON.stringify(result));
-            },
-            next: (request: RouteHandlerRequest) => {
-                res.statusCode = 404;
-                res.end();
+                return;
             }
+            res.statusCode = 404;
+            res.end();
         };
         try {
-            await this.internalExecute(request);
+            await this.internalExecute(request, response, next);
         } catch (err) {
             console.error(`failed to handle request: ${req.url}`, err);
             res.statusCode = 500;

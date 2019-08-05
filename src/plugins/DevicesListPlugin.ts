@@ -1,6 +1,7 @@
 import {UnisonHTPlugin} from "../UnisonHTPlugin";
-import {UnisonHT} from "../UnisonHT";
+import {NextFunction, UnisonHT} from "../UnisonHT";
 import {RouteHandlerRequest} from "../RouteHandlerRequest";
+import {RouteHandlerResponse} from "../RouteHandlerResponse";
 
 export interface DeviceListResponseDevice {
     deviceName: string;
@@ -18,8 +19,12 @@ export class DevicesListPlugin implements UnisonHTPlugin {
         });
     }
 
-    private async list(request: RouteHandlerRequest): Promise<void> {
-        request.resolve({
+    private async list(
+        request: RouteHandlerRequest,
+        response: RouteHandlerResponse,
+        next: NextFunction
+    ): Promise<void> {
+        response.send({
             devices: request.unisonht.getDevices()
                 .map((device) => {
                     return {
@@ -30,7 +35,12 @@ export class DevicesListPlugin implements UnisonHTPlugin {
         });
     }
 
-    async handleKeyPress(key: string, request: RouteHandlerRequest): Promise<void> {
-        await request.next(request);
+    async handleKeyPress(
+        key: string,
+        request: RouteHandlerRequest,
+        response: RouteHandlerResponse,
+        next: NextFunction
+    ): Promise<void> {
+        next();
     }
 }
