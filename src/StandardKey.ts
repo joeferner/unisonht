@@ -2,5 +2,15 @@ export enum StandardKey {
     CHANNEL_UP = 'CHANNEL_UP',
     CHANNEL_DOWN = 'CHANNEL_DOWN',
     VOLUME_UP = 'VOLUME_UP',
-    VOLUME_DOWN = 'VOLUME_DOWN'
+    VOLUME_DOWN = 'VOLUME_DOWN',
+    NUM0 = 'NUM0',
+    NUM1 = 'NUM1',
+    NUM2 = 'NUM2',
+    NUM3 = 'NUM3',
+    NUM4 = 'NUM4',
+    NUM5 = 'NUM5',
+    NUM6 = 'NUM6',
+    NUM7 = 'NUM7',
+    NUM8 = 'NUM8',
+    NUM9 = 'NUM9',
 }

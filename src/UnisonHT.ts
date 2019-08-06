@@ -1,12 +1,14 @@
 import http, {IncomingMessage, Server, ServerResponse} from 'http';
 import {UnisonHTPlugin} from "./UnisonHTPlugin";
-import {DevicesListPlugin} from "./plugins/DevicesListPlugin";
+import {DevicesList} from "./plugins/DevicesList";
 import pathToRegexp from "path-to-regexp";
 import {instanceOfUnisonHTDevice, UnisonHTDevice} from "./UnisonHTDevice";
 import {RouteHandlerRequest} from "./RouteHandlerRequest";
 import {Method} from "./Method";
 import Debug from 'debug';
 import {RouteHandlerResponse} from "./RouteHandlerResponse";
+import {CurrentMode} from "./plugins/CurrentMode";
+import {instanceOfUnisonHTMode, UnisonHTMode} from "./UnisonHTMode";
 
 const debug = Debug('UnisonHT');
 
@@ -42,26 +44,54 @@ export class UnisonHT {
     private options: UnisonHTOptions;
     private plugins: UnisonHTPlugin[] = [];
     private handlers: InternalRouterHandler[] = [];
+    private currentMode: string | undefined;
 
     constructor(options: UnisonHTOptions) {
         this.options = {
             ...DEFAULT_OPTIONS,
             ...options
         };
+        this.currentMode = this.options.defaultMode;
         this.server = http.createServer((req, res) => {
             this.handleHttpRequest(req, res);
         });
-        this.use(new DevicesListPlugin());
+        this.use(new CurrentMode());
+        this.use(new DevicesList());
     }
 
     use(plugin: UnisonHTPlugin): void {
         this.plugins.push(plugin);
     }
 
+    getCurrentMode(): UnisonHTMode | undefined {
+        if (!this.currentMode) {
+            return undefined;
+        }
+        return this.getMode(this.currentMode);
+    }
+
     getDevices(): UnisonHTDevice[] {
         return this.plugins
             .filter((plugin) => instanceOfUnisonHTDevice(plugin))
             .map((plugin) => plugin as UnisonHTDevice);
+    }
+
+    getModes(): UnisonHTMode[] {
+        return this.plugins
+            .filter((plugin) => instanceOfUnisonHTMode(plugin))
+            .map((plugin) => plugin as UnisonHTMode);
+    }
+
+    getMode(modeName: string): UnisonHTMode | undefined {
+        const matches = this.getModes()
+            .filter(mode => mode.getModeName() === modeName);
+        if (matches.length === 0) {
+            return undefined;
+        }
+        if (matches.length === 1) {
+            return matches[0];
+        }
+        throw new Error(`Expected 0 or 1 matches found ${matches.length}`);
     }
 
     get(plugin: UnisonHTPlugin, path: string, options: RouteOptions): void {
@@ -76,6 +106,8 @@ export class UnisonHT {
         if (!path.startsWith('/')) {
             if (instanceOfUnisonHTDevice(plugin)) {
                 path = this.getDeviceUrlPrefix(plugin) + '/' + path;
+            } else if (instanceOfUnisonHTMode(plugin)) {
+                path = this.getModeUrlPrefix(plugin) + '/' + path;
             } else {
                 throw new Error(`Unhandled plugin type: ${plugin.constructor.name}`);
             }
@@ -105,15 +137,23 @@ export class UnisonHT {
         for (const plugin of this.plugins) {
             if (plugin.initialize) {
                 await plugin.initialize(this);
-                if (instanceOfUnisonHTDevice(plugin)) {
-                    const device = plugin as UnisonHTDevice;
-                    this.get(plugin, `/device/${device.getDeviceName()}`, {
-                        handler: this.handleDeviceStatus.bind(this, device)
-                    });
-                    this.post(plugin, `/device/${device.getDeviceName()}/key/:key`, {
-                        handler: this.handleKeyPress.bind(this, device)
-                    });
-                }
+            }
+            if (instanceOfUnisonHTDevice(plugin)) {
+                const device = plugin as UnisonHTDevice;
+                this.get(plugin, `/device/${device.getDeviceName()}`, {
+                    handler: this.handleDeviceInfo.bind(this, device)
+                });
+                this.post(plugin, `/device/${device.getDeviceName()}/key/:key`, {
+                    handler: this.handleKeyPress.bind(this, device)
+                });
+            } else if (instanceOfUnisonHTMode(plugin)) {
+                const mode = plugin as UnisonHTMode;
+                this.get(plugin, `/mode/${mode.getModeName()}`, {
+                    handler: this.handleModeInfo.bind(this, mode)
+                });
+                this.post(plugin, `/mode/${mode.getModeName()}/key/:key`, {
+                    handler: this.handleKeyPress.bind(this, mode)
+                });
             }
         }
     }
@@ -128,7 +168,7 @@ export class UnisonHT {
         if (!key) {
             throw Error(`Missing 'key' parameter`);
         }
-        debug(`handleKeyPress(key=${key})`);
+        debug(`handleKeyPress(plugin=${plugin.constructor.name}, key=${key})`);
         const newNext = async (err?: Error) => {
             if (err) {
                 next(err);
@@ -140,7 +180,7 @@ export class UnisonHT {
                         ...request,
                         url: `/mode/current/key/${key}`
                     };
-                    await this.internalExecute(req, response, next);
+                    await this.execute(req, response, next);
                 } else {
                     next();
                 }
@@ -151,7 +191,17 @@ export class UnisonHT {
         await plugin.handleKeyPress(key, request, response, newNext);
     }
 
-    private async handleDeviceStatus(
+    private async handleModeInfo(
+        mode: UnisonHTMode,
+        request: RouteHandlerRequest,
+        response: RouteHandlerResponse
+    ): Promise<void> {
+        await response.send({
+            type: mode.constructor.name
+        });
+    }
+
+    private async handleDeviceInfo(
         device: UnisonHTDevice,
         request: RouteHandlerRequest,
         response: RouteHandlerResponse
@@ -180,19 +230,39 @@ export class UnisonHT {
         });
     }
 
+    async changeMode(newMode: string): Promise<void> {
+        const currentMode = this.getCurrentMode();
+        debug(`switching modes "${currentMode ? currentMode.getModeName() : ''}" -> "${newMode}"`);
+        if (currentMode && currentMode.exit) {
+            await currentMode.exit();
+        }
+        const m = this.getMode(newMode);
+        if (!m) {
+            throw new Error(`invalid mode "${newMode}"`);
+        }
+        this.currentMode = newMode;
+        if (m.enter) {
+            await m.enter();
+        }
+    }
+
     getDeviceUrlPrefix(device: UnisonHTDevice): string {
         return `/device/${device.getDeviceName()}`;
     }
 
+    getModeUrlPrefix(mode: UnisonHTMode): string {
+        return `/mode/${mode.getModeName()}`;
+    }
+
     async executeGet(url: string): Promise<any> {
-        return this.execute(Method.GET, url);
+        return this.executeUrl(Method.GET, url);
     }
 
     async executePost(url: string): Promise<any> {
-        return this.execute(Method.POST, url);
+        return this.executeUrl(Method.POST, url);
     }
 
-    private async execute(method: Method, url: string): Promise<any> {
+    private async executeUrl(method: Method, url: string): Promise<any> {
         return new Promise<any>((resolve, reject) => {
             const request: RouteHandlerRequest = {
                 method,
@@ -212,20 +282,21 @@ export class UnisonHT {
                 }
                 reject(new Error(`url not found: ${request.url}`));
             };
-            this.internalExecute(request, response, next)
+            this.execute(request, response, next)
                 .catch((err) => {
                     reject(err);
                 });
         });
     }
 
-    async internalExecute(
+    async execute(
         request: RouteHandlerRequest,
         response: RouteHandlerResponse,
         next: NextFunction
     ): Promise<void> {
-        debug(`internalExecute(url=${request.url})`);
+        debug(`execute(url=${request.url})`);
         const parsedUrl = new URL(request.url, 'http://unisonht.com');
+        console.log('this.handlers', this.handlers);
         const run = async (i: number) => {
             const handler = this.handlers[i];
             if (!handler) {
@@ -310,7 +381,7 @@ export class UnisonHT {
             res.end();
         };
         try {
-            await this.internalExecute(request, response, next);
+            await this.execute(request, response, next);
         } catch (err) {
             console.error(`failed to handle request: ${req.url}`, err);
             res.statusCode = 500;

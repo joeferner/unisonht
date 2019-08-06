@@ -12,7 +12,7 @@ export interface DeviceListResponse {
     devices: DeviceListResponseDevice[];
 }
 
-export class DevicesListPlugin implements UnisonHTPlugin {
+export class DevicesList implements UnisonHTPlugin {
     async initialize(unisonht: UnisonHT): Promise<void> {
         unisonht.get(this, '/device', {
             handler: this.list.bind(this)
