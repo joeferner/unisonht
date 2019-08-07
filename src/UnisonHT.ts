@@ -9,6 +9,8 @@ import Debug from 'debug';
 import {RouteHandlerResponse} from "./RouteHandlerResponse";
 import {CurrentMode} from "./plugins/CurrentMode";
 import {instanceOfUnisonHTMode, UnisonHTMode} from "./UnisonHTMode";
+import {DefaultKeyHandler} from "./plugins/DefaultKeyHandler";
+import {NotFoundError} from "./NotFoundError";
 
 const debug = Debug('UnisonHT');
 
@@ -55,6 +57,7 @@ export class UnisonHT {
         this.server = http.createServer((req, res) => {
             this.handleHttpRequest(req, res);
         });
+        this.use(new DefaultKeyHandler());
         this.use(new CurrentMode());
         this.use(new DevicesList());
     }
@@ -280,7 +283,7 @@ export class UnisonHT {
                     reject(err);
                     return;
                 }
-                reject(new Error(`url not found: ${request.url}`));
+                reject(new NotFoundError(request.url));
             };
             this.execute(request, response, next)
                 .catch((err) => {
@@ -296,7 +299,6 @@ export class UnisonHT {
     ): Promise<void> {
         debug(`execute(url=${request.url})`);
         const parsedUrl = new URL(request.url, 'http://unisonht.com');
-        console.log('this.handlers', this.handlers);
         const run = async (i: number) => {
             const handler = this.handlers[i];
             if (!handler) {

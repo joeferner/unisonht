@@ -12,6 +12,7 @@ export * from './RouteHandlerRequest';
 export * from './RouteHandlerResponse';
 export * from './StandardKey';
 export * from './ButtonMap';
+export * from './NotFoundError';
 
 export async function handleButtonMap(
     buttonMap: ButtonMap,
