@@ -3,6 +3,7 @@ export enum StandardKey {
     CHANNEL_DOWN = 'CHANNEL_DOWN',
     VOLUME_UP = 'VOLUME_UP',
     VOLUME_DOWN = 'VOLUME_DOWN',
+    MUTE = 'MUTE',
     NUM0 = 'NUM0',
     NUM1 = 'NUM1',
     NUM2 = 'NUM2',
