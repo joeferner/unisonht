@@ -15,6 +15,7 @@
         "allow-leading-underscore",
         "allow-pascal-case"
       ]
-    }
+    },
+    "no-namespace": false
   }
 }

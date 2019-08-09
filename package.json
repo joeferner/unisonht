@@ -37,7 +37,6 @@
     "@types/debug": "^4.1.4",
     "@types/node": "^12.6.9",
     "prettier": "^1.18.2",
-    "ts-node": "^8.3.0",
     "tslint": "^5.18.0",
     "tslint-config-prettier": "^1.18.0",
     "typescript": "^3.5.3"
