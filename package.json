@@ -2,7 +2,8 @@
   "name": "unisonht",
   "version": "0.0.1",
   "description": "UnisonHT - Unified Home Theatre",
-  "main": "src/index.ts",
+  "main": "dist/index.js",
+  "types": "src/index.ts",
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch"

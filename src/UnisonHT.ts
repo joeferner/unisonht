@@ -321,7 +321,7 @@ export class UnisonHT {
             };
             for (let i = 0; i < handler.keys.length; i++) {
                 const key = handler.keys[i];
-                req.parameters[key.name] = m[i + 1];
+                req.parameters[key.name] = decodeURIComponent(m[i + 1]);
             }
             parsedUrl.searchParams.forEach((value, key) => {
                 req.parameters[key] = value;
@@ -367,9 +367,14 @@ export class UnisonHT {
         const response: RouteHandlerResponse = {
             httpResponse: res,
             send: (result?: any) => {
-                res.statusCode = 200;
-                res.setHeader('Content-Type', 'application/json');
-                res.end(result ? JSON.stringify(result) : undefined);
+                if (!result) {
+                    res.statusCode = 204;
+                    res.end();
+                } else {
+                    res.statusCode = 200;
+                    res.setHeader('Content-Type', 'application/json');
+                    res.end(result ? JSON.stringify(result) : undefined);
+                }
             }
         };
         const next: NextFunction = (err?: Error) => {
