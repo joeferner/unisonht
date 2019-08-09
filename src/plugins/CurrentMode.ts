@@ -4,7 +4,7 @@ import {RouteHandlerResponse} from "../RouteHandlerResponse";
 import {NextFunction, UnisonHT} from "../UnisonHT";
 import Debug from 'debug';
 
-const debug = Debug('CurrentMode');
+const debug = Debug('UnisonHT:CurrentMode');
 
 export class CurrentMode implements UnisonHTMode {
     enter(): Promise<void> {
