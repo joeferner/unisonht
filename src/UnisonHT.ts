@@ -208,7 +208,7 @@ export class UnisonHT {
     try {
       status = await device.getStatus();
     } catch (err) {
-      debug(`Could not get device "${device.getDeviceName()}" status: ${err}`);
+      console.error(`Could not get device "${device.getDeviceName()}" status`, err);
       status = {
         error: err.message,
       };
@@ -370,7 +370,7 @@ export class UnisonHT {
     };
     const next: NextFunction = (err?: Error) => {
       if (err) {
-        debug(`failed to handle request: ${req.url}: ${err}`);
+        console.error(`failed to handle request: ${req.url}`, err);
         res.statusCode = 500;
         res.end();
         return;
@@ -381,7 +381,7 @@ export class UnisonHT {
     try {
       await this.execute(request, response, next);
     } catch (err) {
-      debug(`failed to handle request: ${req.url}: ${err}`);
+      console.error(`failed to handle request: ${req.url}`, err);
       res.statusCode = 500;
       res.end();
     }

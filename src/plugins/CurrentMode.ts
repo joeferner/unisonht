@@ -25,11 +25,25 @@ export class CurrentMode implements UnisonHTMode {
   }
 
   public async initialize(unisonht: UnisonHT): Promise<void> {
+    unisonht.get(this, '/mode', {
+      handler: this.handleModeInfo.bind(this),
+    });
     unisonht.get(this, ':partialPath*', {
       handler: this.handle.bind(this),
     });
     unisonht.post(this, ':partialPath*', {
       handler: this.handle.bind(this),
+    });
+  }
+
+  private async handleModeInfo(
+    request: RouteHandlerRequest,
+    response: RouteHandlerResponse,
+    next: NextFunction,
+  ): Promise<void> {
+    const currentMode = request.unisonht.getCurrentMode();
+    response.send({
+      currentMode: currentMode ? currentMode.getModeName() : null,
     });
   }
 
