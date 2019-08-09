@@ -1,6 +1,6 @@
-import {ServerResponse} from "http";
+import { ServerResponse } from 'http';
 
 export interface RouteHandlerResponse {
-    httpResponse?: ServerResponse;
-    send: (result?: any) => void;
+  httpResponse?: ServerResponse;
+  send: (result?: any) => void;
 }

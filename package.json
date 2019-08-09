@@ -1,12 +1,16 @@
 {
   "name": "@unisonht/unisonht",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "UnisonHT - Unified Home Theatre",
   "main": "dist/index.js",
   "types": "src/index.ts",
   "scripts": {
     "build": "tsc",
-    "build:watch": "tsc --watch"
+    "build:watch": "tsc --watch",
+    "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
+    "lint": "tslint -p tsconfig.json",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run lint"
   },
   "repository": {
     "type": "git",
@@ -32,7 +36,10 @@
   "devDependencies": {
     "@types/debug": "^4.1.4",
     "@types/node": "^12.6.9",
+    "prettier": "^1.18.2",
     "ts-node": "^8.3.0",
+    "tslint": "^5.18.0",
+    "tslint-config-prettier": "^1.18.0",
     "typescript": "^3.5.3"
   },
   "nodemonConfig": {
