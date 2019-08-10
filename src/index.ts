@@ -9,13 +9,13 @@ export * from './UnisonHTMode';
 export * from './DeviceStatus';
 export * from './RouteHandlerRequest';
 export * from './RouteHandlerResponse';
-export * from './StandardKey';
+export * from './StandardButton';
 export * from './NotFoundError';
 export * from './ButtonNotFoundError';
 export * from './plugins/WebApi';
 export * from './plugins/DebugWebUI';
 
-export function sendKeyToDevice(deviceName: string, button?: string): ButtonHandler {
+export function sendButtonToDevice(deviceName: string, button?: string): ButtonHandler {
   return async (
     buttonParam: string,
     request: RouteHandlerRequest,
@@ -25,6 +25,6 @@ export function sendKeyToDevice(deviceName: string, button?: string): ButtonHand
     if (!button) {
       button = buttonParam;
     }
-    await request.unisonht.redirect(`/device/${deviceName}/key/${button}`, request, response, next);
+    await request.unisonht.redirect(`/device/${deviceName}/button/${button}`, request, response, next);
   };
 }

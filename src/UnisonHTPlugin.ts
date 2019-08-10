@@ -2,31 +2,31 @@ import { NextFunction, UnisonHT } from './UnisonHT';
 import { RouteHandlerRequest } from './RouteHandlerRequest';
 import { RouteHandlerResponse } from './RouteHandlerResponse';
 
-export interface SupportedKey {
+export interface SupportedButton {
   name: string;
   description?: string;
 
-  handleKeyPress(
-    key: string,
+  handleButtonPress(
+    button: string,
     request: RouteHandlerRequest,
     response: RouteHandlerResponse,
     next: NextFunction,
   ): Promise<void>;
 }
 
-export interface SupportedKeys {
-  [key: string]: SupportedKey;
+export interface SupportedButtons {
+  [button: string]: SupportedButton;
 }
 
 export interface UnisonHTPlugin {
   initialize?(unisonht: UnisonHT): Promise<void>;
 
-  handleKeyPress?(
-    key: string,
+  handleButtonPress?(
+    button: string,
     request: RouteHandlerRequest,
     response: RouteHandlerResponse,
     next: NextFunction,
   ): Promise<void>;
 
-  getSupportedKeys(): SupportedKeys;
+  getSupportedButtons(): SupportedButtons;
 }

@@ -1,4 +1,4 @@
-export enum StandardKey {
+export enum StandardButton {
   HOME = 'HOME',
   REVERSE = 'REVERSE',
   FORWARD = 'FORWARD',

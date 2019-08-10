@@ -1,4 +1,4 @@
-import { SupportedKeys, UnisonHTPlugin } from '../UnisonHTPlugin';
+import { SupportedButtons, UnisonHTPlugin } from '../UnisonHTPlugin';
 import { RouteHandlerRequest } from '../RouteHandlerRequest';
 import { RouteHandlerResponse } from '../RouteHandlerResponse';
 import { NextFunction, UnisonHT } from '../UnisonHT';
@@ -39,17 +39,8 @@ export class DebugWebUI implements UnisonHTPlugin {
     );
   }
 
-  public getSupportedKeys(): SupportedKeys {
+  public getSupportedButtons(): SupportedButtons {
     return {};
-  }
-
-  public async handleKeyPress(
-    key: string,
-    request: RouteHandlerRequest,
-    response: RouteHandlerResponse,
-    next: NextFunction,
-  ): Promise<void> {
-    next();
   }
 
   private serveFile(filePath: string, contentType: string) {

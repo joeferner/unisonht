@@ -1,4 +1,4 @@
-import { SupportedKeys, UnisonHTPlugin } from '../UnisonHTPlugin';
+import { SupportedButtons, UnisonHTPlugin } from '../UnisonHTPlugin';
 import { NextFunction, UnisonHT } from '../UnisonHT';
 import { RouteHandlerRequest } from '../RouteHandlerRequest';
 import { RouteHandlerResponse } from '../RouteHandlerResponse';
@@ -30,7 +30,7 @@ export class DevicesList implements UnisonHTPlugin {
     });
   }
 
-  public getSupportedKeys(): SupportedKeys {
+  public getSupportedButtons(): SupportedButtons {
     return {};
   }
 }

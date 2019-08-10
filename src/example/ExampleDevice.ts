@@ -2,7 +2,7 @@ import { UnisonHTDevice } from '../UnisonHTDevice';
 import { UnisonHT } from '../UnisonHT';
 import { DeviceStatus } from '../DeviceStatus';
 import Debug from 'debug';
-import { SupportedKeys } from '../UnisonHTPlugin';
+import { SupportedButtons } from '../UnisonHTPlugin';
 
 const debug = Debug('UnisonHT:ExampleDevice');
 
@@ -19,7 +19,7 @@ export class ExampleDevice implements UnisonHTDevice {
     return {};
   }
 
-  public getSupportedKeys(): SupportedKeys {
+  public getSupportedButtons(): SupportedButtons {
     return {};
   }
 }

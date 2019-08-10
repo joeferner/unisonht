@@ -3,7 +3,7 @@ import { RouteHandlerRequest } from '../RouteHandlerRequest';
 import { RouteHandlerResponse } from '../RouteHandlerResponse';
 import { NextFunction, UnisonHT } from '../UnisonHT';
 import Debug from 'debug';
-import { SupportedKeys } from '../UnisonHTPlugin';
+import { SupportedButtons } from '../UnisonHTPlugin';
 
 const debug = Debug('UnisonHT:CurrentMode');
 
@@ -62,7 +62,7 @@ export class CurrentMode implements UnisonHTMode {
     );
   }
 
-  public getSupportedKeys(): SupportedKeys {
+  public getSupportedButtons(): SupportedButtons {
     return {};
   }
 }

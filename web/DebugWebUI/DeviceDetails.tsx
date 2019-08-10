@@ -14,7 +14,7 @@ interface DeviceDetailsState {
             path: string
         }[],
         buttons: {
-            [key: string]: {
+            [button: string]: {
                 name: string;
             }
         }
@@ -74,7 +74,7 @@ export class DeviceDetails extends Component<DeviceDetailsProps, DeviceDetailsSt
         const {device} = this.props;
         const {deviceStatus} = this.state;
         const button = deviceStatus.buttons[buttonKey];
-        await fetch(`/device/${device.deviceName}/key/${buttonKey}`, {
+        await fetch(`/device/${device.deviceName}/button/${buttonKey}`, {
             method: 'POST'
         })
     }

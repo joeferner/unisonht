@@ -8,7 +8,7 @@ import Debug from 'debug';
 import { RouteHandlerResponse } from './RouteHandlerResponse';
 import { CurrentMode } from './plugins/CurrentMode';
 import { instanceOfUnisonHTMode, UnisonHTMode } from './UnisonHTMode';
-import { DefaultKeyHandler } from './plugins/DefaultKeyHandler';
+import { DefaultButtonHandler } from './plugins/DefaultButtonHandler';
 import { NotFoundError } from './NotFoundError';
 
 const debug = Debug('UnisonHT');
@@ -32,7 +32,7 @@ export interface DeviceStatusResponseHandler {
 }
 
 export interface DeviceStatusResponseButtons {
-  [key: string]: {
+  [button: string]: {
     name: string;
     description?: string;
   };
@@ -79,7 +79,7 @@ export class UnisonHT {
       ...options,
     };
     this.currentMode = this.options.defaultMode;
-    this.use(new DefaultKeyHandler());
+    this.use(new DefaultButtonHandler());
     this.use(new CurrentMode());
     this.use(new DevicesList());
   }
@@ -158,32 +158,32 @@ export class UnisonHT {
         this.get(plugin, `/device/${device.getDeviceName()}`, {
           handler: this.handleDeviceInfo.bind(this, device),
         });
-        this.post(plugin, `/device/${device.getDeviceName()}/key/:key`, {
-          handler: this.handleKeyPress.bind(this, device),
+        this.post(plugin, `/device/${device.getDeviceName()}/button/:button`, {
+          handler: this.handleButtonPress.bind(this, device),
         });
       } else if (instanceOfUnisonHTMode(plugin)) {
         const mode = plugin as UnisonHTMode;
         this.get(plugin, `/mode/${mode.getModeName()}`, {
           handler: this.handleModeInfo.bind(this, mode),
         });
-        this.post(plugin, `/mode/${mode.getModeName()}/key/:key`, {
-          handler: this.handleKeyPress.bind(this, mode),
+        this.post(plugin, `/mode/${mode.getModeName()}/button/:button`, {
+          handler: this.handleButtonPress.bind(this, mode),
         });
       }
     }
   }
 
-  private async handleKeyPress(
+  private async handleButtonPress(
     plugin: UnisonHTPlugin,
     request: RouteHandlerRequest,
     response: RouteHandlerResponse,
     next: NextFunction,
   ): Promise<void> {
-    const key = request.parameters.key;
-    if (!key) {
-      throw Error(`Missing 'key' parameter`);
+    const button = request.parameters.button;
+    if (!button) {
+      throw Error(`Missing 'button' parameter`);
     }
-    debug(`handleKeyPress(plugin=${plugin.constructor.name}, key=${key})`);
+    debug(`handleButtonPress(plugin=${plugin.constructor.name}, button=${button})`);
     const newNext = async (err?: Error) => {
       if (err) {
         next(err);
@@ -193,7 +193,7 @@ export class UnisonHT {
         if (instanceOfUnisonHTDevice(plugin)) {
           const req = {
             ...request,
-            url: `/mode/current/key/${key}`,
+            url: `/mode/current/button/${button}`,
           };
           await this.execute(req, response, next);
         } else {
@@ -203,19 +203,19 @@ export class UnisonHT {
         next(err);
       }
     };
-    if (plugin.handleKeyPress) {
+    if (plugin.handleButtonPress) {
       try {
-        await plugin.handleKeyPress(key, request, response, newNext);
+        await plugin.handleButtonPress(button, request, response, newNext);
       } catch (err) {
         next(err);
       }
     } else {
-      const foundButton = plugin.getSupportedKeys()[key];
+      const foundButton = plugin.getSupportedButtons()[button];
       if (!foundButton) {
         next();
       } else {
         try {
-          await foundButton.handleKeyPress(key, request, response, next);
+          await foundButton.handleButtonPress(button, request, response, next);
         } catch (err) {
           next(err);
         }
@@ -256,7 +256,7 @@ export class UnisonHT {
         };
       });
     const buttons: DeviceStatusResponseButtons = {};
-    const deviceButtons = device.getSupportedKeys();
+    const deviceButtons = device.getSupportedButtons();
     Object.keys(deviceButtons).forEach(button => {
       const b = deviceButtons[button];
       buttons[button] = {

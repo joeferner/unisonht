@@ -3,7 +3,7 @@ import {Component} from "react";
 
 export interface DeviceButtonsProps {
     buttons: {
-        [key: string]: {
+        [button: string]: {
             name: string;
         }
     },
