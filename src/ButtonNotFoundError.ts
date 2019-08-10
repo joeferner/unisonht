@@ -7,6 +7,6 @@ export class ButtonNotFoundError extends Error {
   }
 
   get button(): string {
-   return this._button;
+  return this._button;
   }
 }
