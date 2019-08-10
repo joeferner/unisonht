@@ -1,4 +1,3 @@
-import http, { IncomingMessage, Server, ServerResponse } from 'http';
 import { UnisonHTPlugin } from './UnisonHTPlugin';
 import { DevicesList } from './plugins/DevicesList';
 import pathToRegexp from 'path-to-regexp';
@@ -42,7 +41,6 @@ export interface RouteOptions {
 const DEFAULT_OPTIONS: UnisonHTOptions = {};
 
 export class UnisonHT {
-  private server: Server;
   private options: UnisonHTOptions;
   private plugins: UnisonHTPlugin[] = [];
   private handlers: InternalRouterHandler[] = [];
@@ -54,12 +52,13 @@ export class UnisonHT {
       ...options,
     };
     this.currentMode = this.options.defaultMode;
-    this.server = http.createServer((req, res) => {
-      this.handleHttpRequest(req, res);
-    });
     this.use(new DefaultKeyHandler());
     this.use(new CurrentMode());
     this.use(new DevicesList());
+  }
+
+  public async start(): Promise<void> {
+    await this.initializePlugins();
   }
 
   public use(plugin: UnisonHTPlugin): void {
@@ -119,15 +118,6 @@ export class UnisonHT {
       keys,
       regex,
       options,
-    });
-  }
-
-  public async listen(port: number): Promise<void> {
-    await this.initializePlugins();
-    return new Promise((resolve, reject) => {
-      this.server.listen(port, () => {
-        resolve();
-      });
     });
   }
 
@@ -340,50 +330,5 @@ export class UnisonHT {
       }
     };
     run(0);
-  }
-
-  private async handleHttpRequest(req: IncomingMessage, res: ServerResponse) {
-    if (!req.url) {
-      res.statusCode = 400;
-      res.end();
-      return;
-    }
-    const request: RouteHandlerRequest = {
-      unisonht: this,
-      url: req.url,
-      parameters: {},
-      method: req.method as Method,
-      httpRequest: req,
-    };
-    const response: RouteHandlerResponse = {
-      httpResponse: res,
-      send: (result?: any) => {
-        if (!result) {
-          res.statusCode = 204;
-          res.end();
-        } else {
-          res.statusCode = 200;
-          res.setHeader('Content-Type', 'application/json');
-          res.end(result ? JSON.stringify(result) : undefined);
-        }
-      },
-    };
-    const next: NextFunction = (err?: Error) => {
-      if (err) {
-        console.error(`failed to handle request: ${req.url}`, err);
-        res.statusCode = 500;
-        res.end();
-        return;
-      }
-      res.statusCode = 404;
-      res.end();
-    };
-    try {
-      await this.execute(request, response, next);
-    } catch (err) {
-      console.error(`failed to handle request: ${req.url}`, err);
-      res.statusCode = 500;
-      res.end();
-    }
   }
 }

@@ -14,6 +14,7 @@ export * from './StandardKey';
 export * from './ButtonMap';
 export * from './NotFoundError';
 export * from './ButtonNotFoundError';
+export * from './plugins/WebApi';
 
 export function sendKeyToDevice(deviceName: string, key?: string): RouteHandler {
   return async (request: RouteHandlerRequest, response: RouteHandlerResponse, next: NextFunction): Promise<void> => {
