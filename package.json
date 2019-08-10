@@ -51,19 +51,6 @@
     "webpack": "^4.39.1",
     "webpack-cli": "^3.3.6"
   },
-  "nodemonConfig": {
-    "ignore": [
-      "**/*.test.ts",
-      "**/*.spec.ts",
-      ".git",
-      "node_modules"
-    ],
-    "watch": [
-      "src"
-    ],
-    "exec": "npm start",
-    "ext": "ts"
-  },
   "husky": {
     "hooks": {
       "pre-commit": "npm run format && npm run lint"
