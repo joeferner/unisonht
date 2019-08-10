@@ -3,7 +3,15 @@ import { RouteHandlerRequest } from './RouteHandlerRequest';
 import { RouteHandlerResponse } from './RouteHandlerResponse';
 
 export interface SupportedKey {
+  name: string;
   description?: string;
+
+  handleKeyPress(
+    key: string,
+    request: RouteHandlerRequest,
+    response: RouteHandlerResponse,
+    next: NextFunction,
+  ): Promise<void>;
 }
 
 export interface SupportedKeys {
@@ -13,12 +21,12 @@ export interface SupportedKeys {
 export interface UnisonHTPlugin {
   initialize?(unisonht: UnisonHT): Promise<void>;
 
-  handleKeyPress(
+  handleKeyPress?(
     key: string,
     request: RouteHandlerRequest,
     response: RouteHandlerResponse,
     next: NextFunction,
   ): Promise<void>;
 
-  getSupportedKeys?(): SupportedKeys;
+  getSupportedKeys(): SupportedKeys;
 }

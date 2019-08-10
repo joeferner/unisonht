@@ -1,4 +1,4 @@
-import { UnisonHTPlugin } from '../UnisonHTPlugin';
+import { SupportedKeys, UnisonHTPlugin } from '../UnisonHTPlugin';
 import { RouteHandlerResponse } from '../RouteHandlerResponse';
 import { RouteHandlerRequest } from '../RouteHandlerRequest';
 import { NextFunction, UnisonHT } from '../UnisonHT';
@@ -26,5 +26,9 @@ export class DefaultKeyHandler implements UnisonHTPlugin {
     next: (err?: Error) => void,
   ): Promise<void> {
     await request.unisonht.executePost(`/mode/current/key/${key}`);
+  }
+
+  public getSupportedKeys(): SupportedKeys {
+    return {};
   }
 }

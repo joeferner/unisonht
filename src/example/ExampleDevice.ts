@@ -1,9 +1,8 @@
 import { UnisonHTDevice } from '../UnisonHTDevice';
-import { NextFunction, UnisonHT } from '../UnisonHT';
+import { UnisonHT } from '../UnisonHT';
 import { DeviceStatus } from '../DeviceStatus';
-import { RouteHandlerRequest } from '../RouteHandlerRequest';
-import { RouteHandlerResponse } from '../RouteHandlerResponse';
 import Debug from 'debug';
+import { SupportedKeys } from '../UnisonHTPlugin';
 
 const debug = Debug('UnisonHT:ExampleDevice');
 
@@ -20,13 +19,7 @@ export class ExampleDevice implements UnisonHTDevice {
     return {};
   }
 
-  public async handleKeyPress(
-    key: string,
-    request: RouteHandlerRequest,
-    response: RouteHandlerResponse,
-    next: NextFunction,
-  ): Promise<void> {
-    debug(`key press: ${key}`);
-    next();
+  public getSupportedKeys(): SupportedKeys {
+    return {};
   }
 }

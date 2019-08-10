@@ -4,9 +4,22 @@ import { RouteHandlerRequest } from '../RouteHandlerRequest';
 import { RouteHandlerResponse } from '../RouteHandlerResponse';
 import { NextFunction, UnisonHT } from '../UnisonHT';
 import { Method } from '../Method';
+import { UnisonHTMode } from '../UnisonHTMode';
 
 export interface WebApiOptions {
   port: number;
+}
+
+export interface WebApiRouteHandlerRequest extends RouteHandlerRequest {
+  httpRequest: IncomingMessage;
+}
+
+export interface WebApiRouteHandlerResponse extends RouteHandlerResponse {
+  httpResponse: ServerResponse;
+}
+
+export function instanceOfWebApiRouteHandlerResponse(obj: any): obj is WebApiRouteHandlerResponse {
+  return 'httpResponse' in obj;
 }
 
 export class WebApi implements UnisonHTPlugin {
@@ -56,14 +69,14 @@ export class WebApi implements UnisonHTPlugin {
       res.end();
       return;
     }
-    const request: RouteHandlerRequest = {
+    const request: WebApiRouteHandlerRequest = {
       unisonht: this.unisonht,
       url: req.url,
       parameters: {},
       method: req.method as Method,
       httpRequest: req,
     };
-    const response: RouteHandlerResponse = {
+    const response: WebApiRouteHandlerResponse = {
       httpResponse: res,
       send: (result?: any) => {
         if (!result) {

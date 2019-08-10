@@ -1,4 +1,4 @@
-import { UnisonHTPlugin } from '../UnisonHTPlugin';
+import { SupportedKeys, UnisonHTPlugin } from '../UnisonHTPlugin';
 import { NextFunction, UnisonHT } from '../UnisonHT';
 import { RouteHandlerRequest } from '../RouteHandlerRequest';
 import { RouteHandlerResponse } from '../RouteHandlerResponse';
@@ -30,12 +30,7 @@ export class DevicesList implements UnisonHTPlugin {
     });
   }
 
-  public async handleKeyPress(
-    key: string,
-    request: RouteHandlerRequest,
-    response: RouteHandlerResponse,
-    next: NextFunction,
-  ): Promise<void> {
-    next();
+  public getSupportedKeys(): SupportedKeys {
+    return {};
   }
 }

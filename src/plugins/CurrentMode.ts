@@ -3,6 +3,7 @@ import { RouteHandlerRequest } from '../RouteHandlerRequest';
 import { RouteHandlerResponse } from '../RouteHandlerResponse';
 import { NextFunction, UnisonHT } from '../UnisonHT';
 import Debug from 'debug';
+import { SupportedKeys } from '../UnisonHTPlugin';
 
 const debug = Debug('UnisonHT:CurrentMode');
 
@@ -13,15 +14,6 @@ export class CurrentMode implements UnisonHTMode {
 
   public getModeName(): string {
     return 'current';
-  }
-
-  public async handleKeyPress(
-    key: string,
-    request: RouteHandlerRequest,
-    response: RouteHandlerResponse,
-    next: (err?: Error) => void,
-  ): Promise<void> {
-    next();
   }
 
   public async initialize(unisonht: UnisonHT): Promise<void> {
@@ -68,5 +60,9 @@ export class CurrentMode implements UnisonHTMode {
       response,
       next,
     );
+  }
+
+  public getSupportedKeys(): SupportedKeys {
+    return {};
   }
 }

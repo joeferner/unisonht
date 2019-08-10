@@ -26,7 +26,34 @@ interface InternalRouterHandler {
   options: RouteOptions;
 }
 
+export interface DeviceStatusResponseHandler {
+  method: Method;
+  path: string;
+}
+
+export interface DeviceStatusResponseButtons {
+  [key: string]: {
+    name: string;
+    description?: string;
+  };
+}
+
+export interface DeviceStatusResponse {
+  type: string;
+  handlers: DeviceStatusResponseHandler[];
+  buttons: DeviceStatusResponseButtons;
+
+  [key: string]: any;
+}
+
 export type NextFunction = (err?: Error) => void;
+
+export type ButtonHandler = (
+  button: string,
+  request: RouteHandlerRequest,
+  response: RouteHandlerResponse,
+  next: NextFunction,
+) => Promise<void>;
 
 export type RouteHandler = (
   request: RouteHandlerRequest,
@@ -176,7 +203,24 @@ export class UnisonHT {
         next(err);
       }
     };
-    await plugin.handleKeyPress(key, request, response, newNext);
+    if (plugin.handleKeyPress) {
+      try {
+        await plugin.handleKeyPress(key, request, response, newNext);
+      } catch (err) {
+        next(err);
+      }
+    } else {
+      const foundButton = plugin.getSupportedKeys()[key];
+      if (!foundButton) {
+        next();
+      } else {
+        try {
+          await foundButton.handleKeyPress(key, request, response, next);
+        } catch (err) {
+          next(err);
+        }
+      }
+    }
   }
 
   private async handleModeInfo(
@@ -211,11 +255,22 @@ export class UnisonHT {
           path: handler.path,
         };
       });
-    await response.send({
+    const buttons: DeviceStatusResponseButtons = {};
+    const deviceButtons = device.getSupportedKeys();
+    Object.keys(deviceButtons).forEach(button => {
+      const b = deviceButtons[button];
+      buttons[button] = {
+        name: b.name,
+        description: b.description,
+      };
+    });
+    const statusResponse: DeviceStatusResponse = {
       type: device.constructor.name,
       handlers,
+      buttons,
       ...status,
-    });
+    };
+    await response.send(statusResponse);
   }
 
   public async changeMode(newMode: string): Promise<void> {
@@ -274,6 +329,22 @@ export class UnisonHT {
         reject(err);
       });
     });
+  }
+
+  public async redirect(
+    newUrl: string,
+    request: RouteHandlerRequest,
+    response: RouteHandlerResponse,
+    next: NextFunction,
+  ): Promise<void> {
+    await this.execute(
+      {
+        ...request,
+        url: newUrl,
+      },
+      response,
+      next,
+    );
   }
 
   public async execute(

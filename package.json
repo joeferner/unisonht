@@ -7,7 +7,9 @@
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
-    "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
+    "build:web": "cd web && webpack",
+    "build:web:watch": "cd web && webpack -w",
+    "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\" \"web/**/*.ts\" \"web/**/*.js\"",
     "lint": "tslint -p tsconfig.json",
     "prepare": "npm run build",
     "prepublishOnly": "npm run lint"
@@ -31,15 +33,23 @@
   "dependencies": {
     "debug": "^4.1.1",
     "path-to-regexp": "^3.0.0",
+    "react": "^16.9.0",
+    "react-dom": "^16.9.0",
     "yargs": "^13.3.0"
   },
   "devDependencies": {
     "@types/debug": "^4.1.4",
     "@types/node": "^12.6.9",
+    "@types/react": "^16.9.1",
+    "@types/react-dom": "^16.8.5",
     "prettier": "^1.18.2",
+    "source-map-loader": "^0.2.4",
+    "ts-loader": "^6.0.4",
     "tslint": "^5.18.0",
     "tslint-config-prettier": "^1.18.0",
-    "typescript": "^3.5.3"
+    "typescript": "^3.5.3",
+    "webpack": "^4.39.1",
+    "webpack-cli": "^3.3.6"
   },
   "nodemonConfig": {
     "ignore": [

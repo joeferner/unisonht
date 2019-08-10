@@ -1,4 +1,3 @@
-import { IncomingMessage, ServerResponse } from 'http';
 import { UnisonHT } from './UnisonHT';
 import { Method } from './Method';
 
@@ -7,5 +6,4 @@ export interface RouteHandlerRequest {
   method: Method;
   url: string;
   parameters: { [id: string]: any };
-  httpRequest?: IncomingMessage;
 }
