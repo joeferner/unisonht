@@ -10,11 +10,14 @@ import { CurrentMode } from './plugins/CurrentMode';
 import { instanceOfUnisonHTMode, UnisonHTMode } from './UnisonHTMode';
 import { DefaultButtonHandler } from './plugins/DefaultButtonHandler';
 import { NotFoundError } from './NotFoundError';
+import { URL } from 'url';
+import fs from 'fs';
 
 const debug = Debug('UnisonHT');
 
 export interface UnisonHTOptions {
   defaultMode?: string;
+  settingsFileName?: string;
 }
 
 interface InternalRouterHandler {
@@ -401,5 +404,61 @@ export class UnisonHT {
       }
     };
     run(0);
+  }
+
+  private loadSettings(): any {
+    if (!this.options.settingsFileName) {
+      throw new Error('settingsFileName option not set');
+    }
+    const defaultSettings = {
+      devices: {},
+      modes: {},
+    };
+    if (!fs.existsSync(this.options.settingsFileName)) {
+      return defaultSettings;
+    }
+    const data = fs.readFileSync(this.options.settingsFileName, 'utf8');
+    const json = {
+      ...defaultSettings,
+      ...JSON.parse(data),
+    };
+  }
+
+  private saveSettings(settings: any) {
+    if (!this.options.settingsFileName) {
+      throw new Error('settingsFileName option not set');
+    }
+    fs.writeFileSync(this.options.settingsFileName, JSON.stringify(settings, null, 2));
+  }
+
+  public getSetting(plugin: UnisonHTPlugin, name: string): any {
+    debug(`getSetting ${name}`);
+    const settings = this.loadSettings();
+    let pluginData;
+    if (instanceOfUnisonHTDevice(plugin)) {
+      pluginData = settings.devices[(plugin as UnisonHTDevice).getDeviceName()] || {};
+    } else if (instanceOfUnisonHTMode(plugin)) {
+      pluginData = settings.modes[(plugin as UnisonHTMode).getModeName()] || {};
+    } else {
+      throw new Error(`unhandled plugin type: ${plugin}`);
+    }
+    return pluginData[name];
+  }
+
+  public setSetting(plugin: UnisonHTPlugin, name: string, value: any): void {
+    debug(`setSetting ${name}: ${value}`);
+    const settings = this.loadSettings();
+    let pluginData;
+    if (instanceOfUnisonHTDevice(plugin)) {
+      const key = (plugin as UnisonHTDevice).getDeviceName();
+      pluginData = settings.devices[key] = settings.devices[key] || {};
+    } else if (instanceOfUnisonHTMode(plugin)) {
+      const key = (plugin as UnisonHTMode).getModeName();
+      pluginData = settings.modes[key] = settings.modes[key] || {};
+    } else {
+      throw new Error(`unhandled plugin type: ${plugin}`);
+    }
+    pluginData[name] = value;
+    this.saveSettings(settings);
   }
 }
