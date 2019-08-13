@@ -11,7 +11,7 @@
     "build:web:watch": "cd web && webpack -w",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\" \"web/**/*.ts\" \"web/**/*.js\"",
     "lint": "tslint -p tsconfig.json",
-    "prepare": "npm run build",
+    "prepare": "npm run build && npm run build:web",
     "prepublishOnly": "npm run lint"
   },
   "repository": {
