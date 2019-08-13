@@ -18,6 +18,7 @@ const debug = Debug('UnisonHT');
 export interface UnisonHTOptions {
   defaultMode?: string;
   settingsFileName?: string;
+  prompt?: (message: string) => Promise<string>;
 }
 
 interface InternalRouterHandler {
@@ -460,5 +461,12 @@ export class UnisonHT {
     }
     pluginData[name] = value;
     this.saveSettings(settings);
+  }
+
+  public async prompt(message: string): Promise<string> {
+    if (!this.options.prompt) {
+      throw new Error('prompt not set');
+    }
+    return await this.options.prompt(message);
   }
 }
