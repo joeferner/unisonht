@@ -12,6 +12,9 @@ import { DefaultButtonHandler } from './plugins/DefaultButtonHandler';
 import { NotFoundError } from './NotFoundError';
 import { URL } from 'url';
 import fs from 'fs';
+import { EventEmitter } from 'events';
+import { ModeInfo } from './plugins/ModeInfo';
+import { DeviceInfo } from './plugins/DeviceInfo';
 
 const debug = Debug('UnisonHT');
 
@@ -69,15 +72,30 @@ export interface RouteOptions {
   handler: RouteHandler;
 }
 
+export interface DeviceAddedEvent {
+  device: UnisonHTDevice;
+}
+
+export interface ModeAddedEvent {
+  mode: UnisonHTMode;
+}
+
+export interface UnisonHTEventEmitter {
+  on(event: 'deviceAdded', listener: (evt: DeviceAddedEvent) => void): this;
+
+  on(event: 'modeAdded', listener: (evt: ModeAddedEvent) => void): this;
+}
+
 const DEFAULT_OPTIONS: UnisonHTOptions = {};
 
-export class UnisonHT {
+export class UnisonHT extends EventEmitter implements UnisonHTEventEmitter {
   private options: UnisonHTOptions;
   private plugins: UnisonHTPlugin[] = [];
-  private handlers: InternalRouterHandler[] = [];
+  private _handlers: InternalRouterHandler[] = [];
   private currentMode: string | undefined;
 
   constructor(options: UnisonHTOptions) {
+    super();
     this.options = {
       ...DEFAULT_OPTIONS,
       ...options,
@@ -86,6 +104,8 @@ export class UnisonHT {
     this.use(new DefaultButtonHandler());
     this.use(new CurrentMode());
     this.use(new DevicesList());
+    this.use(new DeviceInfo());
+    this.use(new ModeInfo());
   }
 
   public async start(): Promise<void> {
@@ -142,7 +162,7 @@ export class UnisonHT {
     }
     const keys: pathToRegexp.Key[] = [];
     const regex = pathToRegexp(path, keys);
-    this.handlers.push({
+    this._handlers.push({
       plugin,
       method,
       path,
@@ -159,122 +179,12 @@ export class UnisonHT {
       }
       if (instanceOfUnisonHTDevice(plugin)) {
         const device = plugin as UnisonHTDevice;
-        this.get(plugin, `/device/${device.getDeviceName()}`, {
-          handler: this.handleDeviceInfo.bind(this, device),
-        });
-        this.post(plugin, `/device/${device.getDeviceName()}/button/:button`, {
-          handler: this.handleButtonPress.bind(this, device),
-        });
+        this.emit('deviceAdded', { device });
       } else if (instanceOfUnisonHTMode(plugin)) {
         const mode = plugin as UnisonHTMode;
-        this.get(plugin, `/mode/${mode.getModeName()}`, {
-          handler: this.handleModeInfo.bind(this, mode),
-        });
-        this.post(plugin, `/mode/${mode.getModeName()}/button/:button`, {
-          handler: this.handleButtonPress.bind(this, mode),
-        });
+        this.emit('modeAdded', { mode });
       }
     }
-  }
-
-  private async handleButtonPress(
-    plugin: UnisonHTPlugin,
-    request: RouteHandlerRequest,
-    response: RouteHandlerResponse,
-    next: NextFunction,
-  ): Promise<void> {
-    const button = request.parameters.button;
-    if (!button) {
-      throw Error(`Missing 'button' parameter`);
-    }
-    debug(`handleButtonPress(plugin=${plugin.constructor.name}, button=${button})`);
-    const newNext = async (err?: Error) => {
-      if (err) {
-        next(err);
-        return;
-      }
-      try {
-        if (instanceOfUnisonHTDevice(plugin)) {
-          const req = {
-            ...request,
-            url: `/mode/current/button/${button}`,
-          };
-          await this.execute(req, response, next);
-        } else {
-          next();
-        }
-      } catch (err) {
-        next(err);
-      }
-    };
-    if (plugin.handleButtonPress) {
-      try {
-        await plugin.handleButtonPress(button, request, response, newNext);
-      } catch (err) {
-        next(err);
-      }
-    } else {
-      const foundButton = plugin.getSupportedButtons()[button];
-      if (!foundButton) {
-        next();
-      } else {
-        try {
-          await foundButton.handleButtonPress(button, request, response, next);
-        } catch (err) {
-          next(err);
-        }
-      }
-    }
-  }
-
-  private async handleModeInfo(
-    mode: UnisonHTMode,
-    request: RouteHandlerRequest,
-    response: RouteHandlerResponse,
-  ): Promise<void> {
-    await response.send({
-      type: mode.constructor.name,
-    });
-  }
-
-  private async handleDeviceInfo(
-    device: UnisonHTDevice,
-    request: RouteHandlerRequest,
-    response: RouteHandlerResponse,
-  ): Promise<void> {
-    let status;
-    try {
-      status = await device.getStatus();
-    } catch (err) {
-      console.error(`Could not get device "${device.getDeviceName()}" status`, err);
-      status = {
-        error: err.message,
-      };
-    }
-    const handlers = this.handlers
-      .filter(handler => handler.plugin === device)
-      .map(handler => {
-        return {
-          method: handler.method,
-          path: handler.path,
-        };
-      });
-    const buttons: DeviceStatusResponseButtons = {};
-    const deviceButtons = device.getSupportedButtons();
-    Object.keys(deviceButtons).forEach(button => {
-      const b = deviceButtons[button];
-      buttons[button] = {
-        name: b.name,
-        description: b.description,
-      };
-    });
-    const statusResponse: DeviceStatusResponse = {
-      type: device.constructor.name,
-      handlers,
-      buttons,
-      ...status,
-    };
-    await response.send(statusResponse);
   }
 
   public async changeMode(newMode: string): Promise<void> {
@@ -359,7 +269,7 @@ export class UnisonHT {
     debug(`execute(url=${request.url})`);
     const parsedUrl = new URL(request.url, 'http://unisonht.com');
     const run = async (i: number) => {
-      const handler = this.handlers[i];
+      const handler = this._handlers[i];
       if (!handler) {
         next();
         return;
@@ -468,5 +378,9 @@ export class UnisonHT {
       throw new Error('prompt not set');
     }
     return await this.options.prompt(message);
+  }
+
+  get handlers(): InternalRouterHandler[] {
+    return this._handlers;
   }
 }
