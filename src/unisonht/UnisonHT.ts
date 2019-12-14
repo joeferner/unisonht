@@ -1,7 +1,8 @@
 import * as http from 'http';
 import { IncomingMessage, ServerResponse } from 'http';
 import { Device } from './Device';
-import { ButtonPressRequestCallback, RequestCallback, UnisonHTRequest, UnisonHTResponse } from './index';
+import { ButtonPressRequestCallback, Method, Mode, RequestCallback, UnisonHTRequest } from './index';
+import { InitOptions } from './InitOptions';
 
 export interface UnionsHTOptionsHttp {
   port: number;
@@ -9,19 +10,24 @@ export interface UnionsHTOptionsHttp {
 }
 
 export interface UnionsHTOptions {
+  initialMode: string;
   http: UnionsHTOptionsHttp;
 }
 
 export class UnisonHT {
   private started: boolean = false;
   private devices: Device[] = [];
+  private modes: Mode[] = [];
   private handlers: Handler[] = [];
+  private currentMode: Mode | null = null;
 
   async start(options: UnionsHTOptions): Promise<void> {
     await this.startHttpServer(options.http);
     await this.initializeDevices();
+    await this.initializeModes();
     await this.initializeDefaultRoutes();
     this.started = true;
+    await this.switchToMode(options.initialMode);
   }
 
   private async startHttpServer(options: UnionsHTOptionsHttp) {
@@ -37,33 +43,63 @@ export class UnisonHT {
   }
 
   private async handleHttpServerRequest(req: IncomingMessage, res: ServerResponse) {
+    if (!req.url) {
+      console.error(`Invalid request. Missing url`);
+      res.writeHead(500);
+      res.end();
+    }
+    if (!req.method) {
+      console.error(`Invalid request. Missing url`);
+      res.writeHead(500);
+      res.end();
+    }
+    const handlerReq: UnisonHTRequest = {
+      method: req.method ? req.method as Method : Method.ERROR,
+      url: req.url || '',
+      getParameter(name: string): any {
+        console.log(res);
+      },
+      app: this,
+      http: req,
+    };
+    try {
+      const result = await this.handle(handlerReq);
+      if (!result) {
+        res.writeHead(404);
+        res.end();
+      } else if (typeof (result) === 'object') {
+        res.writeHead(200, {
+          'Content-Type': 'application/json',
+        });
+        res.write(JSON.stringify(result));
+        res.end();
+      } else {
+        console.error(`unhandled result type ${typeof result}`);
+        res.writeHead(500);
+        res.end();
+      }
+    } catch (err) {
+      console.error(`Failed on url: ${req.method} ${req.url}`, err);
+      res.writeHead(500);
+      res.end();
+    }
+  }
+
+  private async handle(req: UnisonHTRequest): Promise<any> {
     let error = undefined;
     for (const handler of this.handlers) {
       if ((error && handler.method === Method.ERROR)
         || (!error && req.url === handler.url && req.method === handler.method)) {
         try {
           let nextCalled = false;
-          const result = await handler.handler(req, res, (err?) => {
+          const result = await handler.handler(req, (err?) => {
             nextCalled = true;
             error = err;
           });
           if (nextCalled) {
             continue;
           }
-          if (result) {
-            if (typeof (result) === 'object') {
-              res.writeHead(200, {
-                'Content-Type': 'application/json',
-              });
-              res.write(JSON.stringify(result));
-              res.end();
-            } else {
-              console.error(`unhandled result type ${typeof result}`);
-              res.writeHead(500);
-              res.end();
-            }
-            return;
-          }
+          return result;
         } catch (err) {
           error = err;
         }
@@ -71,60 +107,70 @@ export class UnisonHT {
     }
 
     if (error) {
-      console.error(`Failed on url: ${req.method} ${req.url}`, error);
-      res.writeHead(500);
-      res.end();
-    } else {
-      res.writeHead(404);
-      res.end();
+      throw error;
     }
+    return null;
   }
 
   private async initializeDefaultRoutes(): Promise<void> {
-    this.onGet('/device', (req, res) => this.handleDeviceList(req, res));
+    this.onGet('/status', (req) => this.handleStatus(req));
+    this.onGet('/mode', (req) => this.handleModeList(req));
+    this.onPost('/mode', (req) => this.handleModeSet(req));
+    this.onGet('/device', (req) => this.handleDeviceList(req));
+  }
+
+  private async initializeModes(): Promise<void> {
+    for (const mode of this.modes) {
+      const urlPrefix = `/mode/${mode.name}`;
+      await mode.init(this.createInitOptions(urlPrefix));
+    }
   }
 
   private async initializeDevices(): Promise<void> {
-    const unisonht = this;
     for (const device of this.devices) {
-      const deviceUrlPrefix = `/device/${device.name}`;
-      await device.init({
-        onGet(url: string, handler: RequestCallback): void {
-          if (url.startsWith('/')) {
-            unisonht.onGet(url, handler);
-          } else {
-            unisonht.onGet(`${deviceUrlPrefix}/${url}`, handler);
-          }
-        },
-        onPost(url: string, handler: RequestCallback): void {
-          if (url.startsWith('/')) {
-            unisonht.onPost(url, handler);
-          } else {
-            unisonht.onPost(`${deviceUrlPrefix}/${url}`, handler);
-          }
-        },
-        onPut(url: string, handler: RequestCallback): void {
-          if (url.startsWith('/')) {
-            unisonht.onPut(url, handler);
-          } else {
-            unisonht.onPut(`${deviceUrlPrefix}/${url}`, handler);
-          }
-        },
-        onDelete(url: string, handler: RequestCallback): void {
-          if (url.startsWith('/')) {
-            unisonht.onDelete(url, handler);
-          } else {
-            unisonht.onDelete(`${deviceUrlPrefix}/${url}`, handler);
-          }
-        },
-        onButtonPress(url: string, handler: ButtonPressRequestCallback): void {
-          unisonht.onPost(`${deviceUrlPrefix}/button`, handler);
-        },
-      });
-      this.onGet(`${deviceUrlPrefix}/status`, async (req, res) => {
+      const urlPrefix = `/device/${device.name}`;
+      await device.init(this.createInitOptions(urlPrefix));
+      this.onGet(`${urlPrefix}/status`, async (req, res) => {
         return await device.getStatus(req);
       });
     }
+  }
+
+  private createInitOptions(urlPrefix: string): InitOptions {
+    const unisonht = this;
+    return {
+      onGet(url: string, handler: RequestCallback): void {
+        if (url.startsWith('/')) {
+          unisonht.onGet(url, handler);
+        } else {
+          unisonht.onGet(`${urlPrefix}/${url}`, handler);
+        }
+      },
+      onPost(url: string, handler: RequestCallback): void {
+        if (url.startsWith('/')) {
+          unisonht.onPost(url, handler);
+        } else {
+          unisonht.onPost(`${urlPrefix}/${url}`, handler);
+        }
+      },
+      onPut(url: string, handler: RequestCallback): void {
+        if (url.startsWith('/')) {
+          unisonht.onPut(url, handler);
+        } else {
+          unisonht.onPut(`${urlPrefix}/${url}`, handler);
+        }
+      },
+      onDelete(url: string, handler: RequestCallback): void {
+        if (url.startsWith('/')) {
+          unisonht.onDelete(url, handler);
+        } else {
+          unisonht.onDelete(`${urlPrefix}/${url}`, handler);
+        }
+      },
+      onButtonPress(url: string, handler: ButtonPressRequestCallback): void {
+        unisonht.onPost(`${urlPrefix}/button`, handler);
+      },
+    };
   }
 
   addDevice(device: Device): UnisonHT {
@@ -132,6 +178,14 @@ export class UnisonHT {
       throw new Error('Cannot add device after start is called');
     }
     this.devices.push(device);
+    return this;
+  }
+
+  addMode(mode: Mode): UnisonHT {
+    if (this.started) {
+      throw new Error('Cannot add mode after start is called');
+    }
+    this.modes.push(mode);
     return this;
   }
 
@@ -151,23 +205,89 @@ export class UnisonHT {
     this.handlers.push(new Handler(Method.DELETE, url, handler));
   }
 
-  private async handleDeviceList(req: UnisonHTRequest, res: UnisonHTResponse): Promise<DeviceListResponse> {
+  private async handleStatus(req: UnisonHTRequest): Promise<StatusResponse> {
+    return {
+      currentMode: this.currentMode ? this.currentMode.name : null,
+    };
+  }
+
+  private async handleModeList(req: UnisonHTRequest): Promise<ModeListResponse> {
+    return {
+      modeNames: this.modes.map(mode => mode.name),
+    };
+  }
+
+  private async handleModeSet(req: UnisonHTRequest): Promise<ModeSetResponse> {
+    const mode = req.getParameter('mode');
+    await this.switchToMode(mode);
+    return { mode };
+  }
+
+  private async handleDeviceList(req: UnisonHTRequest): Promise<DeviceListResponse> {
     return {
       deviceNames: this.devices.map(device => device.name),
     };
   }
+
+  private async switchToMode(mode: string): Promise<void> {
+    const newMode = this.getMode(mode);
+    if (!newMode) {
+      throw new Error(`Invalid mode ${mode}`);
+    }
+    let oldDevices: Device[] = [];
+    if (this.currentMode) {
+      oldDevices = this.currentMode.devices;
+      if (this.currentMode.onExit) {
+        await this.currentMode.onExit(this);
+      }
+    }
+    this.currentMode = null;
+
+    const newDevices = newMode.devices;
+    const devicesToPowerOff: Device[] = oldDevices.filter(d => newDevices.indexOf(d) < 0);
+    const devicesToPowerOn: Device[] = newDevices.filter(d => oldDevices.indexOf(d) < 0);
+
+    for (const device of devicesToPowerOn) {
+      if (device.powerOn) {
+        await device.powerOn(this);
+      }
+    }
+    for (const device of devicesToPowerOff) {
+      if (device.powerOff) {
+        await device.powerOff(this);
+      }
+    }
+
+    if (newMode.onEnter) {
+      await newMode.onEnter(this);
+    }
+    this.currentMode = newMode;
+  }
+
+  private getMode(mode: string): Mode | null {
+    for (const m of this.modes) {
+      if (m.name === mode) {
+        return m;
+      }
+    }
+    return null;
+  }
+}
+
+interface StatusResponse {
+  currentMode: string | null;
+}
+
+interface ModeListResponse {
+  modeNames: string[];
+}
+
+interface ModeSetResponse {
+  mode: string;
 }
 
 interface DeviceListResponse {
   deviceNames: string[];
-}
-
-enum Method {
-  ERROR = 'ERROR',
-  GET = 'GET',
-  POST = 'POST',
-  PUT = 'PUT',
-  DELETE = 'DELETE'
 }
 
 class Handler {

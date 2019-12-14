@@ -1,13 +1,5 @@
-import { ButtonPressRequestCallback, RequestCallback } from './index';
+import { InitOptions } from './InitOptions';
 
-export interface DeviceInitOptions {
-  onGet(url: string, handler: RequestCallback): void;
+export interface DeviceInitOptions extends InitOptions {
 
-  onPost(url: string, handler: RequestCallback): void;
-
-  onPut(url: string, handler: RequestCallback): void;
-
-  onDelete(url: string, handler: RequestCallback): void;
-
-  onButtonPress(url: string, handler: ButtonPressRequestCallback): void;
 }
