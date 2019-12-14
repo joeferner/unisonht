@@ -1,4 +1,4 @@
-import { Device, DeviceInitOptions, DeviceStatus, UnisonHTRequest } from '../unisonht';
+import { Device, DeviceInitOptions, DeviceStatus, UnisonHT, UnisonHTRequest } from '../unisonht';
 
 export class PioneerIrTv implements Device {
   readonly name: string = 'pioneer-tv';
@@ -8,5 +8,9 @@ export class PioneerIrTv implements Device {
 
   async getStatus(req: UnisonHTRequest): Promise<DeviceStatus> {
     return {};
+  }
+
+  async buttonPress(app: UnisonHT, button: string): Promise<void> {
+    // TODO
   }
 }

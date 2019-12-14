@@ -14,9 +14,5 @@ export interface UnisonHTRequest {
   url: string;
   app: UnisonHT;
   http?: IncomingMessage;
-
-  getParameter(name: string): any;
-}
-
-export interface UnisonHTButtonRequest extends UnisonHTRequest {
+  parameters: { [key: string]: string };
 }

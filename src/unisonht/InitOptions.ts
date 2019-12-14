@@ -1,4 +1,4 @@
-import { ButtonPressRequestCallback, RequestCallback } from './index';
+import { RequestCallback } from './index';
 
 export interface InitOptions {
   onGet(url: string, handler: RequestCallback): void;
@@ -8,6 +8,4 @@ export interface InitOptions {
   onPut(url: string, handler: RequestCallback): void;
 
   onDelete(url: string, handler: RequestCallback): void;
-
-  onButtonPress(url: string, handler: ButtonPressRequestCallback): void;
 }

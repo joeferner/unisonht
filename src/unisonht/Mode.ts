@@ -9,6 +9,8 @@ export interface Mode {
 
   init(initOptions: ModeInitOptions): Promise<void>;
 
+  buttonPress(app: UnisonHT, button: string): Promise<void>;
+
   onEnter?(app: UnisonHT): Promise<void>;
 
   onExit?(app: UnisonHT): Promise<void>;
@@ -19,7 +21,7 @@ export interface StandardModeOptions {
   devices: Device[];
 }
 
-export class StandardMode implements Mode {
+export class GenericMode implements Mode {
   private options: StandardModeOptions;
 
   constructor(options: StandardModeOptions) {
@@ -35,5 +37,9 @@ export class StandardMode implements Mode {
   }
 
   async init(initOptions: ModeInitOptions): Promise<void> {
+  }
+
+  async buttonPress(app: UnisonHT, button: string): Promise<void> {
+    // TODO
   }
 }

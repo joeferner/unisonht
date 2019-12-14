@@ -1,7 +1,7 @@
 import * as http from 'http';
 import { IncomingMessage, ServerResponse } from 'http';
 import { Device } from './Device';
-import { ButtonPressRequestCallback, Method, Mode, RequestCallback, UnisonHTRequest } from './index';
+import { Method, Mode, RequestCallback, UnisonHTRequest } from './index';
 import { InitOptions } from './InitOptions';
 
 export interface UnionsHTOptionsHttp {
@@ -53,12 +53,11 @@ export class UnisonHT {
       res.writeHead(500);
       res.end();
     }
+    console.log(req);
     const handlerReq: UnisonHTRequest = {
       method: req.method ? req.method as Method : Method.ERROR,
       url: req.url || '',
-      getParameter(name: string): any {
-        console.log(res);
-      },
+      parameters: {},
       app: this,
       http: req,
     };
@@ -123,6 +122,13 @@ export class UnisonHT {
     for (const mode of this.modes) {
       const urlPrefix = `/mode/${mode.name}`;
       await mode.init(this.createInitOptions(urlPrefix));
+      this.onPost(`${urlPrefix}/button`, async (req) => {
+        const button = req.parameters['button'];
+        if (!button) {
+          throw new Error(`'button' is a required parameter`);
+        }
+        return await mode.buttonPress(this, button);
+      });
     }
   }
 
@@ -130,7 +136,14 @@ export class UnisonHT {
     for (const device of this.devices) {
       const urlPrefix = `/device/${device.name}`;
       await device.init(this.createInitOptions(urlPrefix));
-      this.onGet(`${urlPrefix}/status`, async (req, res) => {
+      this.onPost(`${urlPrefix}/button`, async (req) => {
+        const button = req.parameters['button'];
+        if (!button) {
+          throw new Error(`'button' is a required parameter`);
+        }
+        return await device.buttonPress(this, button);
+      });
+      this.onGet(`${urlPrefix}/status`, async (req) => {
         return await device.getStatus(req);
       });
     }
@@ -166,9 +179,6 @@ export class UnisonHT {
         } else {
           unisonht.onDelete(`${urlPrefix}/${url}`, handler);
         }
-      },
-      onButtonPress(url: string, handler: ButtonPressRequestCallback): void {
-        unisonht.onPost(`${urlPrefix}/button`, handler);
       },
     };
   }
@@ -218,7 +228,7 @@ export class UnisonHT {
   }
 
   private async handleModeSet(req: UnisonHTRequest): Promise<ModeSetResponse> {
-    const mode = req.getParameter('mode');
+    const mode = req.parameters['mode'];
     await this.switchToMode(mode);
     return { mode };
   }

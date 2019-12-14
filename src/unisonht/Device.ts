@@ -10,6 +10,8 @@ export interface Device {
 
   getStatus(req: UnisonHTRequest): Promise<DeviceStatus>;
 
+  buttonPress(app: UnisonHT, button: string): Promise<void>;
+
   powerOn?(app: UnisonHT): Promise<void>;
 
   powerOff?(app: UnisonHT): Promise<void>;
