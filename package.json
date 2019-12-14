@@ -1,17 +1,15 @@
 {
   "name": "@unisonht/unisonht",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "UnisonHT - Unified Home Theatre",
-  "main": "dist/index.js",
+  "main": "target/index.js",
   "types": "src/index.ts",
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
-    "build:web": "cd web && webpack",
-    "build:web:watch": "cd web && webpack -w",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\" \"web/**/*.ts\" \"web/**/*.js\"",
     "lint": "tslint -p tsconfig.json",
-    "prepare": "npm run build && npm run build:web",
+    "prepare": "npm run build && npm run build:watch",
     "prepublishOnly": "npm run lint"
   },
   "repository": {
@@ -30,28 +28,10 @@
     "url": "https://github.com/joeferner/unisonht/issues"
   },
   "homepage": "https://github.com/joeferner/unisonht#readme",
-  "dependencies": {
-    "debug": "^4.1.1",
-    "path-to-regexp": "^3.0.0",
-    "react": "^16.9.0",
-    "react-dom": "^16.9.0",
-    "yargs": "^13.3.0"
-  },
   "devDependencies": {
-    "@types/debug": "^4.1.4",
-    "@types/node": "^12.6.9",
-    "@types/react": "^16.9.1",
-    "@types/react-dom": "^16.8.5",
-    "husky": "^3.0.3",
-    "lint-staged": "^9.2.1",
-    "prettier": "^1.18.2",
-    "source-map-loader": "^0.2.4",
-    "ts-loader": "^6.0.4",
-    "tslint": "^5.18.0",
-    "tslint-config-prettier": "^1.18.0",
-    "typescript": "^3.5.3",
-    "webpack": "^4.39.1",
-    "webpack-cli": "^3.3.6"
+    "@types/node": "^12.12.17",
+    "tslint": "^5.20.1",
+    "typescript": "^3.7.3"
   },
   "husky": {
     "hooks": {
