@@ -7,9 +7,10 @@
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
+    "watch": "nodemon -w target target/index.js",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\" \"web/**/*.ts\" \"web/**/*.js\"",
     "lint": "tslint -p tsconfig.json",
-    "prepare": "npm run build && npm run build:watch",
+    "prepare": "npm run build",
     "prepublishOnly": "npm run lint"
   },
   "repository": {
@@ -28,10 +29,13 @@
     "url": "https://github.com/joeferner/unisonht/issues"
   },
   "homepage": "https://github.com/joeferner/unisonht#readme",
+  "dependencies": {
+  },
   "devDependencies": {
     "@types/node": "^12.12.17",
     "tslint": "^5.20.1",
-    "typescript": "^3.7.3"
+    "typescript": "^3.7.3",
+    "nodemon": "^2.0.2"
   },
   "husky": {
     "hooks": {

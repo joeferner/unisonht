@@ -1,4 +1,4 @@
 .idea/
 .vscode/
-dist/
+target/
 node_modules/
