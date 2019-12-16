@@ -16,13 +16,42 @@
 
 <script type="text/babel">
   function App() {
-    const handleClick = React.useCallback(() => {
-      ons.notification.alert('Hello world!');
+    const [menuClosed, setMenuClosed] = React.useState(true);
+    const handleMenuOpenClick = React.useCallback(() => {
+      setMenuClosed(!menuClosed);
     });
 
-    return (<Ons.Page>
-      <Ons.Button onClick={handleClick}>Tap me!</Ons.Button>
-    </Ons.Page>);
+    return (<Ons.Splitter>
+      <Ons.SplitterSide side="left" width="220px" collapse={menuClosed} swipeable>
+        <Ons.Page>
+          <Ons.List>
+            <Ons.ListItem onclick="fn.load('home.html')" tappable>
+              Home
+            </Ons.ListItem>
+            <Ons.ListItem onclick="fn.load('settings.html')" tappable>
+              Settings
+            </Ons.ListItem>
+            <Ons.ListItem onclick="fn.load('about.html')" tappable>
+              About
+            </Ons.ListItem>
+          </Ons.List>
+        </Ons.Page>
+      </Ons.SplitterSide>
+      <Ons.SplitterContent id="content">
+        <Ons.Page>
+          <Ons.Toolbar>
+            <div className="left">
+              <Ons.ToolbarButton onClick={handleMenuOpenClick}>
+                <Ons.Icon icon="md-menu"/>
+              </Ons.ToolbarButton>
+            </div>
+            <div className="center">
+              Main
+            </div>
+          </Ons.Toolbar>
+        </Ons.Page>
+      </Ons.SplitterContent>
+    </Ons.Splitter>);
   }
 
   ReactDOM.render(<App/>, document.getElementById('app'));

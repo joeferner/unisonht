@@ -12,6 +12,7 @@ export enum Method {
 export interface UnisonHTRequest {
   method: Method;
   url: string;
+  path: string;
   app: UnisonHT;
   http?: IncomingMessage;
   parameters: { [key: string]: string };

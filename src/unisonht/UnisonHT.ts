@@ -55,9 +55,11 @@ export class UnisonHT {
       res.writeHead(500);
       res.end();
     }
+    const url = new URL(`http://localhost${req.url || ''}`);
     const handlerReq: UnisonHTRequest = {
       method: req.method ? req.method as Method : Method.ERROR,
       url: req.url || '',
+      path: url.pathname,
       parameters: {},
       app: this,
       http: req,

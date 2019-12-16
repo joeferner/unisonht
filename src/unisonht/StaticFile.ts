@@ -17,8 +17,10 @@ export class StaticFile {
       return 'text/css';
     } else if (path.endsWith('.js')) {
       return 'application/javascript';
-    }  else if (path.endsWith('.ico')) {
+    } else if (path.endsWith('.ico')) {
       return 'image/x-icon';
+    } else if (path.endsWith('.woff2')) {
+      return 'font/woff2';
     } else {
       console.warn('could not determine content type: ', path);
       return 'application/octet-stream';
