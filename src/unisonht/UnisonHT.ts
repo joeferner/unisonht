@@ -3,6 +3,8 @@ import { IncomingMessage, ServerResponse } from 'http';
 import { Device } from './Device';
 import { Method, Mode, RequestCallback, UnisonHTRequest } from './index';
 import { InitOptions } from './InitOptions';
+import { initializeRoutes } from './routes';
+import { StaticFile } from './StaticFile';
 
 export interface UnionsHTOptionsHttp {
   port: number;
@@ -16,16 +18,16 @@ export interface UnionsHTOptions {
 
 export class UnisonHT {
   private started: boolean = false;
-  private devices: Device[] = [];
-  private modes: Mode[] = [];
+  private _devices: Device[] = [];
+  private _modes: Mode[] = [];
   private handlers: Handler[] = [];
-  private currentMode: Mode | null = null;
+  private _currentMode: Mode | null = null;
 
   async start(options: UnionsHTOptions): Promise<void> {
     await this.startHttpServer(options.http);
     await this.initializeDevices();
     await this.initializeModes();
-    await this.initializeDefaultRoutes();
+    initializeRoutes(this);
     this.started = true;
     await this.switchToMode(options.initialMode);
   }
@@ -53,7 +55,6 @@ export class UnisonHT {
       res.writeHead(500);
       res.end();
     }
-    console.log(req);
     const handlerReq: UnisonHTRequest = {
       method: req.method ? req.method as Method : Method.ERROR,
       url: req.url || '',
@@ -66,6 +67,8 @@ export class UnisonHT {
       if (!result) {
         res.writeHead(404);
         res.end();
+      } else if (result instanceof StaticFile) {
+        await result.send(res);
       } else if (typeof (result) === 'object') {
         res.writeHead(200, {
           'Content-Type': 'application/json',
@@ -88,7 +91,7 @@ export class UnisonHT {
     let error = undefined;
     for (const handler of this.handlers) {
       if ((error && handler.method === Method.ERROR)
-        || (!error && req.url === handler.url && req.method === handler.method)) {
+        || (!error && handler.testUrl(req.url) && req.method === handler.method)) {
         try {
           let nextCalled = false;
           const result = await handler.handler(req, (err?) => {
@@ -111,15 +114,8 @@ export class UnisonHT {
     return null;
   }
 
-  private async initializeDefaultRoutes(): Promise<void> {
-    this.onGet('/status', (req) => this.handleStatus(req));
-    this.onGet('/mode', (req) => this.handleModeList(req));
-    this.onPost('/mode', (req) => this.handleModeSet(req));
-    this.onGet('/device', (req) => this.handleDeviceList(req));
-  }
-
   private async initializeModes(): Promise<void> {
-    for (const mode of this.modes) {
+    for (const mode of this._modes) {
       const urlPrefix = `/mode/${mode.name}`;
       await mode.init(this.createInitOptions(urlPrefix));
       this.onPost(`${urlPrefix}/button`, async (req) => {
@@ -133,7 +129,7 @@ export class UnisonHT {
   }
 
   private async initializeDevices(): Promise<void> {
-    for (const device of this.devices) {
+    for (const device of this._devices) {
       const urlPrefix = `/device/${device.name}`;
       await device.init(this.createInitOptions(urlPrefix));
       this.onPost(`${urlPrefix}/button`, async (req) => {
@@ -187,7 +183,7 @@ export class UnisonHT {
     if (this.started) {
       throw new Error('Cannot add device after start is called');
     }
-    this.devices.push(device);
+    this._devices.push(device);
     return this;
   }
 
@@ -195,51 +191,27 @@ export class UnisonHT {
     if (this.started) {
       throw new Error('Cannot add mode after start is called');
     }
-    this.modes.push(mode);
+    this._modes.push(mode);
     return this;
   }
 
-  onGet(url: string, handler: RequestCallback): void {
+  onGet(url: string | RegExp, handler: RequestCallback): void {
     this.handlers.push(new Handler(Method.GET, url, handler));
   }
 
-  onPost(url: string, handler: RequestCallback): void {
+  onPost(url: string | RegExp, handler: RequestCallback): void {
     this.handlers.push(new Handler(Method.POST, url, handler));
   }
 
-  onPut(url: string, handler: RequestCallback): void {
+  onPut(url: string | RegExp, handler: RequestCallback): void {
     this.handlers.push(new Handler(Method.PUT, url, handler));
   }
 
-  onDelete(url: string, handler: RequestCallback): void {
+  onDelete(url: string | RegExp, handler: RequestCallback): void {
     this.handlers.push(new Handler(Method.DELETE, url, handler));
   }
 
-  private async handleStatus(req: UnisonHTRequest): Promise<StatusResponse> {
-    return {
-      currentMode: this.currentMode ? this.currentMode.name : null,
-    };
-  }
-
-  private async handleModeList(req: UnisonHTRequest): Promise<ModeListResponse> {
-    return {
-      modeNames: this.modes.map(mode => mode.name),
-    };
-  }
-
-  private async handleModeSet(req: UnisonHTRequest): Promise<ModeSetResponse> {
-    const mode = req.parameters['mode'];
-    await this.switchToMode(mode);
-    return { mode };
-  }
-
-  private async handleDeviceList(req: UnisonHTRequest): Promise<DeviceListResponse> {
-    return {
-      deviceNames: this.devices.map(device => device.name),
-    };
-  }
-
-  private async switchToMode(mode: string): Promise<void> {
+  async switchToMode(mode: string): Promise<void> {
     const newMode = this.getMode(mode);
     if (!newMode) {
       throw new Error(`Invalid mode ${mode}`);
@@ -251,7 +223,7 @@ export class UnisonHT {
         await this.currentMode.onExit(this);
       }
     }
-    this.currentMode = null;
+    this._currentMode = null;
 
     const newDevices = newMode.devices;
     const devicesToPowerOff: Device[] = oldDevices.filter(d => newDevices.indexOf(d) < 0);
@@ -271,43 +243,58 @@ export class UnisonHT {
     if (newMode.onEnter) {
       await newMode.onEnter(this);
     }
-    this.currentMode = newMode;
+    this._currentMode = newMode;
   }
 
   private getMode(mode: string): Mode | null {
-    for (const m of this.modes) {
+    for (const m of this._modes) {
       if (m.name === mode) {
         return m;
       }
     }
     return null;
   }
-}
 
-interface StatusResponse {
-  currentMode: string | null;
-}
+  get modes(): Mode[] {
+    return this._modes;
+  }
 
-interface ModeListResponse {
-  modeNames: string[];
-}
+  get devices(): Device[] {
+    return this._devices;
+  }
 
-interface ModeSetResponse {
-  mode: string;
-}
-
-interface DeviceListResponse {
-  deviceNames: string[];
+  get currentMode(): Mode | null {
+    return this._currentMode;
+  }
 }
 
 class Handler {
-  method: Method;
-  url: string;
-  handler: RequestCallback;
+  private _method: Method;
+  private _url: string | RegExp;
+  private _handler: RequestCallback;
 
-  constructor(method: Method, url: string, handler: RequestCallback) {
-    this.method = method;
-    this.url = url;
-    this.handler = handler;
+  constructor(method: Method, url: string | RegExp, handler: RequestCallback) {
+    this._method = method;
+    this._url = url;
+    this._handler = handler;
+  }
+
+  testUrl(url: string) {
+    if (typeof (this._url) === 'string') {
+      return this._url === url;
+    }
+    return this._url.test(url);
+  }
+
+  get method(): Method {
+    return this._method;
+  }
+
+  get url(): string | RegExp {
+    return this._url;
+  }
+
+  get handler(): (req: UnisonHTRequest, next: (err?: Error) => void) => Promise<any> {
+    return this._handler;
   }
 }

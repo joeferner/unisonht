@@ -30,6 +30,11 @@
   },
   "homepage": "https://github.com/joeferner/unisonht#readme",
   "dependencies": {
+    "babel-standalone": "^6.26.0",
+    "onsenui": "^2.10.10",
+    "react": "^16.12.0",
+    "react-dom": "^16.12.0",
+    "react-onsenui": "^1.11.2"
   },
   "devDependencies": {
     "@types/node": "^12.12.17",

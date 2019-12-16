@@ -1,0 +1,32 @@
+<html lang="en">
+<head>
+    <title>UnisonHT</title>
+    <meta charset="utf-8"/>
+    <link rel="stylesheet" href="lib/onsenui/css/onsenui.css">
+    <link rel="stylesheet" href="lib/onsenui/css/dark-onsen-css-components.css">
+    <script src="lib/prop-types/prop-types.min.js"></script>
+    <script src="lib/react/umd/react.production.min.js"></script>
+    <script src="lib/react-dom/umd/react-dom.production.min.js"></script>
+    <script src="lib/onsenui/js/onsenui.js"></script>
+    <script src="lib/react-onsenui/dist/react-onsenui.js"></script>
+    <script src="lib/babel-standalone/babel.min.js"></script>
+</head>
+<body>
+<div id="app"></div>
+
+<script type="text/babel">
+  function App() {
+    const handleClick = React.useCallback(() => {
+      ons.notification.alert('Hello world!');
+    });
+
+    return (<Ons.Page>
+      <Ons.Button onClick={handleClick}>Tap me!</Ons.Button>
+    </Ons.Page>);
+  }
+
+  ReactDOM.render(<App/>, document.getElementById('app'));
+  console.log('wee');
+</script>
+</body>
+</html>
