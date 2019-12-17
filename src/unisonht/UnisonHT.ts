@@ -5,6 +5,7 @@ import { Method, Mode, RequestCallback, UnisonHTRequest } from './index';
 import { InitOptions } from './InitOptions';
 import { initializeRoutes } from './routes';
 import { StaticFile } from './StaticFile';
+import { readRequestParameters } from './httpUtils';
 
 export interface UnionsHTOptionsHttp {
   port: number;
@@ -55,16 +56,18 @@ export class UnisonHT {
       res.writeHead(500);
       res.end();
     }
-    const url = new URL(`http://localhost${req.url || ''}`);
-    const handlerReq: UnisonHTRequest = {
-      method: req.method ? req.method as Method : Method.ERROR,
-      url: req.url || '',
-      path: url.pathname,
-      parameters: {},
-      app: this,
-      http: req,
-    };
     try {
+      const url = new URL(`http://localhost${req.url || ''}`);
+      const parameters = await readRequestParameters(req);
+      const handlerReq: UnisonHTRequest = {
+        method: req.method ? req.method as Method : Method.ERROR,
+        url: req.url || '',
+        path: url.pathname,
+        parameters,
+        app: this,
+        http: req,
+      };
+
       const result = await this.handle(handlerReq);
       if (!result) {
         res.writeHead(404);
@@ -93,7 +96,7 @@ export class UnisonHT {
     let error = undefined;
     for (const handler of this.handlers) {
       if ((error && handler.method === Method.ERROR)
-        || (!error && handler.testUrl(req.url) && req.method === handler.method)) {
+        || (!error && handler.testUrl(req.path) && req.method === handler.method)) {
         try {
           let nextCalled = false;
           const result = await handler.handler(req, (err?) => {
@@ -134,6 +137,10 @@ export class UnisonHT {
     for (const device of this._devices) {
       const urlPrefix = `/device/${device.name}`;
       await device.init(this.createInitOptions(urlPrefix));
+      this.onGet(`${urlPrefix}`, async (req) => {
+        const path = await device.publicModulePath(this);
+        return new StaticFile(path);
+      });
       this.onPost(`${urlPrefix}/button`, async (req) => {
         const button = req.parameters['button'];
         if (!button) {
@@ -217,6 +224,9 @@ export class UnisonHT {
     const newMode = this.getMode(mode);
     if (!newMode) {
       throw new Error(`Invalid mode ${mode}`);
+    }
+    if (this._currentMode === newMode) {
+      throw new Error(`Mode already set to ${mode}`);
     }
     let oldDevices: Device[] = [];
     if (this.currentMode) {

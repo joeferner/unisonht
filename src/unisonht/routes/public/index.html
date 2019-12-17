@@ -4,58 +4,43 @@
     <meta charset="utf-8"/>
     <link rel="stylesheet" href="lib/onsenui/css/onsenui.css">
     <link rel="stylesheet" href="lib/onsenui/css/dark-onsen-css-components.css">
+    <script src="lib/axios/dist/axios.js"></script>
     <script src="lib/prop-types/prop-types.min.js"></script>
     <script src="lib/react/umd/react.production.min.js"></script>
     <script src="lib/react-dom/umd/react-dom.production.min.js"></script>
     <script src="lib/onsenui/js/onsenui.js"></script>
     <script src="lib/react-onsenui/dist/react-onsenui.js"></script>
-    <script src="lib/babel-standalone/babel.min.js"></script>
+    <script src="lib/@babel/standalone/babel.js"></script>
 </head>
 <body>
 <div id="app"></div>
 
 <script type="text/babel">
-  function App() {
-    const [menuClosed, setMenuClosed] = React.useState(true);
-    const handleMenuOpenClick = React.useCallback(() => {
-      setMenuClosed(!menuClosed);
-    });
+  ons.platform.select('android');
 
-    return (<Ons.Splitter>
-      <Ons.SplitterSide side="left" width="220px" collapse={menuClosed} swipeable>
-        <Ons.Page>
-          <Ons.List>
-            <Ons.ListItem onclick="fn.load('home.html')" tappable>
-              Home
-            </Ons.ListItem>
-            <Ons.ListItem onclick="fn.load('settings.html')" tappable>
-              Settings
-            </Ons.ListItem>
-            <Ons.ListItem onclick="fn.load('about.html')" tappable>
-              About
-            </Ons.ListItem>
-          </Ons.List>
-        </Ons.Page>
-      </Ons.SplitterSide>
-      <Ons.SplitterContent id="content">
-        <Ons.Page>
-          <Ons.Toolbar>
-            <div className="left">
-              <Ons.ToolbarButton onClick={handleMenuOpenClick}>
-                <Ons.Icon icon="md-menu"/>
-              </Ons.ToolbarButton>
-            </div>
-            <div className="center">
-              Main
-            </div>
-          </Ons.Toolbar>
-        </Ons.Page>
-      </Ons.SplitterContent>
-    </Ons.Splitter>);
+  const loadedModules = {};
+
+  function loadModule(path) {
+    if (loadedModules[path]) {
+      return Promise.resolve(loadedModules[path]);
+    }
+    return axios.get(path)
+      .then((res) => {
+        const code = '(function() {'
+          + 'const module = {};'
+          + Babel.transform(res.data, { presets: ['es2015', 'react'] }).code + ';'
+          + 'return module;'
+          + '})()';
+        const c = eval(code);
+        loadedModules[path] = c.exports;
+        return c.exports;
+      });
   }
 
-  ReactDOM.render(<App/>, document.getElementById('app'));
-  console.log('wee');
+  loadModule('/js/App.jsx')
+    .then((App) => {
+      ReactDOM.render(<App/>, document.getElementById('app'));
+    });
 </script>
 </body>
 </html>

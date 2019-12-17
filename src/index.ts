@@ -1,29 +1,30 @@
-import { UnisonHT } from './unisonht/UnisonHT';
+import { GenericMode, UnisonHT } from './unisonht';
 import { PioneerIrTv } from './pioneer-ir-tv';
 import { DenonRs232Avr } from './denon-rs232-avr';
-import { GenericMode } from './unisonht';
 import { Roku } from './roku';
 
 const PORT = 8080;
 
 async function start(): Promise<void> {
   try {
-    const tv = new PioneerIrTv();
-    const receiver = new DenonRs232Avr();
-    const roku = new Roku();
+    const tv = new PioneerIrTv('TV');
+    const receiver = new DenonRs232Avr('Receiver');
+    const roku = new Roku('Roku');
 
     await new UnisonHT()
       .addDevice(tv)
+      .addDevice(receiver)
+      .addDevice(roku)
       .addMode(new GenericMode({
-        name: 'off',
+        name: 'Off',
         devices: [],
       }))
       .addMode(new GenericMode({
-        name: 'tv',
+        name: 'TV',
         devices: [tv, receiver, roku],
       }))
       .start({
-        initialMode: 'off',
+        initialMode: 'Off',
         http: {
           port: PORT,
         },

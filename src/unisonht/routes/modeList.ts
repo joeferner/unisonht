@@ -2,10 +2,18 @@ import { UnisonHTRequest } from '../UnisonHTRequest';
 
 export async function modeList(req: UnisonHTRequest): Promise<ModeListResponse> {
   return {
-    modeNames: req.app.modes.map(mode => mode.name),
+    modes: req.app.modes.map(mode => {
+      return {
+        name: mode.name,
+      };
+    }),
   };
 }
 
 interface ModeListResponse {
-  modeNames: string[];
+  modes: ModeListItem[];
+}
+
+interface ModeListItem {
+  name: string;
 }

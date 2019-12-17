@@ -12,6 +12,8 @@ export interface Device {
 
   buttonPress(app: UnisonHT, button: string): Promise<void>;
 
+  publicModulePath(app: UnisonHT): Promise<string>;
+
   powerOn?(app: UnisonHT): Promise<void>;
 
   powerOff?(app: UnisonHT): Promise<void>;

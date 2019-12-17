@@ -15,12 +15,14 @@ export class StaticFile {
       return 'text/html';
     } else if (path.endsWith('.css')) {
       return 'text/css';
-    } else if (path.endsWith('.js')) {
+    } else if (path.endsWith('.js') || path.endsWith('.jsx')) {
       return 'application/javascript';
     } else if (path.endsWith('.ico')) {
       return 'image/x-icon';
     } else if (path.endsWith('.woff2')) {
       return 'font/woff2';
+    } else if (path.endsWith('.map')) {
+      return 'application/octet-stream';
     } else {
       console.warn('could not determine content type: ', path);
       return 'application/octet-stream';
