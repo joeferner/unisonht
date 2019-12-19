@@ -1,6 +1,6 @@
 import * as http from 'http';
 import { IncomingMessage, ServerResponse } from 'http';
-import { Device } from './Device';
+import { Device, getDeviceUrlPrefix } from './Device';
 import { Method, Mode, RequestCallback, UnisonHTRequest } from './index';
 import { InitOptions } from './InitOptions';
 import { initializeRoutes } from './routes';
@@ -135,7 +135,7 @@ export class UnisonHT {
 
   private async initializeDevices(): Promise<void> {
     for (const device of this._devices) {
-      const urlPrefix = `/device/${device.name}`;
+      const urlPrefix = getDeviceUrlPrefix(device);
       await device.init(this.createInitOptions(urlPrefix));
       this.onGet(`${urlPrefix}`, async (req) => {
         const path = await device.publicModulePath(this);

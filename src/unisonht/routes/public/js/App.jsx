@@ -34,7 +34,8 @@ function App() {
   }
 
   function handleDeviceClick(device) {
-    loadModule(`/device/${device.name}`)
+    history.pushState(null, null, `#${device.urlPrefix}`);
+    loadModule(device.urlPrefix)
       .then(m => {
         setContent(() => m);
         setMenuOpen(false);
@@ -45,34 +46,46 @@ function App() {
   }
 
   function refreshModes() {
-    axios.get('/mode')
+    return axios.get('/mode')
       .then(res => {
         setModes(res.data.modes);
+        return res.data.modes;
       });
   }
 
   function refreshDevices() {
-    axios.get('/device')
+    return axios.get('/device')
       .then(res => {
         setDevices(res.data.devices);
+        return res.data.devices;
       });
   }
 
   function refreshStatus() {
-    axios.get('/status')
+    return axios.get('/status')
       .then(res => {
         setCurrentMode(res.data.currentMode);
       });
   }
 
   React.useEffect(() => {
-    loadModule('/js/Home.jsx')
-      .then(m => {
-        setContent(() => m);
-      });
-    refreshModes();
-    refreshDevices();
-    refreshStatus();
+    Promise.all([
+      refreshModes(),
+      refreshDevices(),
+      refreshStatus(),
+    ]).then(([modes, devices]) => {
+      let moduleToLoad = '/js/Home.jsx';
+      const hash = window.location.hash;
+      if (hash.startsWith('#/device/')) {
+        const device = devices.filter(device => device.urlPrefix === hash.substring(1))[0];
+        moduleToLoad = device.urlPrefix;
+      }
+
+      loadModule(moduleToLoad)
+        .then(m => {
+          setContent(() => m);
+        });
+    });
   }, []);
 
   const modeRows = modes

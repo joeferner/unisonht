@@ -18,3 +18,7 @@ export interface Device {
 
   powerOff?(app: UnisonHT): Promise<void>;
 }
+
+export function getDeviceUrlPrefix(device: Device): string {
+  return `/device/${encodeURIComponent(device.name)}`;
+}
