@@ -1,6 +1,7 @@
 function App() {
   const [menuOpen, setMenuOpen] = React.useState(false);
   const [Content, setContent] = React.useState(null);
+  const [contentUrlPrefix, setContentUrlPrefix] = React.useState(null);
   const [modes, setModes] = React.useState(null);
   const [devices, setDevices] = React.useState(null);
   const [currentMode, setCurrentMode] = React.useState(null);
@@ -37,6 +38,7 @@ function App() {
     history.pushState(null, null, `#${device.urlPrefix}`);
     loadModule(device.urlPrefix)
       .then(m => {
+        setContentUrlPrefix(device.urlPrefix);
         setContent(() => m);
         setMenuOpen(false);
       })
@@ -78,6 +80,7 @@ function App() {
       const hash = window.location.hash;
       if (hash.startsWith('#/device/')) {
         const device = devices.filter(device => device.urlPrefix === hash.substring(1))[0];
+        setContentUrlPrefix(device.urlPrefix);
         moduleToLoad = device.urlPrefix;
       }
 
@@ -177,9 +180,9 @@ function App() {
           </div>
         </Ons.Toolbar>
       }>
-        <p style={{ paddingLeft: '20px' }}>
-          {Content ? (<Content/>) : 'Loading…'}
-        </p>
+        <div>
+          {Content ? (<Content urlPrefix={contentUrlPrefix}/>) : 'Loading…'}
+        </div>
       </Ons.Page>
     </Ons.SplitterContent>
   </Ons.Splitter>);

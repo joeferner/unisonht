@@ -37,8 +37,11 @@
       });
   }
 
-  loadModule('/js/App.jsx')
-    .then((App) => {
+  Promise.all([
+    loadModule('/js/App.jsx'),
+    loadModule('/js/utils.js'),
+  ])
+    .then(([App]) => {
       ReactDOM.render(<App/>, document.getElementById('app'));
     });
 </script>

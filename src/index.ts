@@ -9,7 +9,10 @@ async function start(): Promise<void> {
   try {
     const tv = new PioneerIrTv('TV');
     const receiver = new DenonRs232Avr('Receiver');
-    const roku = new Roku('Roku');
+    const roku = new Roku({
+      name: 'Roku',
+      address: 'http://192.168.68.118:8060'
+    });
 
     await new UnisonHT()
       .addDevice(tv)

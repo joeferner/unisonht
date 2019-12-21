@@ -23,6 +23,8 @@ export class StaticFile {
       return 'font/woff2';
     } else if (path.endsWith('.map')) {
       return 'application/octet-stream';
+    } else if (path.endsWith('.svg')) {
+      return 'image/svg+xml';
     } else {
       console.warn('could not determine content type: ', path);
       return 'application/octet-stream';
