@@ -2,6 +2,9 @@ import { Device, DeviceInitOptions, DeviceStatus, UnisonHT, UnisonHTRequest } fr
 import * as path from 'path';
 import SerialPort from 'serialport';
 import { StaticFile } from '../unisonht/StaticFile';
+import Debug from 'debug';
+
+const debug = Debug('unisonht/denon');
 
 export class DenonRs232Avr implements Device {
   private _name: string;
@@ -10,18 +13,30 @@ export class DenonRs232Avr implements Device {
   private _serialPort: SerialPort;
   private _incomingBuffer: string;
 
+  static readonly MOCK_PATH = '/dev/MOCK';
+
   constructor(options: DenonRs232AvrOptions) {
     this._name = options.name;
     this._port = options.port;
     this._publicPath = path.join(__dirname, '../../src/denon-rs232-avr/public/');
-    this._serialPort = new SerialPort(this._port, {
-      baudRate: 9600,
-      dataBits: 8,
-      parity: 'none',
-      stopBits: 1,
-      autoOpen: false,
-    });
     this._incomingBuffer = '';
+
+    if (this._port === DenonRs232Avr.MOCK_PATH) {
+      const MockBinding = require('@serialport/binding-mock');
+      SerialPort.Binding = MockBinding;
+      MockBinding.createPort(DenonRs232Avr.MOCK_PATH, { echo: true, record: true });
+      this._serialPort = new SerialPort(this._port, {
+        autoOpen: false,
+      });
+    } else {
+      this._serialPort = new SerialPort(this._port, {
+        baudRate: 9600,
+        dataBits: 8,
+        parity: 'none',
+        stopBits: 1,
+        autoOpen: false,
+      });
+    }
     this._serialPort.on('data', (data: Buffer) => {
       this._incomingBuffer += data.toString('utf8');
     });
@@ -172,6 +187,7 @@ export class DenonRs232Avr implements Device {
 
   private openPort(): Promise<void> {
     return new Promise<void>((resolve, reject) => {
+      debug(`opening port: ${this._port}`);
       this._serialPort.open((err) => {
         if (err) {
           reject(err);

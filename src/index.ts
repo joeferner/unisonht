@@ -10,7 +10,7 @@ async function start(): Promise<void> {
     const tv = new PioneerIrTv('TV');
     const receiver = new DenonRs232Avr({
       name: 'Receiver',
-      port: '/dev/ttyUSB0'
+      port: DenonRs232Avr.MOCK_PATH //'/dev/ttyUSB0'
     });
     const roku = new Roku({
       name: 'Roku',
