@@ -100,7 +100,6 @@ export class UnisonHT {
         try {
           let nextCalled = false;
           const result = await handler.handler(req, (err?) => {
-            console.log('next');
             nextCalled = true;
             error = err;
           });

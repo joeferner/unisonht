@@ -8,10 +8,13 @@ const PORT = 8080;
 async function start(): Promise<void> {
   try {
     const tv = new PioneerIrTv('TV');
-    const receiver = new DenonRs232Avr('Receiver');
+    const receiver = new DenonRs232Avr({
+      name: 'Receiver',
+      port: '/dev/ttyUSB0'
+    });
     const roku = new Roku({
       name: 'Roku',
-      address: 'http://192.168.68.118:8060'
+      address: 'http://192.168.68.118:8060',
     });
 
     await new UnisonHT()
