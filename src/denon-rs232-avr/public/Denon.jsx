@@ -9,7 +9,7 @@ function Denon({ urlPrefix }) {
     <object ref={svg}
             onLoad={() => handleOnLoad()}
             type="image/svg+xml"
-            data={`${urlPrefix}/roku-remote.svg`}
+            data={`${urlPrefix}/denon-remote.svg`}
             style={{ border: '1px solid white;', width: '100%', maxWidth: '300px' }}/>
   </div>);
 }

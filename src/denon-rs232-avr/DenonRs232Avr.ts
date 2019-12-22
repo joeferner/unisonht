@@ -1,6 +1,7 @@
 import { Device, DeviceInitOptions, DeviceStatus, UnisonHT, UnisonHTRequest } from '../unisonht';
 import * as path from 'path';
 import SerialPort from 'serialport';
+import { StaticFile } from '../unisonht/StaticFile';
 
 export class DenonRs232Avr implements Device {
   private _name: string;
@@ -31,6 +32,7 @@ export class DenonRs232Avr implements Device {
   }
 
   async init(app: DeviceInitOptions): Promise<void> {
+    app.onGet('denon-remote.svg', async () => new StaticFile(path.join(this._publicPath, 'denon-remote.svg')));
     await this.openPort();
   }
 
@@ -101,6 +103,10 @@ export class DenonRs232Avr implements Device {
 
   private async getMasterVolume(): Promise<number> {
     const response = await this.sendCommand('MV?');
+    return DenonRs232Avr.parseMasterVolumeResponse(response);
+  }
+
+  private static parseMasterVolumeResponse(response: string | null) {
     if (!response) {
       throw new Error('no response');
     }
@@ -115,8 +121,53 @@ export class DenonRs232Avr implements Device {
     return result - 80.0;
   }
 
-  async buttonPress(app: UnisonHT, button: string): Promise<void> {
-    // TODO
+  async buttonPress(app: UnisonHT, button: string): Promise<any> {
+    switch (button) {
+      case 'ON':
+        return await this.powerOn()
+          .then(() => {
+            return {};
+          });
+      case 'OFF':
+        return await this.powerOff()
+          .then(() => {
+            return {};
+          });
+      case 'VOLUME_UP':
+        return await this.volumeUp()
+          .then(() => {
+            return {};
+          });
+      case 'VOLUME_DOWN':
+        return await this.volumeDown()
+          .then(() => {
+            return {};
+          });
+    }
+  }
+
+  async powerOn(): Promise<void> {
+    const response = await this.sendCommand('PWON');
+    if (response !== 'PWON') {
+      throw new Error('unexpected response: ' + response);
+    }
+  }
+
+  async powerOff(): Promise<void> {
+    const response = await this.sendCommand('PWSTANDBY');
+    if (response !== 'PWSTANDBY') {
+      throw new Error('unexpected response: ' + response);
+    }
+  }
+
+  async volumeUp(): Promise<number> {
+    const response = await this.sendCommand('MVUP');
+    return DenonRs232Avr.parseMasterVolumeResponse(response);
+  }
+
+  async volumeDown(): Promise<number> {
+    const response = await this.sendCommand('MVDOWN');
+    return DenonRs232Avr.parseMasterVolumeResponse(response);
   }
 
   private openPort(): Promise<void> {
