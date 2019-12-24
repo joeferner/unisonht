@@ -1,11 +1,15 @@
 import * as http from 'http';
 import { IncomingMessage, ServerResponse } from 'http';
 import { Device, getDeviceUrlPrefix } from './Device';
-import { Method, Mode, RequestCallback, UnisonHTRequest } from './index';
+import { getModeUrlPrefix, Method, Mode, RequestCallback, UnisonHTRequest } from './index';
 import { InitOptions } from './InitOptions';
 import { initializeRoutes } from './routes';
 import { StaticFile } from './StaticFile';
 import { readRequestParameters } from './httpUtils';
+import Lirc, { LircClientInstance } from 'lirc-client';
+import Debug from 'debug';
+
+const debug = Debug('unisonht/app');
 
 export interface UnionsHTOptionsHttp {
   port: number;
@@ -23,14 +27,45 @@ export class UnisonHT {
   private _modes: Mode[] = [];
   private handlers: Handler[] = [];
   private _currentMode: Mode | null = null;
+  private _lirc: LircClientInstance | undefined;
 
   async start(options: UnionsHTOptions): Promise<void> {
     await this.startHttpServer(options.http);
     await this.initializeDevices();
     await this.initializeModes();
+    this._lirc = this.initializeLirc();
     initializeRoutes(this);
     this.started = true;
     await this.switchToMode(options.initialMode);
+  }
+
+  private initializeLirc(): LircClientInstance {
+    let lirc = Lirc({
+      path: '/var/run/lirc/lircd',
+    });
+    lirc.on('receive', (remote, button, repeat) => {
+      this.handleLircButtonPress(remote, button, repeat)
+        .catch((err) => {
+          console.error(`failed handling lirc button press (remote=${remote}, button=${button}, repeat=${repeat})`, err);
+        });
+    });
+    return lirc;
+  }
+
+  private handleLircButtonPress(remote: string, button: string, repeat: number): Promise<void> {
+    repeat = repeat || 1;
+    debug(`handleLircButtonPress(remote: ${remote}, button: ${button}, repeat: ${repeat})`);
+    return this.handle({
+      app: this,
+      path: '/button',
+      url: '/button',
+      method: Method.POST,
+      parameters: {
+        remote,
+        button,
+        repeat: `${repeat}`,
+      },
+    });
   }
 
   private async startHttpServer(options: UnionsHTOptionsHttp) {
@@ -116,19 +151,25 @@ export class UnisonHT {
     if (error) {
       throw error;
     }
+    debug(`not found ${req.path} (parameters: ${JSON.stringify(req.parameters)})`);
     return null;
   }
 
   private async initializeModes(): Promise<void> {
     for (const mode of this._modes) {
-      const urlPrefix = `/mode/${mode.name}`;
+      const urlPrefix = getModeUrlPrefix(mode);
       await mode.init(this.createInitOptions(urlPrefix));
-      this.onPost(`${urlPrefix}/button`, async (req) => {
+      this.onPost(`${urlPrefix}/button`, async (req, next) => {
         const button = req.parameters['button'];
         if (!button) {
           throw new Error(`'button' is a required parameter`);
         }
-        return await mode.buttonPress(this, button);
+        if (await mode.buttonPress(this, button)) {
+          return {};
+        } else {
+          next();
+          return null;
+        }
       });
     }
   }
@@ -137,16 +178,20 @@ export class UnisonHT {
     for (const device of this._devices) {
       const urlPrefix = getDeviceUrlPrefix(device);
       await device.init(this.createInitOptions(urlPrefix));
-      this.onGet(`${urlPrefix}`, async (req) => {
+      this.onGet(`${urlPrefix}`, async () => {
         const path = await device.publicModulePath(this);
         return new StaticFile(path);
       });
-      this.onPost(`${urlPrefix}/button`, async (req) => {
+      this.onPost(`${urlPrefix}/button`, async (req, next) => {
         const button = req.parameters['button'];
         if (!button) {
           throw new Error(`'button' is a required parameter`);
         }
-        return await device.buttonPress(this, button);
+        if (await device.buttonPress(this, button)) {
+          return {};
+        }
+        next();
+        return null;
       });
       this.onGet(`${urlPrefix}/status`, async (req) => {
         return await device.getStatus(req);
@@ -157,6 +202,7 @@ export class UnisonHT {
   private createInitOptions(urlPrefix: string): InitOptions {
     const unisonht = this;
     return {
+      app: this,
       onGet(url: string, handler: RequestCallback): void {
         if (url.startsWith('/')) {
           unisonht.onGet(url, handler);
@@ -221,6 +267,7 @@ export class UnisonHT {
   }
 
   async switchToMode(mode: string): Promise<void> {
+    debug(`switching mode from "${this._currentMode?.name}" to "${mode}"`);
     const newMode = this.getMode(mode);
     if (!newMode) {
       throw new Error(`Invalid mode ${mode}`);
@@ -243,11 +290,13 @@ export class UnisonHT {
 
     for (const device of devicesToPowerOn) {
       if (device.powerOn) {
+        debug(`powering on ${device.name}`);
         await device.powerOn(this);
       }
     }
     for (const device of devicesToPowerOff) {
       if (device.powerOff) {
+        debug(`powering off ${device.name}`);
         await device.powerOff(this);
       }
     }
@@ -278,12 +327,38 @@ export class UnisonHT {
   get currentMode(): Mode | null {
     return this._currentMode;
   }
+
+  get lircClient(): LircClientInstance {
+    if (!this._lirc) {
+      throw new Error('not started yet');
+    }
+    return this._lirc;
+  }
+
+  async handleButton(options: { button: string; repeat: number; remote: string }): Promise<void> {
+    if (!this._currentMode) {
+      throw new Error('mode not set');
+    }
+    debug(`handleButton(currentMode: ${this._currentMode.name}, remote: ${options.remote}, button: ${options.button}, repeat: ${options.repeat || 1})`);
+    const urlPrefix = getModeUrlPrefix(this._currentMode);
+    await this.handle({
+      app: this,
+      path: `${urlPrefix}/button`,
+      url: `${urlPrefix}/button`,
+      method: Method.POST,
+      parameters: {
+        remote: options.remote,
+        button: options.button,
+        repeat: `${options.repeat || 1}`,
+      },
+    });
+  }
 }
 
 class Handler {
-  private _method: Method;
-  private _url: string | RegExp;
-  private _handler: RequestCallback;
+  private readonly _method: Method;
+  private readonly _url: string | RegExp;
+  private readonly _handler: RequestCallback;
 
   constructor(method: Method, url: string | RegExp, handler: RequestCallback) {
     this._method = method;

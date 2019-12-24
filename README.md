@@ -1,3 +1,6 @@
+Install
+=======
+
 1. Flash the latest Raspberry Pi Raspbian Lite image
 1. Add file `ssh` to the boot partition
 1. Add a user
@@ -24,3 +27,19 @@
    1. `sudo usermod -a -G dialout <username>`
    1. `sudo npm install -g @serialport/list`
    1. `serialport-list`
+
+Simulate LIRC
+=============
+
+```
+sudo systemctl start lircd
+irw
+sudo systemctl stop lircd
+```
+OR
+```
+sudo lircd --allow-simulate --immediate-init --driver=file --nodaemon
+irsend simulate "A10C000F 00 NUM1 tivo"
+```
+
+

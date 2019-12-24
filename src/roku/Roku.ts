@@ -79,14 +79,14 @@ export class Roku implements Device {
     });
   }
 
-  async buttonPress(app: UnisonHT, buttonName: string): Promise<any> {
+  async buttonPress(app: UnisonHT, buttonName: string): Promise<boolean> {
     const button = Roku.BUTTON_MAP[buttonName];
     if (!button) {
-      return null;
+      return false;
     }
     return this._client.keypress(button.rokuKey)
       .then(() => {
-        return {};
+        return true;
       });
   }
 

@@ -10,7 +10,7 @@ export interface Device {
 
   getStatus(req: UnisonHTRequest): Promise<DeviceStatus>;
 
-  buttonPress(app: UnisonHT, button: string): Promise<void>;
+  buttonPress(app: UnisonHT, button: string): Promise<boolean>;
 
   publicModulePath(app: UnisonHT): Promise<string>;
 

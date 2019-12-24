@@ -1,6 +1,8 @@
-import { RequestCallback } from './index';
+import { RequestCallback, UnisonHT } from './index';
 
 export interface InitOptions {
+  app: UnisonHT;
+
   onGet(url: string, handler: RequestCallback): void;
 
   onPost(url: string, handler: RequestCallback): void;

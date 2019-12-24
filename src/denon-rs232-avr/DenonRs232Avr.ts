@@ -136,28 +136,30 @@ export class DenonRs232Avr implements Device {
     return result - 80.0;
   }
 
-  async buttonPress(app: UnisonHT, button: string): Promise<any> {
+  async buttonPress(app: UnisonHT, button: string): Promise<boolean> {
     switch (button) {
       case 'ON':
         return await this.powerOn()
           .then(() => {
-            return {};
+            return true;
           });
       case 'OFF':
         return await this.powerOff()
           .then(() => {
-            return {};
+            return true;
           });
       case 'VOLUME_UP':
         return await this.volumeUp()
           .then(() => {
-            return {};
+            return true;
           });
       case 'VOLUME_DOWN':
         return await this.volumeDown()
           .then(() => {
-            return {};
+            return true;
           });
+      default:
+        return false;
     }
   }
 
