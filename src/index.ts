@@ -1,4 +1,4 @@
-import { GenericMode, UnisonHT } from './unisonht';
+import { GenericMode, sleep, UnisonHT } from './unisonht';
 import { PioneerIrTv, PioneerIrTvInput } from './pioneer-ir-tv';
 import { DenonRs232Avr } from './denon-rs232-avr';
 import { Roku } from './roku';
@@ -10,7 +10,7 @@ const tv = new PioneerIrTv('TV');
 
 const receiver = new DenonRs232Avr({
   name: 'Receiver',
-  port: DenonRs232Avr.MOCK_PATH, //'/dev/ttyUSB0'
+  port: '/dev/ttyUSB0' // DenonRs232Avr.MOCK_PATH
 });
 
 const roku = new Roku({
@@ -48,6 +48,7 @@ async function start(): Promise<void> {
           },
         },
         onEnter: async (app) => {
+          await sleep(3_000);
           await tv.setInput(PioneerIrTvInput.HDMI5);
         },
       }))

@@ -2,8 +2,12 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 DEST=$1
+if [ -z "${DEST}" ]; then
+  echo "Missing destination"
+  exit 1
+fi
 
 ssh ${DEST} mkdir -p unisonht
 rsync -r --exclude node_modules --exclude target ${DIR}/* ${DEST}:unisonht
 #ssh ${DEST} '. ~/.nvm/nvm.sh && cd ~/unisonht && npm install'
-ssh ${DEST} '. ~/.nvm/nvm.sh && cd ~/unisonht && npm run build'
+#ssh ${DEST} '. ~/.nvm/nvm.sh && cd ~/unisonht && npm run build'

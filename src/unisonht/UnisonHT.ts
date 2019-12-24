@@ -30,6 +30,7 @@ export class UnisonHT {
   private _lirc: LircClientInstance | undefined;
 
   async start(options: UnionsHTOptions): Promise<void> {
+    debug('start');
     await this.startHttpServer(options.http);
     await this.initializeDevices();
     await this.initializeModes();
