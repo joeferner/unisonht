@@ -5,14 +5,13 @@
   "main": "dist/index.js",
   "types": "src/index.ts",
   "scripts": {
+    "prepare": "rm -rf dist && npm run build",
     "build": "tsc",
     "build:watch": "tsc --watch",
-    "build:web": "cd web && webpack",
-    "build:web:watch": "cd web && webpack -w",
-    "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\" \"web/**/*.ts\" \"web/**/*.js\"",
-    "lint": "tslint -p tsconfig.json",
-    "prepare": "npm run build",
-    "prepublishOnly": "npm run lint"
+    "format": "prettier --write \"src/**/*.ts\"",
+    "lint": "eslint --fix --ext .ts .",
+    "lint-staged": "lint-staged",
+    "pre-commit": "npm run format && npm run lint-staged"
   },
   "repository": {
     "type": "git",
@@ -31,37 +30,25 @@
   },
   "homepage": "https://github.com/joeferner/unisonht#readme",
   "dependencies": {
-    "debug": "^4.1.1",
-    "path-to-regexp": "^3.0.0",
-    "react": "^16.9.0",
-    "react-dom": "^16.9.0",
-    "yargs": "^13.3.0"
+    "debug": "4.x",
+    "path-to-regexp": "6.x"
   },
   "devDependencies": {
-    "@types/debug": "^4.1.4",
-    "@types/node": "^12.6.9",
-    "@types/react": "^16.9.1",
-    "@types/react-dom": "^16.8.5",
-    "husky": "^3.0.3",
-    "lint-staged": "^9.2.1",
-    "prettier": "^1.18.2",
-    "source-map-loader": "^0.2.4",
-    "ts-loader": "^6.0.4",
-    "tslint": "^5.18.0",
-    "tslint-config-prettier": "^1.18.0",
-    "typescript": "^3.5.3",
-    "webpack": "^4.39.1",
-    "webpack-cli": "^3.3.6"
+    "@types/debug": "4.x",
+    "@types/node": "14.x",
+    "@typescript-eslint/eslint-plugin": "4.x",
+    "@typescript-eslint/parser": "4.x",
+    "husky": "4.x",
+    "lint-staged": "10.x",
+    "prettier": "2.x",
+    "source-map-loader": "1.x",
+    "ts-loader": "8.x",
+    "typescript": "4.x",
+    "eslint": "7.x"
   },
   "husky": {
     "hooks": {
-      "pre-commit": "lint-staged && npm run lint"
+      "pre-commit": "npm run pre-commit"
     }
-  },
-  "lint-staged": {
-    "*": [
-      "npm run format",
-      "git add"
-    ]
   }
 }

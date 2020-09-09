@@ -13,18 +13,17 @@ export * from './StandardButton';
 export * from './NotFoundError';
 export * from './ButtonNotFoundError';
 export * from './plugins/WebApi';
-export * from './plugins/DebugWebUI';
 
 export function sendButtonToDevice(deviceName: string, button?: string): ButtonHandler {
-  return async (
-    buttonParam: string,
-    request: RouteHandlerRequest,
-    response: RouteHandlerResponse,
-    next: NextFunction,
-  ): Promise<void> => {
-    if (!button) {
-      button = buttonParam;
-    }
-    await request.unisonht.redirect(`/device/${deviceName}/button/${button}`, request, response, next);
-  };
+    return async (
+        buttonParam: string,
+        request: RouteHandlerRequest,
+        response: RouteHandlerResponse,
+        next: NextFunction,
+    ): Promise<void> => {
+        if (!button) {
+            button = buttonParam;
+        }
+        await request.unisonht.redirect(`/device/${deviceName}/button/${button}`, request, response, next);
+    };
 }
