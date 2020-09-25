@@ -1,5 +1,5 @@
 import { SupportedButtons, UnisonHTPlugin } from '../UnisonHTPlugin';
-import { UnisonHT } from '../UnisonHT';
+import { ModeStatusResponse, ModeStatusResponseButtons, UnisonHT } from '../UnisonHT';
 import { RouteHandlerRequest } from '../RouteHandlerRequest';
 import { RouteHandlerResponse } from '../RouteHandlerResponse';
 import { UnisonHTMode } from '../UnisonHTMode';
@@ -23,9 +23,23 @@ export class ModeInfo implements UnisonHTPlugin {
         request: RouteHandlerRequest,
         response: RouteHandlerResponse,
     ): Promise<void> {
-        await response.send({
-            type: mode.constructor.name,
+        const buttons: ModeStatusResponseButtons = {};
+        const modeButtons = mode.getSupportedButtons();
+        Object.keys(modeButtons).forEach((button) => {
+            const b = modeButtons[button];
+            buttons[button] = {
+                name: b.name,
+                description: b.description,
+            };
         });
+
+        const result: ModeStatusResponse = {
+            name: mode.getModeName(),
+            type: mode.constructor.name,
+            buttons,
+        };
+
+        await response.send(result);
     }
 
     public getSupportedButtons(): SupportedButtons {

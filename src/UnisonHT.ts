@@ -53,6 +53,21 @@ export interface DeviceStatusResponse {
     [key: string]: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
+export interface ModeStatusResponseButtons {
+    [button: string]: {
+        name: string;
+        description?: string;
+    };
+}
+
+export interface ModeStatusResponse {
+    name: string;
+    type: string;
+    buttons: ModeStatusResponseButtons;
+
+    [key: string]: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+}
+
 export type NextFunction = (err?: Error) => void;
 
 export type ButtonHandler = (
