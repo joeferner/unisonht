@@ -20,6 +20,9 @@ export class CurrentMode implements UnisonHTMode {
         unisonht.get(this, '/mode', {
             handler: this.handleModeInfo.bind(this),
         });
+        unisonht.post(this, '/mode/:modeName', {
+            handler: this.handleSetMode.bind(this),
+        });
         unisonht.get(this, ':partialPath*', {
             handler: this.handle.bind(this),
         });
@@ -32,7 +35,23 @@ export class CurrentMode implements UnisonHTMode {
         const currentMode = request.unisonht.getCurrentMode();
         response.send({
             currentMode: currentMode ? currentMode.getModeName() : null,
+            modes: request.unisonht
+                .getModes()
+                .filter((mode) => mode.getModeName() !== 'current')
+                .map((mode) => {
+                    return {
+                        modeName: mode.getModeName(),
+                    };
+                }),
         });
+    }
+
+    private async handleSetMode(request: RouteHandlerRequest, response: RouteHandlerResponse): Promise<void> {
+        if (!request.parameters.modeName) {
+            throw new Error(`modeName required`);
+        }
+        await request.unisonht.changeMode(request.parameters.modeName);
+        response.send({});
     }
 
     private async handle(

@@ -74,6 +74,14 @@ export class WebApi implements UnisonHTPlugin {
                 if (!result) {
                     res.statusCode = 204;
                     res.end();
+                } else if (typeof result === 'string' || result instanceof String) {
+                    res.statusCode = 200;
+                    res.setHeader('Content-Type', 'text/html');
+                    res.end(result);
+                } else if (result && result.contentType && result.statusCode) {
+                    res.statusCode = result.statusCode;
+                    res.setHeader('Content-Type', result.contentType);
+                    res.end(result.content);
                 } else {
                     res.statusCode = 200;
                     res.setHeader('Content-Type', 'application/json');
