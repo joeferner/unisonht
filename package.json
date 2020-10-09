@@ -1,6 +1,6 @@
 {
   "name": "@unisonht/unisonht",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "UnisonHT - Unified Home Theatre",
   "main": "dist/index.js",
   "types": "src/index.ts",
