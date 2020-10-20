@@ -19,6 +19,8 @@
     1. Remove `pi` user - `sudo deluser -remove-home pi`
 1. *[Optional]* No password ssh
     1. Copy ssh keys to Raspberry Pi - From your computer `ssh-copy-id username@RASPBERRY_PI_IP`
+    1. Alternativly copy private key - `vi ~/.ssh/id_rsa`. Then `chmod 400 ~/.ssh/id_rsa`
+    1. Alternativly copy public key over `vi ~/.ssh/authorized_keys`. Then `chmod 400 ~/.ssh/authorized_keys`
 1. *[Optional]* Extend SD card life by changing Linux to read only
     1. Download the read only script - `wget https://raw.githubusercontent.com/joeferner/unisonht/master/docs/raspberry-pi/read-only-fs.sh`
     1. Make it executable `chmod a+x read-only-fs.sh`
@@ -47,6 +49,8 @@
     1. Extract it - `unzip master.zip; cd pigpio-master`
     1. Make it - `make`
     1. Install it - `sudo make install`
+1. *[Optional]* Install Git
+    1. `sudo apt-get install -y git`
 1. Install pm2
     1. Install it - `sudo npm install pm2 -g`
     1. Begin on startup - `pm2 startup` (replace your username with root, and replace the home directory with `/root` and run the command)
