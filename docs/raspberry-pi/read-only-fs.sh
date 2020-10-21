@@ -155,6 +155,7 @@ replace /etc/fstab "ext4\s*defaults,noatime\s" "ext4    defaults,noatime,ro "
 append1 /etc/fstab "/var/log" "tmpfs /var/log tmpfs nodev,nosuid 0 0"
 append1 /etc/fstab "/var/tmp" "tmpfs /var/tmp tmpfs nodev,nosuid 0 0"
 append1 /etc/fstab "\s/tmp"   "tmpfs /tmp    tmpfs nodev,nosuid 0 0"
+append1 /etc/fstab "\s/root/.pm2"   "tmpfs /root/.pm2    tmpfs nodev,nosuid 0 0"
 
 # PROMPT FOR REBOOT --------------------------------------------------------
 
