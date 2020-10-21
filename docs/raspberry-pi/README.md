@@ -54,5 +54,4 @@
 1. Install pm2
     1. Install it - `sudo npm install pm2 -g`
     1. Begin on startup - `pm2 startup` (replace your username with root, and replace the home directory with `/root` and run the command)
-    1. Start your app - `sudo pm2 start ecosystem.config.js`
-    1. Save your app - `sudo pm2 save`
+    1. If you are running your filesystem readonly you will need to start your app each boot in `/etc/rc.local` because `/root/.pm2` directory is mount as a temporary file system
