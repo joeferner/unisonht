@@ -145,11 +145,14 @@ touch /tmp/dhcpcd.resolv.conf
 rm /etc/resolv.conf
 ln -s /tmp/dhcpcd.resolv.conf /etc/resolv.conf
 
+mkdir /root/.pm2
+
 # Make edits to fstab
 # make / ro
 # tmpfs /var/log tmpfs nodev,nosuid 0 0
 # tmpfs /var/tmp tmpfs nodev,nosuid 0 0
 # tmpfs /tmp     tmpfs nodev,nosuid 0 0
+# tmpfs /root/.pm2     tmpfs nodev,nosuid 0 0
 replace /etc/fstab "vfat\s*defaults\s" "vfat    defaults,ro "
 replace /etc/fstab "ext4\s*defaults,noatime\s" "ext4    defaults,noatime,ro "
 append1 /etc/fstab "/var/log" "tmpfs /var/log tmpfs nodev,nosuid 0 0"
