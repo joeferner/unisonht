@@ -22,12 +22,49 @@
                                 "examples": {
                                     "mode": {
                                         "value": {
-                                            "mode": "TV"
+                                            "mode": "tv"
                                         }
                                     }
                                 }
                             }
                         }
+                    }
+                }
+            }
+        },
+        "/api/v1/mode/{modeName}": {
+            "post": {
+                "operationId": "switchMode",
+                "summary": "Switch to the given mode",
+                "parameters": [
+                    {
+                        "name": "modeName",
+                        "in": "path",
+                        "description": "Name of the mode to switch to",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "mode": {
+                                        "value": {
+                                            "previousMode": "off",
+                                            "mode": "tv"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Mode not found"
                     }
                 }
             }
