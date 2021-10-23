@@ -19,7 +19,7 @@ modes:
             - type: http
               url: http://localhost:8081/api/v1/transmit/receiver/input-tv
 
-buttonMapping:
+buttons:
   volumeUp:
     actions:
       - type: http

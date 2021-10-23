@@ -22,12 +22,16 @@ impl fmt::Display for ConfigError {
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Config {
     pub modes: HashMap<String, ConfigMode>,
+    #[serde(default)]
+    pub buttons: HashMap<String, ConfigActionsWrapper>,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct ConfigMode {
     pub enter: Option<ConfigActionsWrapper>,
     pub exit: Option<ConfigActionsWrapper>,
+    #[serde(default)]
+    pub buttons: HashMap<String, ConfigActionsWrapper>,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]

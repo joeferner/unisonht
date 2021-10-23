@@ -1,5 +1,6 @@
 use crate::actions::run_actions;
 use crate::actions::ActionError;
+use crate::models::config::ConfigActionsWrapper;
 use crate::Config;
 use log::{error, info};
 use std::fmt;
@@ -73,5 +74,20 @@ impl AppState {
         *state_mode = mode_name.to_owned();
         info!("mode switched to {}", mode_name);
         return Result::Ok(state_mode.to_owned());
+    }
+
+    pub fn get_button(&self, button_name: &str) -> Option<&ConfigActionsWrapper> {
+        let current_mode_name = self.get_mode();
+        if let Option::Some(mode) = self.config.modes.get(&current_mode_name) {
+            if let Option::Some(button) = mode.buttons.get(button_name) {
+                return Option::Some(button);
+            }
+        }
+
+        if let Option::Some(button) = self.config.buttons.get(button_name) {
+            return Option::Some(button);
+        }
+
+        return Option::None;
     }
 }

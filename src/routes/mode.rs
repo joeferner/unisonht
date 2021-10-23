@@ -34,7 +34,7 @@ pub async fn switch_mode(
             mode,
         }),
         Result::Err(err) => {
-            error!("failed to switch mode: {}", err);
+            error!("failed to switch mode {}: {}", mode_name, err);
             match err {
                 AppStateError::InvalidMode(_mode) => HttpResponse::NotFound().finish(),
                 _ => HttpResponse::InternalServerError().finish(),

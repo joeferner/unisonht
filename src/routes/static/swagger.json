@@ -20,7 +20,7 @@
                         "content": {
                             "application/json": {
                                 "examples": {
-                                    "mode": {
+                                    "standard response": {
                                         "value": {
                                             "mode": "tv"
                                         }
@@ -53,7 +53,7 @@
                         "content": {
                             "application/json": {
                                 "examples": {
-                                    "mode": {
+                                    "standard response": {
                                         "value": {
                                             "previousMode": "off",
                                             "mode": "tv"
@@ -65,6 +65,38 @@
                     },
                     "404": {
                         "description": "Mode not found"
+                    }
+                }
+            }
+        },
+        "/api/v1/button/{buttonName}": {
+            "post": {
+                "operationId": "pressButton",
+                "summary": "Press the button first use the current mode then using the global buttons",
+                "parameters": [
+                    {
+                        "name": "buttonName",
+                        "in": "path",
+                        "description": "Name of the button to press",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "standard response": {}
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Button not found"
                     }
                 }
             }

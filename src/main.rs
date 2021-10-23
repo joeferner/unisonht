@@ -3,6 +3,7 @@ mod models;
 mod routes;
 
 use crate::models::config::Config;
+use crate::routes::button::press_button;
 use actix_web::{App, HttpServer};
 use log::info;
 use models::app_state::AppState;
@@ -41,6 +42,7 @@ async fn main() -> std::io::Result<()> {
             .service(swagger_json)
             .service(get_mode)
             .service(switch_mode)
+            .service(press_button)
     })
     .bind(bind.clone())?
     .run();
