@@ -1,0 +1,36 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "UnisonHT",
+        "version": "1.0.0",
+        "description": "UnisonHT web server.",
+        "license": {
+            "name": "MIT",
+            "url": "https://raw.githubusercontent.com/joeferner/unisonht/master/LICENSE.txt"
+        }
+    },
+    "paths": {
+        "/api/v1/mode": {
+            "get": {
+                "operationId": "getMode",
+                "summary": "Get current mode",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "mode": {
+                                        "value": {
+                                            "mode": "TV"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
