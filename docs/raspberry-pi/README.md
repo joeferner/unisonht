@@ -16,7 +16,7 @@
 1. *[Optional]* Change default `pi` user
     1. Create a new user - `sudo adduser username`
     1. Allow user to sudo - `sudo usermod -a -G sudo username`
-    1. Allow user to use serial port - `sudo usermod -a -G dialout username`
+    1. Allow user to use serial port - `sudo usermod -a -G dialout username` and `sudo usermod -a -G gpio username`
     1. Login as new user - `ssh username@RASPBERRY_PI_IP`
     1. Remove `pi` user - `sudo deluser -remove-home pi`
 1. *[Optional]* No password ssh
