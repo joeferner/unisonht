@@ -1,1 +1,3 @@
-<app-config-graph></app-config-graph>
+<div #graphWrapper class="graph-wrapper">
+    <app-config-graph *ngIf="nodes" [viewBox]="viewBox" [nodes]="nodes"></app-config-graph>
+</div>

@@ -11,7 +11,6 @@ import {
   getStatusCodeFromError,
   setStatusCodeOnError,
 } from "./types/ErrorWithStatusCode";
-import { Express } from "express";
 import {
   Request,
   ParamsDictionary,
@@ -24,8 +23,8 @@ export class UnisonHTServer {
   private readonly debug = Debug("unisonht:server");
   private readonly app: Express;
   private readonly plugins: IUnisonHTPlugin[] = [];
-  private readonly nodes: UnisonHTNode[] = [];
-  private config: UnisonHTConfig;
+  private readonly _nodes: UnisonHTNode[] = [];
+  private _config: UnisonHTConfig;
   private _mode: string;
 
   constructor(config?: UnisonHTConfig) {
@@ -35,7 +34,7 @@ export class UnisonHTServer {
       "dist",
       "swagger.json"
     ));
-    this.config = {
+    this._config = {
       defaultMode: "OFF",
       modes: ["OFF"],
       nodes: [],
@@ -241,6 +240,14 @@ export class UnisonHTServer {
 
   get mode(): string {
     return this._mode;
+  }
+
+  get nodes(): UnisonHTNode[] {
+    return this._nodes;
+  }
+
+  get config(): UnisonHTConfig {
+    return this._config;
   }
 }
 

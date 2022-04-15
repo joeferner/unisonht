@@ -1,0 +1,3 @@
+<svg [attr.viewBox]="viewBox" xmlns="http://www.w3.org/2000/svg">
+  <g *ngFor="let node of nodes; let i = index" app-config-graph-node [node]="node" [attr.transform]="'translate(100,'+(i*100+10)+')'"></g>
+</svg>

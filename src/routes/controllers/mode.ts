@@ -2,21 +2,9 @@ import { Body, Get, Post, Response, Route, SuccessResponse } from "tsoa";
 import { UnisonHTServer } from "../../UnisonHTServer";
 import { StatusCodes } from "http-status-codes";
 
-interface GetModeResponse {
-  mode: string;
-}
-
-interface SetModeRequest {
-  mode: string;
-}
-
-interface SetModeResponse {
-  mode: string;
-}
-
 @Route("api/mode")
-export default class ModeController {
-  constructor(private readonly server: UnisonHTServer) {}
+export class ModeController {
+  constructor(private readonly server: UnisonHTServer) { }
 
   @Get("/")
   public async getMode(): Promise<GetModeResponse> {
@@ -34,4 +22,16 @@ export default class ModeController {
       mode: this.server.mode,
     };
   }
+}
+
+interface GetModeResponse {
+  mode: string;
+}
+
+interface SetModeRequest {
+  mode: string;
+}
+
+interface SetModeResponse {
+  mode: string;
 }
