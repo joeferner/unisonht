@@ -2,7 +2,7 @@
     "entryFile": "src/server.ts",
     "noImplicitAdditionalProperties": "throw-on-extras",
     "spec": {
-        "outputDirectory": "public/dist/unisonht-public/",
+        "outputDirectory": "dist/",
         "specVersion": 3
     }
 }

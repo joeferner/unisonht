@@ -1,0 +1,21 @@
+{
+    "nodes": [
+        {
+            "id": "17eb8406-5cd4-4b8f-bca5-670a46a974dc",
+            "pluginId": "unisonht:web-interface",
+            "data": {
+                "name": "Remote 1",
+                "buttons": [
+                    {
+                        "name": "Volume Up",
+                        "value": "VOLUME_UP"
+                    },
+                    {
+                        "name": "Volume Down",
+                        "value": "VOLUME_DOWN"
+                    }
+                ]
+            }
+        }
+    ]
+}

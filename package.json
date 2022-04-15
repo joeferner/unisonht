@@ -11,7 +11,7 @@
     "prebuild": "npm run swagger",
     "build": "tsc",
     "build:watch": "tsc --watch",
-    "start:watch": "DEBUG=unisonht:* concurrently \"ts-node-dev --respawn --transpile-only --ignore-watch public/ src/bin/server.ts\" \"nodemon --ext ts --ignore public/ -x tsoa spec\"",
+    "start:watch": "DEBUG=unisonht:* concurrently \"tsc --watch\" \"ts-node-dev --respawn --transpile-only --ignore-watch public/ src/bin/server.ts --config sample.config.json\" \"nodemon --ext ts --ignore public/ -x tsoa spec\"",
     "swagger": "tsoa spec"
   },
   "repository": {
