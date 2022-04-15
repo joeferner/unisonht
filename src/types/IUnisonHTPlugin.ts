@@ -6,6 +6,7 @@ import {
   NextFunction,
 } from "express-serve-static-core";
 import { ParsedQs } from "qs";
+import { UnisonHTServer } from "../UnisonHTServer";
 import { OpenApi } from "./openApi/v3/OpenApi";
 import { UnisonHTConfig, UnisonHTNodeConfig } from "./UnisonHTConfig";
 import { UnisonHTNode } from "./UnisonHTNode";
@@ -24,10 +25,14 @@ export interface IUnisonHTPlugin {
 
   updateSwaggerJson?(swaggerJson: OpenApi, options: PluginOptions): void;
 
-  createNode(config: UnisonHTNodeConfig, options: PluginOptions): Promise<UnisonHTNode>;
+  createNode(
+    config: UnisonHTNodeConfig,
+    options: PluginOptions
+  ): Promise<UnisonHTNode>;
 }
 
 export interface PluginOptions {
+  server: UnisonHTServer;
   app: Express;
   config: UnisonHTConfig;
 }

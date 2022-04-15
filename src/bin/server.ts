@@ -1,7 +1,8 @@
-import { Server } from "../server";
+import { UnisonHTServer } from "../UnisonHTServer";
 import yargs from "yargs";
 import { WebInterfacePlugin } from "../plugins/WebInterfacePlugin";
 import fs from "fs";
+import { DebugPlugin } from "../plugins/DebugPlugin";
 
 async function run() {
   const args = await yargs
@@ -19,8 +20,9 @@ async function run() {
 
   const config = JSON.parse(await fs.promises.readFile(args.config, "utf-8"));
 
-  const server = new Server(config);
+  const server = new UnisonHTServer(config);
   server.addPlugin(new WebInterfacePlugin());
+  server.addPlugin(new DebugPlugin());
   server.start({ port: args.port });
 }
 

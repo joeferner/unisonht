@@ -10,6 +10,7 @@ import {
 import { ParsedQs } from "qs";
 import { UnisonHTNodeConfig } from "../types/UnisonHTConfig";
 import { UnisonHTNode } from "../types/UnisonHTNode";
+import { UnisonHTServer } from "../UnisonHTServer";
 
 export class WebInterfacePlugin implements IUnisonHTPlugin {
   get id(): string {
@@ -24,32 +25,44 @@ export class WebInterfacePlugin implements IUnisonHTPlugin {
     config: UnisonHTNodeConfig,
     options: PluginOptions
   ): Promise<UnisonHTNode> {
-    return Promise.resolve(new WebInterfaceNode(this, config));
+    return Promise.resolve(new WebInterfaceNode(this, config, options.server));
   }
 }
 
 export class WebInterfaceNode implements UnisonHTNode {
+  private readonly server: UnisonHTServer;
   private readonly plugin: WebInterfacePlugin;
   private readonly config: UnisonHTNodeConfig;
 
-  constructor(plugin: WebInterfacePlugin, config: UnisonHTNodeConfig) {
+  constructor(
+    plugin: WebInterfacePlugin,
+    config: UnisonHTNodeConfig,
+    server: UnisonHTServer
+  ) {
+    this.server = server;
     this.plugin = plugin;
     this.config = config;
   }
 
+  get id(): string {
+    return this.config.id;
+  }
+
   get urlPrefix(): string {
-    const data = this.config.data as WebInterfacePluginNodeData;
-    const remoteName = this.nameToUrl(data.name);
+    const remoteName = this.nameToUrl(this.configData.name);
     return `${this.plugin.urlPrefix}${remoteName}/`;
   }
 
+  get configData(): WebInterfacePluginNodeData {
+    return this.config.data as WebInterfacePluginNodeData;
+  }
+
   updateSwaggerJson(swaggerJson: OpenApi, options: PluginOptions): void {
-    const data = this.config.data as WebInterfacePluginNodeData;
     const response: OpenApiResponse = {
       description: "Button pressed successfully",
     };
-    for (const button of data.buttons) {
-      swaggerJson.paths[this.toPath(data, button)] = {
+    for (const button of this.configData.buttons) {
+      swaggerJson.paths[this.toPath(button)] = {
         post: {
           responses: {
             "204": response,
@@ -67,12 +80,9 @@ export class WebInterfaceNode implements UnisonHTNode {
     options: PluginOptions
   ): void {
     if (req.url.startsWith(this.plugin.urlPrefix)) {
-      const data = this.config.data as WebInterfacePluginNodeData;
-      for (const button of data.buttons) {
-        if (req.url === this.toPath(data, button)) {
-          // TODO emit value
-          resp.statusCode = 204;
-          resp.end();
+      for (const button of this.configData.buttons) {
+        if (req.url === this.toPath(button)) {
+          this.handleButtonWebRequest(req, resp, button);
           return;
         }
       }
@@ -81,10 +91,25 @@ export class WebInterfaceNode implements UnisonHTNode {
     next();
   }
 
-  private toPath(
-    data: WebInterfacePluginNodeData,
+  private async handleButtonWebRequest(
+    req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>,
+    resp: Response<any, Record<string, any>, number>,
     button: WebInterfacePluginNodeDataButton
-  ): string {
+  ): Promise<void> {
+    for (const output of this.configData.outputs) {
+      if (output.values.includes(button.value)) {
+        await this.emitOutput(output.name, button.value);
+      }
+    }
+    resp.statusCode = 204;
+    resp.end();
+  }
+
+  private emitOutput(name: string, value: string): Promise<void> {
+    return this.server.emitMessage(this, name, { value });
+  }
+
+  private toPath(button: WebInterfacePluginNodeDataButton): string {
     const buttonName = this.nameToUrl(button.name);
     return `${this.urlPrefix}${buttonName}`;
   }
@@ -97,9 +122,15 @@ export class WebInterfaceNode implements UnisonHTNode {
 export interface WebInterfacePluginNodeData {
   name: string;
   buttons: WebInterfacePluginNodeDataButton[];
+  outputs: WebInterfacePluginNodeDataOutput[];
 }
 
 export interface WebInterfacePluginNodeDataButton {
   name: string;
   value: string;
+}
+
+export interface WebInterfacePluginNodeDataOutput {
+  name: string;
+  values: string[];
 }

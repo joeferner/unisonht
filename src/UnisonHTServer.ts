@@ -2,14 +2,14 @@ import express, { Express } from "express";
 import Debug from "debug";
 import swaggerUi from "swagger-ui-express";
 import { router } from "./routes";
-import { IUnisonHTPlugin } from "./types/IUnisonHTPlugin";
+import { IUnisonHTPlugin, PluginOptions } from "./types/IUnisonHTPlugin";
 import path from "path";
 import { UnisonHTConfig } from "./types/UnisonHTConfig";
-import { UnisonHTNode } from "./types/UnisonHTNode";
+import { NodeOptions, UnisonHTNode } from "./types/UnisonHTNode";
 
 const debug = Debug("unisonht:server");
 
-export class Server {
+export class UnisonHTServer {
   private readonly app: Express;
   private readonly plugins: IUnisonHTPlugin[] = [];
   private readonly nodes: UnisonHTNode[] = [];
@@ -24,6 +24,7 @@ export class Server {
     ));
     this.config = {
       nodes: [],
+      edges: [],
       ...config,
     };
 
@@ -31,17 +32,25 @@ export class Server {
     this.app.use(express.json());
     this.app.get("/swagger.json", (req, resp) => {
       const newSwaggerJson = JSON.parse(JSON.stringify(swaggerJson));
-      
+
       for (const plugin of this.plugins) {
-        const pluginOptions = { app: this.app, config: this.config };
+        const pluginOptions: PluginOptions = {
+          server: this,
+          app: this.app,
+          config: this.config,
+        };
         plugin.updateSwaggerJson?.(newSwaggerJson, pluginOptions);
       }
 
       for (const node of this.nodes) {
-        const nodeOptions = { app: this.app, config: this.config };
+        const nodeOptions: NodeOptions = {
+          server: this,
+          app: this.app,
+          config: this.config,
+        };
         node.updateSwaggerJson?.(newSwaggerJson, nodeOptions);
       }
-      
+
       resp.json(newSwaggerJson);
     });
     this.app.use(
@@ -57,8 +66,25 @@ export class Server {
   }
 
   async start(options?: { port?: number }): Promise<void> {
+    await this.startPlugins();
+    await this.startNodes();
+
+    return new Promise((resolve) => {
+      const port = options?.port || 4201;
+      this.app.listen(port, () => {
+        debug(`listening http://localhost:${port}`);
+        resolve();
+      });
+    });
+  }
+
+  private async startPlugins(): Promise<void> {
     for (const plugin of this.plugins) {
-      const pluginOptions = { app: this.app, config: this.config };
+      const pluginOptions: PluginOptions = {
+        server: this,
+        app: this.app,
+        config: this.config,
+      };
       await plugin.initialize?.(pluginOptions);
       if (plugin.handleWebRequest) {
         this.app.use((req, resp, next) => {
@@ -70,7 +96,9 @@ export class Server {
         });
       }
     }
+  }
 
+  private async startNodes(): Promise<void> {
     for (const nodeConfig of this.config.nodes) {
       const plugin = this.plugins.find((p) => p.id === nodeConfig.pluginId);
       if (!plugin) {
@@ -78,8 +106,16 @@ export class Server {
           `Could not find plugin: ${nodeConfig.pluginId} for node ${nodeConfig.id}`
         );
       }
-      const pluginOptions = { app: this.app, config: this.config };
-      const nodeOptions = { app: this.app, config: this.config, nodeConfig };
+      const pluginOptions: PluginOptions = {
+        server: this,
+        app: this.app,
+        config: this.config,
+      };
+      const nodeOptions: NodeOptions = {
+        server: this,
+        app: this.app,
+        config: this.config,
+      };
       const node = await plugin.createNode(nodeConfig, pluginOptions);
       if (node.handleWebRequest) {
         this.app.use((req, resp, next) => {
@@ -92,17 +128,33 @@ export class Server {
       }
       this.nodes.push(node);
     }
-
-    return new Promise((resolve) => {
-      const port = options?.port || 4201;
-      this.app.listen(port, () => {
-        debug(`listening http://localhost:${port}`);
-        resolve();
-      });
-    });
   }
 
   addPlugin(plugin: IUnisonHTPlugin): void {
     this.plugins.push(plugin);
+  }
+
+  async emitMessage(
+    fromNode: UnisonHTNode,
+    outputName: string,
+    value: any
+  ): Promise<void> {
+    for (const edge of this.config.edges) {
+      if (
+        edge.fromNodeId === fromNode.id &&
+        edge.fromNodeOutput === outputName
+      ) {
+        const toNode = this.nodes.find((n) => n.id === edge.toNodeId);
+        if (!toNode) {
+          throw new Error(
+            `edge connected to non-existing node: ${edge.toNodeId}`
+          );
+        }
+        if (!toNode.handleMessage) {
+          throw new Error(`node ${toNode.id} missing handleMessage function`);
+        }
+        await toNode.handleMessage(edge.toNodeInput, value);
+      }
+    }
   }
 }

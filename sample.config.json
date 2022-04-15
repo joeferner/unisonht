@@ -7,6 +7,10 @@
                 "name": "Remote 1",
                 "buttons": [
                     {
+                        "name": "Power",
+                        "value": "POWER_TOGGLE"
+                    },
+                    {
                         "name": "Volume Up",
                         "value": "VOLUME_UP"
                     },
@@ -14,8 +18,41 @@
                         "name": "Volume Down",
                         "value": "VOLUME_DOWN"
                     }
+                ],
+                "outputs": [
+                    {
+                        "name": "Power",
+                        "values": [
+                            "POWER_TOGGLE"
+                        ]
+                    },
+                    {
+                        "name": "Other",
+                        "values": [
+                            "VOLUME_UP",
+                            "VOLUME_DOWN"
+                        ]
+                    }
                 ]
             }
+        },
+        {
+            "id": "ed148c6b-aceb-4b1c-9041-2931467f9a8b",
+            "pluginId": "unisonht:debug"
+        }
+    ],
+    "edges": [
+        {
+            "fromNodeId": "17eb8406-5cd4-4b8f-bca5-670a46a974dc",
+            "fromNodeOutput": "Power",
+            "toNodeId": "ed148c6b-aceb-4b1c-9041-2931467f9a8b",
+            "toNodeInput": "All"
+        },
+        {
+            "fromNodeId": "17eb8406-5cd4-4b8f-bca5-670a46a974dc",
+            "fromNodeOutput": "Other",
+            "toNodeId": "ed148c6b-aceb-4b1c-9041-2931467f9a8b",
+            "toNodeInput": "All"
         }
     ]
 }

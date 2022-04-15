@@ -1,5 +1,5 @@
 {
-    "entryFile": "src/server.ts",
+    "entryFile": "src/UnisonHTServer.ts",
     "noImplicitAdditionalProperties": "throw-on-extras",
     "spec": {
         "outputDirectory": "dist/",
