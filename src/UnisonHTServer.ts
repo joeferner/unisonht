@@ -122,7 +122,7 @@ export class UnisonHTServer {
       const node = await plugin.createNode(nodeConfig, pluginOptions);
       if (node.handleWebRequest) {
         this.app.use((req, resp, next) => {
-          if (node.handleWebRequest) {
+          if (node.handleWebRequest && this.isNodeActive(node)) {
             node.handleWebRequest(req, resp, next, nodeOptions);
           } else {
             next();
@@ -135,6 +135,19 @@ export class UnisonHTServer {
 
   addPlugin(plugin: IUnisonHTPlugin): void {
     this.plugins.push(plugin);
+  }
+
+  isNodeActive(node: UnisonHTNode, currentMode?: string): boolean {
+    const nodeOptions: NodeOptions = {
+      app: this.app,
+      config: this.config,
+      server: this,
+    };
+    return (
+      node.isActive?.(nodeOptions) ??
+      node.config.activeModes?.includes(currentMode ?? this.mode) ??
+      true
+    );
   }
 
   async emitMessage(
@@ -154,17 +167,7 @@ export class UnisonHTServer {
             `edge connected to non-existing node: ${edge.toNodeId}`
           );
         }
-        const nodeOptions: NodeOptions = {
-          app: this.app,
-          config: this.config,
-          server: this,
-        };
-
-        const isActive =
-          toNode.isActive?.(nodeOptions) ??
-          toNode.config.activeModes?.includes(currentMode) ??
-          true;
-        if (!isActive) {
+        if (!this.isNodeActive(toNode, currentMode)) {
           this.debug("node %s not active... skipping", toNode.id);
           continue;
         }
