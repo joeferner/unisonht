@@ -31,6 +31,3 @@ export class Server {
     });
   }
 }
-
-const port = parseInt(process.env.SERVER_PORT ?? "4201");
-new Server().start({ port });
