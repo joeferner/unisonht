@@ -31,7 +31,10 @@
     1. Sync time on startup - Add the following to the end of `/etc/rc.local`
     
            (systemctl stop ntp; ntpd -gq; systemctl start ntp) || echo "NTP failed"
-    
+
+1. Enable WiFi
+    1. `sudo raspi-config`
+    1. "System Options" -> "Wireless LAN"    
 1. Enable USART
     1. `sudo raspi-config`
        1. "Interfacing Options" -> "Serial"
