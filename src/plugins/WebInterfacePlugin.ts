@@ -13,6 +13,7 @@ import { UnisonHTNode } from "../types/UnisonHTNode";
 import { UnisonHTServer } from "../UnisonHTServer";
 import WebInterfacePluginNodeDataTypeInfo from "../../dist/WebInterfacePlugin-ti";
 import { createCheckers } from "ts-interface-checker";
+import { StatusCodes } from "http-status-codes";
 
 export class WebInterfacePlugin implements IUnisonHTPlugin {
   get id(): string {
@@ -70,7 +71,7 @@ export class WebInterfaceNode implements UnisonHTNode {
       swaggerJson.paths[this.getButtonUrl(button)] = {
         post: {
           responses: {
-            "204": response,
+            [StatusCodes.NO_CONTENT]: response,
           },
           tags: [this.plugin.id],
         },
@@ -111,7 +112,7 @@ export class WebInterfaceNode implements UnisonHTNode {
         await this.emitOutput(output.name, button.value);
       }
     }
-    resp.statusCode = 204;
+    resp.statusCode = StatusCodes.NO_CONTENT;
     resp.end();
   }
 

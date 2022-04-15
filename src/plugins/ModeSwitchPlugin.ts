@@ -40,7 +40,7 @@ export class ModeSwitchNode implements UnisonHTNode {
   }
 
   handleMessage?(inputName: string, value: any): Promise<void> {
-    return this.server.switchModes(this.configData.mode);
+    return this.server.switchMode(this.configData.mode);
   }
 }
 

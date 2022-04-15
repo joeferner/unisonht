@@ -6,6 +6,19 @@ import { IUnisonHTPlugin, PluginOptions } from "./types/IUnisonHTPlugin";
 import path from "path";
 import { UnisonHTConfig } from "./types/UnisonHTConfig";
 import { NodeOptions, UnisonHTNode } from "./types/UnisonHTNode";
+import { StatusCodes } from "http-status-codes";
+import {
+  getStatusCodeFromError,
+  setStatusCodeOnError,
+} from "./types/ErrorWithStatusCode";
+import { Express } from "express";
+import {
+  Request,
+  ParamsDictionary,
+  Response,
+  NextFunction,
+} from "express-serve-static-core";
+import { ParsedQs } from "qs";
 
 export class UnisonHTServer {
   private readonly debug = Debug("unisonht:server");
@@ -74,6 +87,7 @@ export class UnisonHTServer {
 
     return new Promise((resolve) => {
       const port = options?.port || 4201;
+      this.app.use(errorHandler);
       this.app.listen(port, () => {
         this.debug(`listening http://localhost:${port}`);
         resolve();
@@ -180,10 +194,12 @@ export class UnisonHTServer {
     }
   }
 
-  async switchModes(newMode: string): Promise<void> {
+  async switchMode(newMode: string): Promise<void> {
     this.debug("switching mode to: %s", newMode);
     if (!this.config.modes.includes(newMode)) {
-      throw new Error(`invalid mode: ${newMode}`);
+      const err = new Error(`invalid mode: ${newMode}`);
+      setStatusCodeOnError(err, StatusCodes.BAD_REQUEST);
+      throw err;
     }
 
     for (const plugin of this.plugins) {
@@ -214,4 +230,17 @@ export class UnisonHTServer {
   get mode(): string {
     return this._mode;
   }
+}
+
+function errorHandler(
+  err: Error,
+  _req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>,
+  res: Response<any, Record<string, any>, number>,
+  next: NextFunction
+) {
+  if (res.headersSent) {
+    return next(err);
+  }
+  res.status(getStatusCodeFromError(err) ?? 500);
+  res.json({ error: err.message });
 }
