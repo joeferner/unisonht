@@ -1,19 +1,19 @@
 import express, { Express } from "express";
 import Debug from "debug";
 import swaggerUi from "swagger-ui-express";
-import { router } from "./routes";
+import { createRouter } from "./routes";
 import { IUnisonHTPlugin, PluginOptions } from "./types/IUnisonHTPlugin";
 import path from "path";
 import { UnisonHTConfig } from "./types/UnisonHTConfig";
 import { NodeOptions, UnisonHTNode } from "./types/UnisonHTNode";
 
-const debug = Debug("unisonht:server");
-
 export class UnisonHTServer {
+  private readonly debug = Debug("unisonht:server");
   private readonly app: Express;
   private readonly plugins: IUnisonHTPlugin[] = [];
   private readonly nodes: UnisonHTNode[] = [];
   private config: UnisonHTConfig;
+  private _mode: string;
 
   constructor(config?: UnisonHTConfig) {
     const swaggerJson = require(path.join(
@@ -23,10 +23,13 @@ export class UnisonHTServer {
       "swagger.json"
     ));
     this.config = {
+      defaultMode: "OFF",
+      modes: ["OFF"],
       nodes: [],
       edges: [],
       ...config,
     };
+    this._mode = this.config.defaultMode;
 
     this.app = express();
     this.app.use(express.json());
@@ -62,7 +65,7 @@ export class UnisonHTServer {
         },
       })
     );
-    this.app.use(router);
+    this.app.use(createRouter(this));
   }
 
   async start(options?: { port?: number }): Promise<void> {
@@ -72,7 +75,7 @@ export class UnisonHTServer {
     return new Promise((resolve) => {
       const port = options?.port || 4201;
       this.app.listen(port, () => {
-        debug(`listening http://localhost:${port}`);
+        this.debug(`listening http://localhost:${port}`);
         resolve();
       });
     });
@@ -139,6 +142,7 @@ export class UnisonHTServer {
     outputName: string,
     value: any
   ): Promise<void> {
+    const currentMode = this.mode;
     for (const edge of this.config.edges) {
       if (
         edge.fromNodeId === fromNode.id &&
@@ -150,11 +154,61 @@ export class UnisonHTServer {
             `edge connected to non-existing node: ${edge.toNodeId}`
           );
         }
+        const nodeOptions: NodeOptions = {
+          app: this.app,
+          config: this.config,
+          server: this,
+        };
+
+        const isActive =
+          toNode.isActive?.(nodeOptions) ??
+          toNode.config.activeModes?.includes(currentMode) ??
+          true;
+        if (!isActive) {
+          this.debug("node %s not active... skipping", toNode.id);
+          continue;
+        }
         if (!toNode.handleMessage) {
           throw new Error(`node ${toNode.id} missing handleMessage function`);
         }
+        this.debug("sending message to %s", toNode.id);
         await toNode.handleMessage(edge.toNodeInput, value);
       }
     }
+  }
+
+  async switchModes(newMode: string): Promise<void> {
+    this.debug("switching mode to: %s", newMode);
+    if (!this.config.modes.includes(newMode)) {
+      throw new Error(`invalid mode: ${newMode}`);
+    }
+
+    for (const plugin of this.plugins) {
+      if (plugin.switchMode) {
+        const pluginOptions: PluginOptions = {
+          server: this,
+          app: this.app,
+          config: this.config,
+        };
+        await plugin.switchMode(newMode, pluginOptions);
+      }
+    }
+
+    for (const node of this.nodes) {
+      if (node.switchMode) {
+        const nodeOptions: NodeOptions = {
+          server: this,
+          app: this.app,
+          config: this.config,
+        };
+        await node.switchMode(newMode, nodeOptions);
+      }
+    }
+
+    this._mode = newMode;
+  }
+
+  get mode(): string {
+    return this._mode;
   }
 }

@@ -1,4 +1,6 @@
 export interface UnisonHTConfig {
+  defaultMode: string;
+  modes: string[];
   nodes: UnisonHTNodeConfig[];
   edges: UnisonHTEdgeConfig[];
 }
@@ -6,6 +8,7 @@ export interface UnisonHTConfig {
 export interface UnisonHTNodeConfig {
   id: string;
   pluginId: string;
+  activeModes?: string[];
   data: any;
 }
 

@@ -29,6 +29,8 @@ export interface IUnisonHTPlugin {
     config: UnisonHTNodeConfig,
     options: PluginOptions
   ): Promise<UnisonHTNode>;
+
+  switchMode?(newMode: string, options: PluginOptions): Promise<void>;
 }
 
 export interface PluginOptions {

@@ -30,22 +30,18 @@ export class WebInterfacePlugin implements IUnisonHTPlugin {
 }
 
 export class WebInterfaceNode implements UnisonHTNode {
-  private readonly server: UnisonHTServer;
-  private readonly plugin: WebInterfacePlugin;
-  private readonly config: UnisonHTNodeConfig;
-
   constructor(
-    plugin: WebInterfacePlugin,
-    config: UnisonHTNodeConfig,
-    server: UnisonHTServer
-  ) {
-    this.server = server;
-    this.plugin = plugin;
-    this.config = config;
-  }
+    private readonly plugin: WebInterfacePlugin,
+    private readonly _config: UnisonHTNodeConfig,
+    private readonly server: UnisonHTServer
+  ) {}
 
   get id(): string {
     return this.config.id;
+  }
+
+  get config(): UnisonHTNodeConfig {
+    return this._config;
   }
 
   get urlPrefix(): string {

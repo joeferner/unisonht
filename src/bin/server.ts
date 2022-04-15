@@ -3,6 +3,7 @@ import yargs from "yargs";
 import { WebInterfacePlugin } from "../plugins/WebInterfacePlugin";
 import fs from "fs";
 import { DebugPlugin } from "../plugins/DebugPlugin";
+import { ModeSwitchPlugin } from "../plugins/ModeSwitchPlugin";
 
 async function run() {
   const args = await yargs
@@ -23,6 +24,7 @@ async function run() {
   const server = new UnisonHTServer(config);
   server.addPlugin(new WebInterfacePlugin());
   server.addPlugin(new DebugPlugin());
+  server.addPlugin(new ModeSwitchPlugin());
   server.start({ port: args.port });
 }
 

@@ -1,4 +1,9 @@
 {
+    "defaultMode": "OFF",
+    "modes": [
+        "OFF",
+        "ON"
+    ],
     "nodes": [
         {
             "id": "17eb8406-5cd4-4b8f-bca5-670a46a974dc",
@@ -21,13 +26,13 @@
                 ],
                 "outputs": [
                     {
-                        "name": "Power",
+                        "name": "POWER",
                         "values": [
                             "POWER_TOGGLE"
                         ]
                     },
                     {
-                        "name": "Other",
+                        "name": "OTHER",
                         "values": [
                             "VOLUME_UP",
                             "VOLUME_DOWN"
@@ -39,20 +44,46 @@
         {
             "id": "ed148c6b-aceb-4b1c-9041-2931467f9a8b",
             "pluginId": "unisonht:debug"
+        },
+        {
+            "id": "1d839d1a-1221-4bff-9a7d-8c0ac526066f",
+            "pluginId": "unisonht:modeSwitch",
+            "activeModes": [
+                "OFF"
+            ],
+            "data": {
+                "mode": "ON"
+            }
+        },
+        {
+            "id": "6dabc481-beec-44ad-8f0d-dc2b494ecd2c",
+            "pluginId": "unisonht:modeSwitch",
+            "activeModes": [
+                "ON"
+            ],
+            "data": {
+                "mode": "OFF"
+            }
         }
     ],
     "edges": [
         {
             "fromNodeId": "17eb8406-5cd4-4b8f-bca5-670a46a974dc",
-            "fromNodeOutput": "Power",
-            "toNodeId": "ed148c6b-aceb-4b1c-9041-2931467f9a8b",
-            "toNodeInput": "All"
+            "fromNodeOutput": "POWER",
+            "toNodeId": "1d839d1a-1221-4bff-9a7d-8c0ac526066f",
+            "toNodeInput": "TOGGLE"
         },
         {
             "fromNodeId": "17eb8406-5cd4-4b8f-bca5-670a46a974dc",
-            "fromNodeOutput": "Other",
+            "fromNodeOutput": "POWER",
+            "toNodeId": "6dabc481-beec-44ad-8f0d-dc2b494ecd2c",
+            "toNodeInput": "TOGGLE"
+        },
+        {
+            "fromNodeId": "17eb8406-5cd4-4b8f-bca5-670a46a974dc",
+            "fromNodeOutput": "OTHER",
             "toNodeId": "ed148c6b-aceb-4b1c-9041-2931467f9a8b",
-            "toNodeInput": "All"
+            "toNodeInput": "ALL"
         }
     ]
 }

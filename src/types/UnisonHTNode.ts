@@ -8,10 +8,12 @@ import {
 import { ParsedQs } from "qs";
 import { UnisonHTServer } from "../UnisonHTServer";
 import { OpenApi } from "./openApi/v3/OpenApi";
-import { UnisonHTConfig } from "./UnisonHTConfig";
+import { UnisonHTConfig, UnisonHTNodeConfig } from "./UnisonHTConfig";
 
 export interface UnisonHTNode {
   get id(): string;
+
+  get config(): UnisonHTNodeConfig;
 
   handleWebRequest?(
     req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>,
@@ -23,6 +25,10 @@ export interface UnisonHTNode {
   updateSwaggerJson?(swaggerJson: OpenApi, options: NodeOptions): void;
 
   handleMessage?(inputName: string, value: any): Promise<void>;
+
+  isActive?(options: NodeOptions): boolean;
+
+  switchMode?(newMode: string, nodeOptions: NodeOptions): Promise<void>;
 }
 
 export interface NodeOptions {
