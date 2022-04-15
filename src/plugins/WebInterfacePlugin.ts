@@ -11,6 +11,8 @@ import { ParsedQs } from "qs";
 import { UnisonHTNodeConfig } from "../types/UnisonHTConfig";
 import { UnisonHTNode } from "../types/UnisonHTNode";
 import { UnisonHTServer } from "../UnisonHTServer";
+import WebInterfacePluginNodeDataTypeInfo from "../../dist/WebInterfacePlugin-ti";
+import { createCheckers } from "ts-interface-checker";
 
 export class WebInterfacePlugin implements IUnisonHTPlugin {
   get id(): string {
@@ -37,6 +39,9 @@ export class WebInterfaceNode implements UnisonHTNode {
     private readonly _config: UnisonHTNodeConfig,
     private readonly server: UnisonHTServer
   ) {
+    const typeCheckers = createCheckers(WebInterfacePluginNodeDataTypeInfo);
+    typeCheckers.WebInterfacePluginNodeData.check(_config.data);
+
     this.html = this.createHtml();
   }
 
@@ -136,9 +141,9 @@ export class WebInterfaceNode implements UnisonHTNode {
         .map((button) => {
           return `<button style="width: ${
             button.width * 100
-          }%;" onclick="handleButtonClick('${this.getButtonUrl(
-            button
-          )}')">${button.name}</button>`;
+          }%;" onclick="handleButtonClick('${this.getButtonUrl(button)}')">${
+            button.name
+          }</button>`;
         })
         .join("\n");
       return `<div>${rowHtml}</div>`;

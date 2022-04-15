@@ -11,8 +11,12 @@
     "prebuild": "npm run swagger",
     "build": "tsc",
     "build:watch": "tsc --watch",
-    "start:watch": "DEBUG=unisonht:* concurrently \"tsc --watch\" \"ts-node-dev --respawn --transpile-only --ignore-watch public/ src/bin/server.ts --config sample.config.json\" \"nodemon --ext ts --ignore public/ -x tsoa spec\"",
-    "swagger": "tsoa spec"
+    "server:watch": "ts-node-dev --respawn --transpile-only --ignore-watch public/ src/bin/server.ts --config sample.config.json",
+    "start:watch": "DEBUG=unisonht:* concurrently \"npm run build:watch\" \"npm run server:watch\" \"npm run swagger:watch\" \"npm run type-check:watch\"",
+    "swagger": "tsoa spec",
+    "swagger:watch": "nodemon --ext ts --ignore public/ --ignore dist/ -x npm run swagger",
+    "type-check": "ts-interface-builder --outDir dist/ src/types/UnisonHTConfig.ts src/plugins/ModeSwitchPlugin.ts src/plugins/WebInterfacePlugin.ts",
+    "type-check:watch": "nodemon --ext ts --ignore public/ --ignore dist/ -x npm run type-check"
   },
   "repository": {
     "type": "git",
@@ -38,6 +42,7 @@
     "@types/yargs": "^17.0.10",
     "concurrently": "^7.1.0",
     "nodemon": "^2.0.15",
+    "ts-interface-builder": "^0.3.3",
     "ts-node-dev": "^1.1.8",
     "typescript": "^4.6.3"
   },
@@ -45,6 +50,7 @@
     "debug": "^4.3.4",
     "express": "^4.17.3",
     "swagger-ui-express": "^4.3.0",
+    "ts-interface-checker": "^1.0.2",
     "tsoa": "^3.14.1",
     "yargs": "^17.4.1"
   }
