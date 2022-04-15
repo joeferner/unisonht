@@ -1,9 +1,9 @@
 :host {
+  display: flex;
+  flex-grow: 1;
+
+  .graph-wrapper {
     display: flex;
     flex-grow: 1;
-
-    .graph {
-        width: 500px;
-        height: 500px;
-    }
+  }
 }

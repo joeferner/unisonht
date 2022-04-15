@@ -1,4 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg">
-  <rect x="1" y="1" width="100" height="100" rx="5" fill="white" stroke="rgb(100,100,100)" stroke-width="1" />
-  <text x="10" y="10" font-size="10pt">{{node.pluginId}}</text>
-</svg>

@@ -9,9 +9,8 @@ import { GraphService } from 'src/services/graph.service';
 })
 export class ConfigPageComponent implements OnInit {
   nodes?: UnisonHTNodeConfig[];
-  viewBox = "0 0 100 100";
 
-  constructor(private graphService: GraphService, private changeDetector: ChangeDetectorRef) { }
+  constructor(private graphService: GraphService) { }
 
   ngOnInit(): void {
     this.refresh();
@@ -20,15 +19,5 @@ export class ConfigPageComponent implements OnInit {
   private async refresh(): Promise<void> {
     const resp = await this.graphService.getGraph();
     this.nodes = resp.nodes.map(n => n.config);
-  }
-
-  @ViewChild("graphWrapper") set graphWrapper(elemRef: ElementRef<HTMLDivElement> | undefined) {
-    if (elemRef?.nativeElement) {
-      const elem = elemRef.nativeElement;
-      new ResizeObserver(() => {
-        this.viewBox = `0 0 ${elem.offsetWidth} ${elem.offsetHeight}`;
-        this.changeDetector.detectChanges();
-      }).observe(elemRef.nativeElement);
-    }
   }
 }
