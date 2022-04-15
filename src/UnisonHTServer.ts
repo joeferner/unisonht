@@ -85,8 +85,20 @@ export class UnisonHTServer {
     await this.startPlugins();
     await this.startNodes();
 
+    const angularPath = path.join(
+      __dirname,
+      "..",
+      "public",
+      "dist",
+      "unisonht-public"
+    );
+
     return new Promise((resolve) => {
       const port = options?.port || 4201;
+      this.app.use(express.static(angularPath));
+      this.app.all("/*", (_req, res) => {
+        res.sendFile("index.html", { root: angularPath });
+      });
       this.app.use(errorHandler);
       this.app.listen(port, () => {
         this.debug(`listening http://localhost:${port}`);
