@@ -24,6 +24,7 @@ import { ParsedQs } from "qs";
 import { DeviceOptions, UnisonHTDevice } from "./types/UnisonHTDevice";
 import { UnisonHTDeviceFactory } from "./types/UnisonHTDeviceFactory";
 import { debug } from "console";
+import { UnisonHTEdge } from "./types/UnisonHTEdge";
 
 export class UnisonHTServer {
   private readonly debug = Debug("unisonht:server");
@@ -32,6 +33,7 @@ export class UnisonHTServer {
   private readonly nodeFactories: UnisonHTNodeFactory[] = [];
   private readonly devices: UnisonHTDevice[] = [];
   private readonly _nodes: UnisonHTNode[] = [];
+  private readonly _edges: UnisonHTEdge[] = [];
   private _config: UnisonHTConfig;
   private _mode: string;
 
@@ -91,6 +93,7 @@ export class UnisonHTServer {
   async start(options?: { port?: number }): Promise<void> {
     await this.startDevices();
     await this.startNodes();
+    await this.createEdges();
 
     const angularPath = path.join(
       __dirname,
@@ -195,7 +198,43 @@ export class UnisonHTServer {
         });
       }
 
-      this.nodes.push(node);
+      this._nodes.push(node);
+    }
+  }
+
+  private createEdges(): void {
+    for (const configEdge of this.config.edges) {
+      const fromNode = this.nodes.find((n) => n.id === configEdge.fromNodeId);
+      if (!fromNode) {
+        throw new Error(
+          `Could not find from node ${configEdge.fromNodeId} for edge ${configEdge.id}`
+        );
+      }
+      const fromNodeOutput = fromNode.outputs.find(
+        (o) => o.name === configEdge.fromNodeOutput
+      );
+      if (!fromNodeOutput) {
+        throw new Error(
+          `Could not find from node output ${configEdge.fromNodeOutput} for edge ${configEdge.id}`
+        );
+      }
+
+      const toNode = this.nodes.find((n) => n.id === configEdge.toNodeId);
+      if (!toNode) {
+        throw new Error(
+          `Could not find to node ${configEdge.toNodeId} for edge ${configEdge.id}`
+        );
+      }
+      const toNodeInput = toNode.inputs.find(
+        (o) => o.name === configEdge.toNodeInput
+      );
+      if (!toNodeInput) {
+        throw new Error(
+          `Could not find to node input ${configEdge.toNodeInput} for edge ${configEdge.id}`
+        );
+      }
+
+      this._edges.push(new UnisonHTEdge(configEdge));
     }
   }
 
@@ -280,6 +319,10 @@ export class UnisonHTServer {
 
   get nodes(): UnisonHTNode[] {
     return this._nodes;
+  }
+
+  get edges(): UnisonHTEdge[] {
+    return this._edges;
   }
 
   get config(): UnisonHTConfig {

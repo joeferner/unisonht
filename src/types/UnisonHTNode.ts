@@ -12,6 +12,8 @@ import { UnisonHTConfig, UnisonHTNodeConfig } from "./UnisonHTConfig";
 export interface UnisonHTNode {
   get id(): string;
 
+  get name(): string;
+
   get config(): UnisonHTNodeConfig;
 
   get inputs(): NodeInput[];

@@ -1,13 +1,16 @@
 import { createCheckers } from "ts-interface-checker";
 import WebInterfaceDeviceFactoryNodeDataTypeInfo from "../../../dist/WebInterfaceTypes-ti";
+import { ButtonEvent } from "../../types/events/ButtonEvent";
 import { UnisonHTNodeConfig } from "../../types/UnisonHTConfig";
 import { NodeInput, NodeOutput, UnisonHTNode } from "../../types/UnisonHTNode";
 import { UnisonHTServer } from "../../UnisonHTServer";
+import { WebInterfaceDevice } from "./WebInterfaceDevice";
 import { WebInterfaceNodeData } from "./WebInterfaceTypes";
 
 export class WebInterfaceNode implements UnisonHTNode {
   constructor(
     private readonly server: UnisonHTServer,
+    private readonly device: WebInterfaceDevice,
     private readonly _config: UnisonHTNodeConfig
   ) {
     const typeCheckers = createCheckers(
@@ -20,20 +23,26 @@ export class WebInterfaceNode implements UnisonHTNode {
     return this.config.id;
   }
 
+  get name(): string {
+    return this.config.name ?? this.device.name;
+  }
+
   get config(): UnisonHTNodeConfig {
     return this._config;
   }
 
+  get configData(): WebInterfaceNodeData {
+    return this.config.data as WebInterfaceNodeData;
+  }
+
   get inputs(): NodeInput[] {
-    throw new Error("todo");
+    return [];
   }
 
   get outputs(): NodeOutput[] {
-    throw new Error("todo");
-  }
-
-  get configData(): WebInterfaceNodeData {
-    return this.config.data as WebInterfaceNodeData;
+    return this.configData.outputs.map((o) => ({
+      name: o.name,
+    }));
   }
 
   async handleButtonPress(value: string): Promise<void> {
@@ -44,7 +53,8 @@ export class WebInterfaceNode implements UnisonHTNode {
     }
   }
 
-  private emitOutput(name: string, value: string): Promise<void> {
-    return this.server.emitMessage(this, name, { value });
+  private emitOutput(outputName: string, buttonName: string): Promise<void> {
+    const event: ButtonEvent = { buttonName };
+    return this.server.emitMessage(this, outputName, event);
   }
 }

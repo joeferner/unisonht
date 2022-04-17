@@ -25,6 +25,7 @@ export interface UnisonHTNodeConfig {
 }
 
 export interface UnisonHTEdgeConfig {
+  id: string;
   fromNodeId: string;
   fromNodeOutput: string;
   toNodeId: string;

@@ -1,5 +1,6 @@
-import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { UnisonHTNodeConfig } from 'src/generated';
+import { Component, OnInit } from '@angular/core';
+import { GetGraphResponseEdge } from 'src/generated/models/GetGraphResponseEdge';
+import { GetGraphResponseNode } from 'src/generated/models/GetGraphResponseNode';
 import { GraphService } from 'src/services/graph.service';
 
 @Component({
@@ -8,9 +9,10 @@ import { GraphService } from 'src/services/graph.service';
   styleUrls: ['./config-page.component.scss'],
 })
 export class ConfigPageComponent implements OnInit {
-  nodes?: UnisonHTNodeConfig[];
+  nodes?: GetGraphResponseNode[];
+  edges?: GetGraphResponseEdge[];
 
-  constructor(private graphService: GraphService) { }
+  constructor(private graphService: GraphService) {}
 
   ngOnInit(): void {
     this.refresh();
@@ -18,6 +20,7 @@ export class ConfigPageComponent implements OnInit {
 
   private async refresh(): Promise<void> {
     const resp = await this.graphService.getGraph();
-    this.nodes = resp.nodes.map(n => n.config);
+    this.nodes = resp.nodes;
+    this.edges = resp.edges;
   }
 }

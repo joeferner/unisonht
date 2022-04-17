@@ -1,1 +1,5 @@
-<app-config-graph *ngIf="nodes" [nodes]="nodes"></app-config-graph>
+<app-config-graph
+  *ngIf="nodes && edges"
+  [nodes]="nodes"
+  [edges]="edges"
+></app-config-graph>

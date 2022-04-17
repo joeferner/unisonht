@@ -4,7 +4,9 @@
 
 export type UnisonHTNodeConfig = {
     id: string;
-    pluginId: string;
+    nodeFactoryId?: string;
+    deviceId?: string;
+    name?: string;
     activeModes?: Array<string>;
     data: any;
 };

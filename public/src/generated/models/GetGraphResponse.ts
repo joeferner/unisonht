@@ -2,10 +2,10 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { UnisonHTNodeConfig } from './UnisonHTNodeConfig';
+import type { GetGraphResponseEdge } from './GetGraphResponseEdge';
+import type { GetGraphResponseNode } from './GetGraphResponseNode';
 
 export type GetGraphResponse = {
-    nodes: Array<{
-        config: UnisonHTNodeConfig;
-    }>;
+    nodes: Array<GetGraphResponseNode>;
+    edges: Array<GetGraphResponseEdge>;
 };

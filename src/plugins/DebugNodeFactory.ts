@@ -1,4 +1,7 @@
-import { UnisonHTNodeFactory, CreateNodeOptions } from "../types/UnisonHTNodeFactory";
+import {
+  UnisonHTNodeFactory,
+  CreateNodeOptions,
+} from "../types/UnisonHTNodeFactory";
 import { UnisonHTNodeConfig } from "../types/UnisonHTConfig";
 import {
   NodeInput,
@@ -34,6 +37,15 @@ export class DebugNode implements UnisonHTNode {
 
   get config(): UnisonHTNodeConfig {
     return this._config;
+  }
+
+  get name(): string {
+    return (
+      this.config.name ??
+      this.config.deviceId ??
+      this.config.nodeFactoryId ??
+      this.config.id
+    );
   }
 
   get inputs(): NodeInput[] {

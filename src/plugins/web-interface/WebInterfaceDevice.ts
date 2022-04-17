@@ -58,7 +58,7 @@ export class WebInterfaceDevice implements UnisonHTDevice {
     config: UnisonHTNodeConfig,
     _options: CreateNodeOptions
   ): Promise<UnisonHTNode> {
-    return Promise.resolve(new WebInterfaceNode(this.server, config));
+    return Promise.resolve(new WebInterfaceNode(this.server, this, config));
   }
 
   private getButtonUrl(button: WebInterfaceDeviceDataButton): string {

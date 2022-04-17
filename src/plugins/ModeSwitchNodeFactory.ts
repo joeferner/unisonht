@@ -38,12 +38,20 @@ export class ModeSwitchNode implements UnisonHTNode {
     return this._config;
   }
 
+  get name(): string {
+    return this.config.name ?? `Switch Mode: ${this.configData.mode}`;
+  }
+
   get inputs(): NodeInput[] {
-    throw new Error("todo");
+    return [
+      {
+        name: "SET",
+      },
+    ];
   }
 
   get outputs(): NodeOutput[] {
-    throw new Error("todo");
+    return [];
   }
 
   private get configData(): ModeSwitchConfigData {
