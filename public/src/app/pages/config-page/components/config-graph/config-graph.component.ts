@@ -4,12 +4,12 @@ import {
   ElementRef,
   Input,
   OnChanges,
-  SimpleChanges,
   ViewChild,
 } from '@angular/core';
 import { GetGraphResponseEdge } from 'src/generated/models/GetGraphResponseEdge';
 import { GetGraphResponseNode } from 'src/generated/models/GetGraphResponseNode';
 import { roundRect, truncateString } from 'src/utils/canvas-utils';
+import dagre from 'dagre';
 
 const backgroundColor = 'rgb(0,0,0)';
 const foregroundColor = 'rgb(255,255,255)';
@@ -21,6 +21,7 @@ const titleHeight = 14;
 const ioHeight = 12;
 const ioLineLength = 10;
 const ioMargin = 5;
+const edgeBezierCurveStrength = 50;
 
 @Component({
   selector: 'app-config-graph',
@@ -82,24 +83,40 @@ export class ConfigGraphComponent implements OnChanges {
       return;
     }
 
-    // clear
-    ctx.fillStyle = backgroundColor;
-    ctx.rect(0, 0, canvasBuffer.width, canvasBuffer.height);
-    ctx.fill();
+    let nodeData = ConfigGraphComponent.drawNodes(ctx, this.nodes);
+    nodeData = ConfigGraphComponent.layoutGraph(nodeData, this.edges);
 
-    const nodeData = ConfigGraphComponent.drawNodes(ctx, this.nodes);
+    ConfigGraphComponent.clear(ctx, canvasBuffer.width, canvasBuffer.height);
+    nodeData = ConfigGraphComponent.drawNodes(ctx, this.nodes, nodeData);
     ConfigGraphComponent.drawEdges(ctx, this.edges, nodeData);
 
     this.ctx.drawImage(canvasBuffer, 0, 0);
   }
 
+  static clear(
+    ctx: CanvasRenderingContext2D,
+    width: number,
+    height: number
+  ): void {
+    ctx.fillStyle = backgroundColor;
+    ctx.rect(0, 0, width, height);
+    ctx.fill();
+  }
+
   static drawNodes(
     ctx: CanvasRenderingContext2D,
-    nodes: GetGraphResponseNode[]
+    nodes: GetGraphResponseNode[],
+    layoutData?: NodeDrawData[]
   ): NodeDrawData[] {
     let y = 5;
     let x = 20;
     return nodes.map((node) => {
+      const nodeLayoutData = layoutData?.find((n) => n.id === node.id);
+      if (nodeLayoutData) {
+        x = nodeLayoutData.x;
+        y = nodeLayoutData.y;
+      }
+
       const ioCount = Math.max(node.inputs.length, node.outputs.length);
       const nodeHeight =
         nodeMargin + titleHeight + ioCount * (ioHeight + ioMargin) + nodeMargin;
@@ -173,7 +190,6 @@ export class ConfigGraphComponent implements OnChanges {
       }
 
       y += nodeHeight + 5;
-      x += 200;
 
       return nodeData;
     });
@@ -215,15 +231,40 @@ export class ConfigGraphComponent implements OnChanges {
       ctx.fillStyle = 'none';
       ctx.moveTo(outputData.x, outputData.y);
       ctx.bezierCurveTo(
-        outputData.x + 50,
+        outputData.x + edgeBezierCurveStrength,
         outputData.y,
-        inputData.x - 50,
+        inputData.x - edgeBezierCurveStrength,
         inputData.y,
         inputData.x,
         inputData.y
       );
       ctx.stroke();
     }
+  }
+
+  static layoutGraph(
+    nodeData: NodeDrawData[],
+    edges: GetGraphResponseEdge[]
+  ): NodeDrawData[] {
+    const g = new dagre.graphlib.Graph();
+    g.setGraph({
+      rankdir: 'LR',
+      ranksep: edgeBezierCurveStrength * 2,
+    });
+    g.setDefaultEdgeLabel(() => ({}));
+    for (const node of nodeData) {
+      g.setNode(node.id, { width: node.width, height: node.height });
+    }
+    for (const edge of edges) {
+      g.setEdge(edge.config.fromNodeId, edge.config.toNodeId);
+    }
+    dagre.layout(g);
+    for (const node of nodeData) {
+      const gNode = g.node(node.id);
+      node.x = gNode.x;
+      node.y = gNode.y;
+    }
+    return nodeData;
   }
 }
 
