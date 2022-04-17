@@ -1,16 +1,21 @@
-import { IUnisonHTPlugin, PluginOptions } from "../types/IUnisonHTPlugin";
+import { UnisonHTNodeFactory, CreateNodeOptions } from "../types/UnisonHTNodeFactory";
 import { UnisonHTNodeConfig } from "../types/UnisonHTConfig";
-import { NodeOptions, UnisonHTNode } from "../types/UnisonHTNode";
+import {
+  NodeInput,
+  NodeOptions,
+  NodeOutput,
+  UnisonHTNode,
+} from "../types/UnisonHTNode";
 import Debug from "debug";
 
-export class DebugPlugin implements IUnisonHTPlugin {
+export class DebugNodeFactory implements UnisonHTNodeFactory {
   get id(): string {
     return "unisonht:debug";
   }
 
   async createNode(
     config: UnisonHTNodeConfig,
-    options: PluginOptions
+    options: CreateNodeOptions
   ): Promise<UnisonHTNode> {
     return new DebugNode(config);
   }
@@ -29,6 +34,14 @@ export class DebugNode implements UnisonHTNode {
 
   get config(): UnisonHTNodeConfig {
     return this._config;
+  }
+
+  get inputs(): NodeInput[] {
+    return [{ name: "ALL" }];
+  }
+
+  get outputs(): NodeOutput[] {
+    return [];
   }
 
   async handleMessage?(inputName: string, value: any): Promise<void> {

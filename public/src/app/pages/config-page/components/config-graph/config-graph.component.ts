@@ -1,6 +1,14 @@
-import { ChangeDetectorRef, Component, ElementRef, Input, OnChanges, SimpleChanges, ViewChild } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  Input,
+  OnChanges,
+  SimpleChanges,
+  ViewChild,
+} from '@angular/core';
 import { UnisonHTNodeConfig } from 'src/generated';
-import { roundRect } from 'src/utils/canvas-utils';
+import { roundRect, truncateString } from 'src/utils/canvas-utils';
 
 @Component({
   selector: 'app-config-graph',
@@ -14,13 +22,15 @@ export class ConfigGraphComponent implements OnChanges {
   width = 100;
   height = 100;
 
-  constructor(private changeDetector: ChangeDetectorRef) { }
+  constructor(private changeDetector: ChangeDetectorRef) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     this.refresh();
   }
 
-  @ViewChild("graphWrapper") set graphWrapper(elemRef: ElementRef<HTMLDivElement> | undefined) {
+  @ViewChild('graphWrapper') set graphWrapper(
+    elemRef: ElementRef<HTMLDivElement> | undefined
+  ) {
     if (elemRef?.nativeElement) {
       const elem = elemRef.nativeElement;
       new ResizeObserver(() => {
@@ -32,10 +42,12 @@ export class ConfigGraphComponent implements OnChanges {
     }
   }
 
-  @ViewChild("graph") set graph(elemRef: ElementRef<HTMLCanvasElement> | undefined) {
+  @ViewChild('graph') set graph(
+    elemRef: ElementRef<HTMLCanvasElement> | undefined
+  ) {
     if (elemRef?.nativeElement) {
       this.canvas = elemRef.nativeElement;
-      this.ctx = this.canvas.getContext("2d") ?? undefined;
+      this.ctx = this.canvas.getContext('2d') ?? undefined;
       this.refresh();
     } else {
       this.canvas = undefined;
@@ -49,18 +61,22 @@ export class ConfigGraphComponent implements OnChanges {
       return;
     }
 
-    const canvasBuffer = document.createElement("canvas");
+    const canvasBuffer = document.createElement('canvas');
     canvasBuffer.width = this.width;
     canvasBuffer.height = this.height;
-    const ctx = canvasBuffer.getContext("2d");
+    const ctx = canvasBuffer.getContext('2d');
     if (!ctx) {
       return;
     }
 
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    let y = 5;
     for (const node of this.nodes) {
       ctx.lineWidth = 1;
-      roundRect(ctx, 1.5, 1.5, 100, 100, 5);
+      ctx.strokeStyle = 'rgb(100,100,100)';
+      roundRect(ctx, 5, y, 100, 100, 5);
+      ctx.fillText(truncateString(ctx, node.id, 90), 10, y + 12);
+      y += 105;
     }
 
     this.ctx.drawImage(canvasBuffer, 0, 0);

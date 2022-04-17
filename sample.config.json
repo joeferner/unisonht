@@ -1,15 +1,16 @@
 {
+    "version": 1,
     "defaultMode": "OFF",
     "modes": [
         "OFF",
         "ON"
     ],
-    "nodes": [
+    "devices": [
         {
-            "id": "17eb8406-5cd4-4b8f-bca5-670a46a974dc",
-            "pluginId": "unisonht:web-interface",
+            "id": "f0dfaa58-cf1c-495e-938d-bec5744dc51a",
+            "deviceFactoryId": "unisonht:web-interface",
+            "name": "Sample Remote",
             "data": {
-                "name": "Remote 1",
                 "url": "/",
                 "buttons": [
                     {
@@ -33,7 +34,15 @@
                         "column": 0,
                         "width": 0.3
                     }
-                ],
+                ]
+            }
+        }
+    ],
+    "nodes": [
+        {
+            "id": "17eb8406-5cd4-4b8f-bca5-670a46a974dc",
+            "deviceId": "f0dfaa58-cf1c-495e-938d-bec5744dc51a",
+            "data": {
                 "outputs": [
                     {
                         "name": "POWER",
@@ -53,11 +62,11 @@
         },
         {
             "id": "ed148c6b-aceb-4b1c-9041-2931467f9a8b",
-            "pluginId": "unisonht:debug"
+            "nodeFactoryId": "unisonht:debug"
         },
         {
             "id": "1d839d1a-1221-4bff-9a7d-8c0ac526066f",
-            "pluginId": "unisonht:modeSwitch",
+            "nodeFactoryId": "unisonht:modeSwitch",
             "activeModes": [
                 "OFF"
             ],
@@ -67,7 +76,7 @@
         },
         {
             "id": "6dabc481-beec-44ad-8f0d-dc2b494ecd2c",
-            "pluginId": "unisonht:modeSwitch",
+            "nodeFactoryId": "unisonht:modeSwitch",
             "activeModes": [
                 "ON"
             ],

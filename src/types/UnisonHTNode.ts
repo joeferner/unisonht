@@ -1,4 +1,3 @@
-import { Express } from "express";
 import {
   Request,
   ParamsDictionary,
@@ -15,6 +14,10 @@ export interface UnisonHTNode {
 
   get config(): UnisonHTNodeConfig;
 
+  get inputs(): NodeInput[];
+
+  get outputs(): NodeOutput[];
+
   handleWebRequest?(
     req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>,
     resp: Response<any, Record<string, any>, number>,
@@ -28,11 +31,22 @@ export interface UnisonHTNode {
 
   isActive?(options: NodeOptions): boolean;
 
-  switchMode?(newMode: string, nodeOptions: NodeOptions): Promise<void>;
+  switchMode?(
+    oldMode: string,
+    newMode: string,
+    nodeOptions: NodeOptions
+  ): Promise<void>;
 }
 
 export interface NodeOptions {
   server: UnisonHTServer;
-  app: Express;
   config: UnisonHTConfig;
+}
+
+export interface NodeInput {
+  name: string;
+}
+
+export interface NodeOutput {
+  name: string;
 }

@@ -1,18 +1,21 @@
-import { IUnisonHTPlugin, PluginOptions } from "../types/IUnisonHTPlugin";
+import {
+  UnisonHTNodeFactory,
+  CreateNodeOptions,
+} from "../types/UnisonHTNodeFactory";
 import { UnisonHTNodeConfig } from "../types/UnisonHTConfig";
-import { UnisonHTNode } from "../types/UnisonHTNode";
+import { NodeInput, NodeOutput, UnisonHTNode } from "../types/UnisonHTNode";
 import { UnisonHTServer } from "../UnisonHTServer";
-import ModeSwitchConfigDataTypeInfo from "../../dist/ModeSwitchPlugin-ti";
+import ModeSwitchConfigDataTypeInfo from "../../dist/ModeSwitchNodeFactory-ti";
 import { createCheckers } from "ts-interface-checker";
 
-export class ModeSwitchPlugin implements IUnisonHTPlugin {
+export class ModeSwitchNodeFactory implements UnisonHTNodeFactory {
   get id(): string {
     return "unisonht:modeSwitch";
   }
 
   async createNode(
     config: UnisonHTNodeConfig,
-    options: PluginOptions
+    options: CreateNodeOptions
   ): Promise<UnisonHTNode> {
     return new ModeSwitchNode(config, options.server);
   }
@@ -33,6 +36,14 @@ export class ModeSwitchNode implements UnisonHTNode {
 
   get config(): UnisonHTNodeConfig {
     return this._config;
+  }
+
+  get inputs(): NodeInput[] {
+    throw new Error("todo");
+  }
+
+  get outputs(): NodeOutput[] {
+    throw new Error("todo");
   }
 
   private get configData(): ModeSwitchConfigData {

@@ -2,7 +2,10 @@ import express, { Express } from "express";
 import Debug from "debug";
 import swaggerUi from "swagger-ui-express";
 import { createRouter } from "./routes";
-import { IUnisonHTPlugin, PluginOptions } from "./types/IUnisonHTPlugin";
+import {
+  UnisonHTNodeFactory,
+  CreateNodeOptions,
+} from "./types/UnisonHTNodeFactory";
 import path from "path";
 import { UnisonHTConfig } from "./types/UnisonHTConfig";
 import { NodeOptions, UnisonHTNode } from "./types/UnisonHTNode";
@@ -18,11 +21,16 @@ import {
   NextFunction,
 } from "express-serve-static-core";
 import { ParsedQs } from "qs";
+import { DeviceOptions, UnisonHTDevice } from "./types/UnisonHTDevice";
+import { UnisonHTDeviceFactory } from "./types/UnisonHTDeviceFactory";
+import { debug } from "console";
 
 export class UnisonHTServer {
   private readonly debug = Debug("unisonht:server");
   private readonly app: Express;
-  private readonly plugins: IUnisonHTPlugin[] = [];
+  private readonly deviceFactories: UnisonHTDeviceFactory[] = [];
+  private readonly nodeFactories: UnisonHTNodeFactory[] = [];
+  private readonly devices: UnisonHTDevice[] = [];
   private readonly _nodes: UnisonHTNode[] = [];
   private _config: UnisonHTConfig;
   private _mode: string;
@@ -35,8 +43,10 @@ export class UnisonHTServer {
       "swagger.json"
     ));
     this._config = {
+      version: 1,
       defaultMode: "OFF",
       modes: ["OFF"],
+      devices: [],
       nodes: [],
       edges: [],
       ...config,
@@ -48,19 +58,17 @@ export class UnisonHTServer {
     this.app.get("/swagger.json", (req, resp) => {
       const newSwaggerJson = JSON.parse(JSON.stringify(swaggerJson));
 
-      for (const plugin of this.plugins) {
-        const pluginOptions: PluginOptions = {
+      for (const device of this.devices) {
+        const deviceOptions: DeviceOptions = {
           server: this,
-          app: this.app,
           config: this.config,
         };
-        plugin.updateSwaggerJson?.(newSwaggerJson, pluginOptions);
+        device.updateSwaggerJson?.(newSwaggerJson, deviceOptions);
       }
 
       for (const node of this.nodes) {
         const nodeOptions: NodeOptions = {
           server: this,
-          app: this.app,
           config: this.config,
         };
         node.updateSwaggerJson?.(newSwaggerJson, nodeOptions);
@@ -81,7 +89,7 @@ export class UnisonHTServer {
   }
 
   async start(options?: { port?: number }): Promise<void> {
-    await this.startPlugins();
+    await this.startDevices();
     await this.startNodes();
 
     const angularPath = path.join(
@@ -106,71 +114,107 @@ export class UnisonHTServer {
     });
   }
 
-  private async startPlugins(): Promise<void> {
-    for (const plugin of this.plugins) {
-      const pluginOptions: PluginOptions = {
+  private async startDevices(): Promise<void> {
+    for (const deviceConfig of this.config.devices) {
+      const deviceFactory = this.deviceFactories.find(
+        (d) => d.id === deviceConfig.deviceFactoryId
+      );
+      if (!deviceFactory) {
+        throw new Error(
+          `Could not find device factory: ${deviceConfig.deviceFactoryId} for node ${deviceConfig.id}`
+        );
+      }
+      const device = await deviceFactory.createDevice(deviceConfig, {
         server: this,
-        app: this.app,
         config: this.config,
-      };
-      await plugin.initialize?.(pluginOptions);
-      if (plugin.handleWebRequest) {
+      });
+
+      if (device.handleWebRequest) {
+        const deviceOptions: NodeOptions = {
+          server: this,
+          config: this.config,
+        };
         this.app.use((req, resp, next) => {
-          if (plugin.handleWebRequest) {
-            plugin.handleWebRequest(req, resp, next, pluginOptions);
+          if (device.handleWebRequest && this.isActive(device)) {
+            device.handleWebRequest(req, resp, next, deviceOptions);
           } else {
             next();
           }
         });
       }
+
+      this.devices.push(device);
     }
   }
 
   private async startNodes(): Promise<void> {
     for (const nodeConfig of this.config.nodes) {
-      const plugin = this.plugins.find((p) => p.id === nodeConfig.pluginId);
-      if (!plugin) {
+      let node: UnisonHTNode;
+
+      if (nodeConfig.nodeFactoryId) {
+        const nodeFactory = this.nodeFactories.find(
+          (p) => p.id === nodeConfig.nodeFactoryId
+        );
+        if (!nodeFactory) {
+          throw new Error(
+            `Could not find node factory: ${nodeConfig.nodeFactoryId} for node ${nodeConfig.id}`
+          );
+        }
+        node = await nodeFactory.createNode(nodeConfig, {
+          server: this,
+          config: this.config,
+        });
+      } else if (nodeConfig.deviceId) {
+        const device = this.devices.find((p) => p.id === nodeConfig.deviceId);
+        if (!device) {
+          throw new Error(
+            `Could not find device: ${nodeConfig.deviceId} for node ${nodeConfig.id}`
+          );
+        }
+        node = await device.createNode(nodeConfig, {
+          server: this,
+          config: this.config,
+        });
+      } else {
         throw new Error(
-          `Could not find plugin: ${nodeConfig.pluginId} for node ${nodeConfig.id}`
+          `required either "nodeFactoryId" or "deviceId" for node: ${nodeConfig.id}`
         );
       }
-      const pluginOptions: PluginOptions = {
-        server: this,
-        app: this.app,
-        config: this.config,
-      };
-      const nodeOptions: NodeOptions = {
-        server: this,
-        app: this.app,
-        config: this.config,
-      };
-      const node = await plugin.createNode(nodeConfig, pluginOptions);
+
       if (node.handleWebRequest) {
+        const nodeOptions: NodeOptions = {
+          server: this,
+          config: this.config,
+        };
         this.app.use((req, resp, next) => {
-          if (node.handleWebRequest && this.isNodeActive(node)) {
+          if (node.handleWebRequest && this.isActive(node)) {
             node.handleWebRequest(req, resp, next, nodeOptions);
           } else {
             next();
           }
         });
       }
+
       this.nodes.push(node);
     }
   }
 
-  addPlugin(plugin: IUnisonHTPlugin): void {
-    this.plugins.push(plugin);
+  addNodeFactory(nodeFactory: UnisonHTNodeFactory): void {
+    this.nodeFactories.push(nodeFactory);
   }
 
-  isNodeActive(node: UnisonHTNode, currentMode?: string): boolean {
+  addDeviceFactory(deviceFactory: UnisonHTDeviceFactory): void {
+    this.deviceFactories.push(deviceFactory);
+  }
+
+  isActive(item: UnisonHTNode | UnisonHTDevice, currentMode?: string): boolean {
     const nodeOptions: NodeOptions = {
-      app: this.app,
       config: this.config,
       server: this,
     };
     return (
-      node.isActive?.(nodeOptions) ??
-      node.config.activeModes?.includes(currentMode ?? this.mode) ??
+      item.isActive?.(nodeOptions) ??
+      item.config.activeModes?.includes(currentMode ?? this.mode) ??
       true
     );
   }
@@ -192,7 +236,7 @@ export class UnisonHTServer {
             `edge connected to non-existing node: ${edge.toNodeId}`
           );
         }
-        if (!this.isNodeActive(toNode, currentMode)) {
+        if (!this.isActive(toNode, currentMode)) {
           this.debug("node %s not active... skipping", toNode.id);
           continue;
         }
@@ -213,29 +257,21 @@ export class UnisonHTServer {
       throw err;
     }
 
-    for (const plugin of this.plugins) {
-      if (plugin.switchMode) {
-        const pluginOptions: PluginOptions = {
-          server: this,
-          app: this.app,
-          config: this.config,
-        };
-        await plugin.switchMode(newMode, pluginOptions);
-      }
-    }
-
     for (const node of this.nodes) {
       if (node.switchMode) {
         const nodeOptions: NodeOptions = {
           server: this,
-          app: this.app,
           config: this.config,
         };
-        await node.switchMode(newMode, nodeOptions);
+        await node.switchMode(this._mode, newMode, nodeOptions);
       }
     }
 
     this._mode = newMode;
+  }
+
+  getNodesByDeviceId(deviceId: string): UnisonHTNode[] {
+    return this.nodes.filter((node) => node.config.deviceId === deviceId);
   }
 
   get mode(): string {
@@ -257,6 +293,7 @@ function errorHandler(
   res: Response<any, Record<string, any>, number>,
   next: NextFunction
 ) {
+  debug("error: %o", err);
   if (res.headersSent) {
     return next(err);
   }
