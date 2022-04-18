@@ -1,3 +1,3 @@
 <div #graphWrapper class="graph-wrapper">
-    <canvas #graph class="graph" [width]="width" [height]="height"></canvas>
+    <canvas #graph class="graph" [width]="width" [height]="height" (click)="handleCanvasClick($event)"></canvas>
 </div>

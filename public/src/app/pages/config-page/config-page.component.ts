@@ -2,6 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { GetGraphResponseEdge } from 'src/generated/models/GetGraphResponseEdge';
 import { GetGraphResponseNode } from 'src/generated/models/GetGraphResponseNode';
 import { GraphService } from 'src/services/graph.service';
+import {
+  EdgeClickEvent,
+  NodeClickEvent,
+} from './components/config-graph/config-graph.component';
 
 @Component({
   selector: 'app-config-page',
@@ -11,6 +15,7 @@ import { GraphService } from 'src/services/graph.service';
 export class ConfigPageComponent implements OnInit {
   nodes?: GetGraphResponseNode[];
   edges?: GetGraphResponseEdge[];
+  selectedIds: string[] = [];
 
   constructor(private graphService: GraphService) {}
 
@@ -22,5 +27,17 @@ export class ConfigPageComponent implements OnInit {
     const resp = await this.graphService.getGraph();
     this.nodes = resp.nodes;
     this.edges = resp.edges;
+  }
+
+  handleNodeClick(event: NodeClickEvent): void {
+    this.selectedIds = [event.nodeId];
+  }
+
+  handleEdgeClick(event: EdgeClickEvent): void {
+    this.selectedIds = [event.edgeId];
+  }
+
+  handleWhitespaceClick(): void {
+    this.selectedIds = [];
   }
 }
