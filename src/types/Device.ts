@@ -6,13 +6,19 @@ import {
 } from "express-serve-static-core";
 import { ParsedQs } from "qs";
 import { UnisonHTServer } from "../UnisonHTServer";
+import { DeviceConfig } from "./Config";
 import { OpenApi } from "./openApi/v3/OpenApi";
-import { UnisonHTConfig, UnisonHTDeviceConfig } from "./UnisonHTConfig";
 
-export abstract class UnisonHTDevice {
+export interface DeviceFactory {
+  get id(): string;
+
+  createDevice(server: UnisonHTServer, config: DeviceConfig): Promise<Device>;
+}
+
+export abstract class Device {
   constructor(
     private readonly _id: string,
-    private readonly _config: UnisonHTDeviceConfig,
+    private readonly _config: DeviceConfig,
     private readonly _server: UnisonHTServer
   ) {}
 
@@ -20,7 +26,7 @@ export abstract class UnisonHTDevice {
     return this._id;
   }
 
-  get config(): UnisonHTDeviceConfig {
+  get config(): DeviceConfig {
     return this._config;
   }
 

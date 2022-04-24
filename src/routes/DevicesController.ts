@@ -4,7 +4,7 @@ import { StatusCodes } from "http-status-codes";
 import { setStatusCodeOnError } from "../types/ErrorWithStatusCode";
 import { Router } from "express-serve-static-core";
 import asyncHandler from "express-async-handler";
-import { PowerState } from "../types/UnisonHTDevice";
+import { PowerState } from "../types/Device";
 
 @Route("api/v1/devices")
 export class DevicesController {

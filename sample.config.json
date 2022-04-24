@@ -5,6 +5,16 @@
         "OFF",
         "ON"
     ],
+    "irTxRx": {
+        "irTxRxFactoryId": "unisonht:mock-ir-tx-rx",
+        "data": {
+            "buttons": [
+                "POWER",
+                "VOLUME_UP",
+                "VOLUME_DOWN"
+            ]
+        }
+    },
     "devices": [
         {
             "id": "f0dfaa58-cf1c-495e-938d-bec5744dc51a",
@@ -13,32 +23,7 @@
             "activeModes": [
                 "ON"
             ],
-            "data": {
-                "url": "/",
-                "buttons": [
-                    {
-                        "name": "Power",
-                        "value": "POWER_TOGGLE",
-                        "row": 0,
-                        "column": 0,
-                        "width": 0.3
-                    },
-                    {
-                        "name": "Volume Up",
-                        "value": "VOLUME_UP",
-                        "row": 1,
-                        "column": 0,
-                        "width": 0.3
-                    },
-                    {
-                        "name": "Volume Down",
-                        "value": "VOLUME_DOWN",
-                        "row": 2,
-                        "column": 0,
-                        "width": 0.3
-                    }
-                ]
-            }
+            "data": {}
         }
     ]
 }

@@ -1,9 +1,9 @@
 import express, { Express } from "express";
 import Debug from "debug";
 import swaggerUi from "swagger-ui-express";
-import { createRouter } from "./routes";
+import { createRouter, routerUpdateSwaggerJson } from "./routes";
 import path from "path";
-import { UnisonHTConfig } from "./types/UnisonHTConfig";
+import { UnisonHTConfig } from "./types/Config";
 import { getStatusCodeFromError } from "./types/ErrorWithStatusCode";
 import {
   Request,
@@ -12,16 +12,18 @@ import {
   NextFunction,
 } from "express-serve-static-core";
 import { ParsedQs } from "qs";
-import { UnisonHTDevice } from "./types/UnisonHTDevice";
-import { UnisonHTDeviceFactory } from "./types/UnisonHTDeviceFactory";
+import { Device, DeviceFactory } from "./types/Device";
+import { IrTxRx, IrTxRxFactory } from "./types/IrTxRx";
 
 export class UnisonHTServer {
   private readonly debug = Debug("unisonht:unisonht:server");
   private readonly app: Express;
-  private readonly deviceFactories: UnisonHTDeviceFactory[] = [];
-  private readonly _devices: UnisonHTDevice[] = [];
+  private readonly deviceFactories: DeviceFactory[] = [];
+  private readonly irTxRxFactories: IrTxRxFactory[] = [];
+  private readonly _devices: Device[] = [];
   private readonly _config: UnisonHTConfig;
   private _mode?: string;
+  private _irTxRx?: IrTxRx;
 
   constructor(config?: UnisonHTConfig) {
     const swaggerJson = require(path.join(
@@ -40,16 +42,17 @@ export class UnisonHTServer {
 
     this.app = express();
     this.app.use(express.json());
-    this.app.get("/swagger.json", async (req, resp) => {
+    this.app.get("/swagger.json", async (_req, resp) => {
       const newSwaggerJson = JSON.parse(JSON.stringify(swaggerJson));
 
+      routerUpdateSwaggerJson(this, newSwaggerJson);
+      await this.irTxRx?.updateSwaggerJson(newSwaggerJson);
       await Promise.all(
         this.devices.map((device) => {
           return device.updateSwaggerJson(newSwaggerJson);
         })
       );
 
-      console.log(newSwaggerJson);
       resp.json(newSwaggerJson);
     });
     this.app.use(
@@ -65,7 +68,8 @@ export class UnisonHTServer {
   }
 
   async start(options?: { port?: number }): Promise<void> {
-    await this.startDevices();
+    await this.createIrTxRx();
+    await this.createDevices();
     await this.switchMode(this.config.defaultMode);
 
     const angularPath = path.join(
@@ -110,7 +114,25 @@ export class UnisonHTServer {
     });
   }
 
-  private async startDevices(): Promise<void> {
+  private async createIrTxRx(): Promise<void> {
+    if (this.config.irTxRx) {
+      const irTxRxFactoryId = this.config.irTxRx.irTxRxFactoryId;
+      const irTxRxFactory = this.irTxRxFactories.find(
+        (i) => i.id === irTxRxFactoryId
+      );
+      if (!irTxRxFactory) {
+        throw new Error(`Could not find IR Tx/Rx factory: ${irTxRxFactoryId}`);
+      }
+      const irTxRx = await irTxRxFactory.createIrTxRx(this, this.config.irTxRx);
+      this.app.use((req, resp, next) => {
+        irTxRx.handleWebRequest(req, resp, next);
+      });
+
+      this._irTxRx = irTxRx;
+    }
+  }
+
+  private async createDevices(): Promise<void> {
     for (const deviceConfig of this.config.devices) {
       const deviceFactory = this.deviceFactories.find(
         (d) => d.id === deviceConfig.deviceFactoryId
@@ -130,8 +152,12 @@ export class UnisonHTServer {
     }
   }
 
-  addDeviceFactory(deviceFactory: UnisonHTDeviceFactory): void {
+  addDeviceFactory(deviceFactory: DeviceFactory): void {
     this.deviceFactories.push(deviceFactory);
+  }
+
+  addIrTxRxFactory(irTxRxFactory: IrTxRxFactory): void {
+    this.irTxRxFactories.push(irTxRxFactory);
   }
 
   async switchMode(newMode: string): Promise<void> {
@@ -159,7 +185,11 @@ export class UnisonHTServer {
     return this._config;
   }
 
-  get devices(): UnisonHTDevice[] {
+  get devices(): Device[] {
     return this._devices;
+  }
+
+  get irTxRx(): IrTxRx | undefined {
+    return this._irTxRx;
   }
 }

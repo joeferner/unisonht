@@ -1,23 +1,22 @@
 import { UnisonHTServer } from "..";
-import { UnisonHTDeviceConfig } from "../types/UnisonHTConfig";
-import { PowerState, UnisonHTDevice } from "../types/UnisonHTDevice";
-import { UnisonHTDeviceFactory } from "../types/UnisonHTDeviceFactory";
+import { PowerState, Device, DeviceFactory } from "../types/Device";
 import Debug from "debug";
+import { DeviceConfig } from "../types/Config";
 
-export class MockDeviceFactory implements UnisonHTDeviceFactory {
+export class MockDeviceFactory implements DeviceFactory {
   get id(): string {
     return "unisonht:mock-device";
   }
 
   async createDevice(
     server: UnisonHTServer,
-    config: UnisonHTDeviceConfig
-  ): Promise<UnisonHTDevice> {
+    config: DeviceConfig
+  ): Promise<Device> {
     return new MockDevice(config.id, config, server);
   }
 }
 
-export class MockDevice extends UnisonHTDevice {
+export class MockDevice extends Device {
   private readonly debug = Debug(`unisonht:unisonht:mockDevice:${this.id}`);
   private _powerState: PowerState = PowerState.OFF;
 

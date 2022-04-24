@@ -15,7 +15,7 @@
     "start:watch": "DEBUG=unisonht:* concurrently \"npm run build:watch\" \"npm run server:watch\" \"npm run swagger:watch\" \"npm run type-check:watch\"",
     "swagger": "tsoa spec",
     "swagger:watch": "nodemon --ext ts --ignore public/ --ignore dist/ -x npm run swagger",
-    "type-check": "mkdir -p dist && ts-interface-builder --outDir dist/ src/types/UnisonHTConfig.ts src/plugins/ModeSwitchNodeFactory.ts src/plugins/web-interface/WebInterfaceTypes.ts",
+    "type-check": "mkdir -p dist && ts-interface-builder --outDir dist/ src/types/Config.ts",
     "type-check:watch": "mkdir -p dist && nodemon --ext ts --ignore public/ --ignore dist/ -x npm run type-check"
   },
   "repository": {

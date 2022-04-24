@@ -1,4 +1,4 @@
 export { UnisonHTServer } from "./UnisonHTServer";
-export { UnisonHTDevice, PowerState } from "./types/UnisonHTDevice";
-export { UnisonHTDeviceFactory } from "./types/UnisonHTDeviceFactory";
-export { UnisonHTConfig, UnisonHTDeviceConfig } from "./types/UnisonHTConfig";
+export { DeviceFactory, Device, PowerState } from "./types/Device";
+export { IrTxRxFactory, IrTxRx } from "./types/IrTxRx";
+export { UnisonHTConfig, DeviceConfig, IrTxRxConfig } from "./types/Config";

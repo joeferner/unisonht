@@ -1,9 +1,10 @@
 import { UnisonHTServer } from "../UnisonHTServer";
 import yargs from "yargs";
 import fs from "fs";
-import UnisonHTConfigTypeInfo from "../../dist/UnisonHTConfig-ti";
+import UnisonHTConfigTypeInfo from "../../dist/Config-ti";
 import { createCheckers } from "ts-interface-checker";
 import { MockDeviceFactory } from "../devices/MockDevice";
+import { MockIrTxRxFactory } from "../ir/MockIrTxRx";
 
 async function run() {
   const args = await yargs
@@ -25,6 +26,7 @@ async function run() {
 
   const server = new UnisonHTServer(config);
   server.addDeviceFactory(new MockDeviceFactory());
+  server.addIrTxRxFactory(new MockIrTxRxFactory());
   server.start({ port: args.port });
 }
 
