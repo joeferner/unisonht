@@ -1,17 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { ConfigPageComponent } from './pages/config-page/config-page.component';
 
-const routes: Routes = [
-  {
-    path: '',
-    component: ConfigPageComponent,
-  },
-  {
-    path: 'config',
-    component: ConfigPageComponent,
-  },
-];
+const routes: Routes = [];
 
 @NgModule({
   imports: [RouterModule.forRoot(routes)],

@@ -1,11 +1,9 @@
 import { UnisonHTServer } from "../UnisonHTServer";
 import yargs from "yargs";
-import { WebInterfaceDeviceFactory } from "../plugins/web-interface/WebInterfaceDeviceFactory";
 import fs from "fs";
-import { DebugNodeFactory } from "../plugins/DebugNodeFactory";
-import { ModeSwitchNodeFactory } from "../plugins/ModeSwitchNodeFactory";
 import UnisonHTConfigTypeInfo from "../../dist/UnisonHTConfig-ti";
 import { createCheckers } from "ts-interface-checker";
+import { MockDeviceFactory } from "../devices/MockDevice";
 
 async function run() {
   const args = await yargs
@@ -26,9 +24,7 @@ async function run() {
   typeCheckers.UnisonHTConfig.check(config);
 
   const server = new UnisonHTServer(config);
-  server.addDeviceFactory(new WebInterfaceDeviceFactory());
-  server.addNodeFactory(new DebugNodeFactory());
-  server.addNodeFactory(new ModeSwitchNodeFactory());
+  server.addDeviceFactory(new MockDeviceFactory());
   server.start({ port: args.port });
 }
 

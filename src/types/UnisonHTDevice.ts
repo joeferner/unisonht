@@ -7,41 +7,55 @@ import {
 import { ParsedQs } from "qs";
 import { UnisonHTServer } from "../UnisonHTServer";
 import { OpenApi } from "./openApi/v3/OpenApi";
-import {
-  UnisonHTConfig,
-  UnisonHTDeviceConfig,
-  UnisonHTNodeConfig,
-} from "./UnisonHTConfig";
-import { UnisonHTNode } from "./UnisonHTNode";
+import { UnisonHTConfig, UnisonHTDeviceConfig } from "./UnisonHTConfig";
 
-export interface UnisonHTDevice {
-  get id(): string;
+export abstract class UnisonHTDevice {
+  constructor(
+    private readonly _id: string,
+    private readonly _config: UnisonHTDeviceConfig,
+    private readonly _server: UnisonHTServer
+  ) {}
 
-  get config(): UnisonHTDeviceConfig;
+  get id(): string {
+    return this._id;
+  }
 
-  createNode(
-    config: UnisonHTNodeConfig,
-    options: CreateNodeOptions
-  ): Promise<UnisonHTNode>;
+  get config(): UnisonHTDeviceConfig {
+    return this._config;
+  }
 
-  updateSwaggerJson?(swaggerJson: OpenApi, options: DeviceOptions): void;
+  get server(): UnisonHTServer {
+    return this._server;
+  }
 
-  handleWebRequest?(
+  updateSwaggerJson(swaggerJson: OpenApi): Promise<void> {
+    return Promise.resolve();
+  }
+
+  handleWebRequest(
     req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>,
     resp: Response<any, Record<string, any>, number>,
-    next: NextFunction,
-    options: DeviceOptions
-  ): void;
+    next: NextFunction
+  ): void {
+    next();
+  }
 
-  isActive?(options: DeviceOptions): boolean;
+  switchMode(oldMode: string | undefined, newMode: string): Promise<void> {
+    return Promise.resolve();
+  }
+
+  protected shouldBeActiveForMode(mode: string): boolean {
+    return this.config.activeModes.includes(mode) ?? false;
+  }
+
+  isActive(): boolean {
+    return this.shouldBeActiveForMode(this.server.mode ?? "NOT SET");
+  }
+
+  abstract getPowerState(): Promise<PowerState>;
 }
 
-export interface CreateNodeOptions {
-  server: UnisonHTServer;
-  config: UnisonHTConfig;
-}
-
-export interface DeviceOptions {
-  server: UnisonHTServer;
-  config: UnisonHTConfig;
+export enum PowerState {
+  ON = "ON",
+  OFF = "OFF",
 }

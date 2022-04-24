@@ -8,8 +8,11 @@
     "devices": [
         {
             "id": "f0dfaa58-cf1c-495e-938d-bec5744dc51a",
-            "deviceFactoryId": "unisonht:web-interface",
-            "name": "Sample Remote",
+            "deviceFactoryId": "unisonht:mock-device",
+            "name": "Mock Device",
+            "activeModes": [
+                "ON"
+            ],
             "data": {
                 "url": "/",
                 "buttons": [
@@ -36,76 +39,6 @@
                     }
                 ]
             }
-        }
-    ],
-    "nodes": [
-        {
-            "id": "17eb8406-5cd4-4b8f-bca5-670a46a974dc",
-            "deviceId": "f0dfaa58-cf1c-495e-938d-bec5744dc51a",
-            "data": {
-                "outputs": [
-                    {
-                        "name": "POWER",
-                        "values": [
-                            "POWER_TOGGLE"
-                        ]
-                    },
-                    {
-                        "name": "OTHER",
-                        "values": [
-                            "VOLUME_UP",
-                            "VOLUME_DOWN"
-                        ]
-                    }
-                ]
-            }
-        },
-        {
-            "id": "ed148c6b-aceb-4b1c-9041-2931467f9a8b",
-            "nodeFactoryId": "unisonht:debug"
-        },
-        {
-            "id": "1d839d1a-1221-4bff-9a7d-8c0ac526066f",
-            "nodeFactoryId": "unisonht:modeSwitch",
-            "activeModes": [
-                "OFF"
-            ],
-            "data": {
-                "mode": "ON"
-            }
-        },
-        {
-            "id": "6dabc481-beec-44ad-8f0d-dc2b494ecd2c",
-            "nodeFactoryId": "unisonht:modeSwitch",
-            "activeModes": [
-                "ON"
-            ],
-            "data": {
-                "mode": "OFF"
-            }
-        }
-    ],
-    "edges": [
-        {
-            "id": "327cf380-b2ee-43a0-bd4a-5ecfa7f2b623",
-            "fromNodeId": "17eb8406-5cd4-4b8f-bca5-670a46a974dc",
-            "fromNodeOutput": "POWER",
-            "toNodeId": "1d839d1a-1221-4bff-9a7d-8c0ac526066f",
-            "toNodeInput": "SET"
-        },
-        {
-            "id": "9c0467f6-c958-4559-8684-863a79a3d372",
-            "fromNodeId": "17eb8406-5cd4-4b8f-bca5-670a46a974dc",
-            "fromNodeOutput": "POWER",
-            "toNodeId": "6dabc481-beec-44ad-8f0d-dc2b494ecd2c",
-            "toNodeInput": "SET"
-        },
-        {
-            "id": "31480615-3cd6-4893-8b60-c4e1e5aca4d3",
-            "fromNodeId": "17eb8406-5cd4-4b8f-bca5-670a46a974dc",
-            "fromNodeOutput": "OTHER",
-            "toNodeId": "ed148c6b-aceb-4b1c-9041-2931467f9a8b",
-            "toNodeInput": "ALL"
         }
     ]
 }
