@@ -1,3 +1,4 @@
 <div #graphWrapper class="graph-wrapper">
-    <canvas #graph class="graph" [width]="width" [height]="height" (click)="handleCanvasClick($event)"></canvas>
+    <button (click)="generate()">Generate</button>
+    <div #blockly class="graph" [style]="blocklyStyle"></div>
 </div>
