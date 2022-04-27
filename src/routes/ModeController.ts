@@ -23,7 +23,11 @@ export class ModeController {
     router.post(
       "/api/v1/mode",
       asyncHandler(async (req, res) => {
-        res.send(await modeController.switchMode(req.query.newMode?.toString()));
+        res.send(
+          await modeController.switchMode(
+            req.query.newModeId?.toString() ?? "NOT SET"
+          )
+        );
       })
     );
   }
@@ -46,31 +50,31 @@ export class ModeController {
       type: "string",
       enum: server.config.modes,
     };
-    console.log(swaggerJson.paths["/api/v1/mode"]?.post?.parameters);
   }
 
   @Get("/")
   public async getMode(): Promise<GetModeResponse> {
     return {
-      mode: this.server.mode ?? this.server.config.defaultMode,
+      mode: this.server.modeId ?? this.server.config.defaultModeId,
     };
   }
 
   @Post("/")
   @SuccessResponse(StatusCodes.OK)
-  @Response(StatusCodes.BAD_REQUEST, "Invalid mode")
-  public async switchMode(@Query() newMode?: string): Promise<SetModeResponse> {
-    if (!newMode || !this.server.config.modes.includes(newMode)) {
-      const err = new Error(`invalid mode: ${newMode}`);
-      setStatusCodeOnError(err, StatusCodes.BAD_REQUEST);
-      throw err;
+  @Response(StatusCodes.NOT_FOUND, "Mode not found")
+  public async switchMode(@Query() newModeId: string): Promise<SetModeResponse> {
+    if (!newModeId || !this.server.config.modes.find((m) => m.id === newModeId)) {
+      throw setStatusCodeOnError(
+        new Error(`invalid mode: ${newModeId}`),
+        StatusCodes.NOT_FOUND
+      );
     }
 
-    const oldMode = this.server.mode;
-    await this.server.switchMode(newMode);
+    const oldModeId = this.server.modeId;
+    await this.server.switchMode(newModeId);
     return {
-      oldMode,
-      mode: newMode,
+      oldModeId: oldModeId,
+      modeId: newModeId,
     };
   }
 }
@@ -80,6 +84,6 @@ interface GetModeResponse {
 }
 
 interface SetModeResponse {
-  oldMode?: string;
-  mode: string;
+  oldModeId?: string;
+  modeId: string;
 }

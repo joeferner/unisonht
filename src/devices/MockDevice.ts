@@ -40,4 +40,24 @@ export class MockDevice extends Device {
   getPowerState(): Promise<PowerState> {
     return Promise.resolve(this._powerState);
   }
+
+  async handleButtonPress(button: string): Promise<void> {
+    this.debug("button press: %s", button);
+  }
+
+  override async switchInput(inputName: string): Promise<void> {
+    this.debug("switch input: %s", inputName);
+  }
+
+  get buttons(): string[] {
+    return this.deviceConfig.buttons;
+  }
+
+  private get deviceConfig(): MockDeviceConfig {
+    return this.config.data as MockDeviceConfig;
+  }
+}
+
+export interface MockDeviceConfig {
+  buttons: string[];
 }

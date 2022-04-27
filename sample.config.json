@@ -1,9 +1,49 @@
 {
     "version": 1,
-    "defaultMode": "OFF",
+    "defaultModeId": "8f023ccc-d7b3-45fb-88ab-43835a6cd820",
     "modes": [
-        "OFF",
-        "ON"
+        {
+            "id": "8f023ccc-d7b3-45fb-88ab-43835a6cd820",
+            "name": "OFF",
+            "buttons": [
+                {
+                    "name": "POWER",
+                    "actions": [
+                        {
+                            "type": "switchMode",
+                            "modeId": "1d4a0294-39e4-4631-a615-1c7a14e14ae0",
+                            "deviceInputs": {
+                                "f0dfaa58-cf1c-495e-938d-bec5744dc51a": "input1"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "1d4a0294-39e4-4631-a615-1c7a14e14ae0",
+            "name": "ON",
+            "buttons": [
+                {
+                    "name": "POWER",
+                    "actions": [
+                        {
+                            "type": "switchMode",
+                            "mode": "8f023ccc-d7b3-45fb-88ab-43835a6cd820"
+                        }
+                    ]
+                },
+                {
+                    "name": "*",
+                    "actions": [
+                        {
+                            "type": "forwardToDevice",
+                            "deviceId": "f0dfaa58-cf1c-495e-938d-bec5744dc51a"
+                        }
+                    ]
+                }
+            ]
+        }
     ],
     "irTxRx": {
         "irTxRxFactoryId": "unisonht:mock-ir-tx-rx",
@@ -23,7 +63,13 @@
             "activeModes": [
                 "ON"
             ],
-            "data": {}
+            "data": {
+                "buttons": [
+                    "POWER",
+                    "VOLUME_UP",
+                    "VOLUME_DOWN"
+                ]
+            }
         }
     ]
 }

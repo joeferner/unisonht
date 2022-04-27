@@ -1,7 +1,7 @@
 import { UnisonHTServer } from "../UnisonHTServer";
 import yargs from "yargs";
 import fs from "fs";
-import UnisonHTConfigTypeInfo from "../../dist/Config-ti";
+import ConfigTypeInfo from "../../dist/Config-ti";
 import { createCheckers } from "ts-interface-checker";
 import { MockDeviceFactory } from "../devices/MockDevice";
 import { MockIrTxRxFactory } from "../ir/MockIrTxRx";
@@ -21,8 +21,8 @@ async function run() {
     .parse();
 
   const config = JSON.parse(await fs.promises.readFile(args.config, "utf-8"));
-  const typeCheckers = createCheckers(UnisonHTConfigTypeInfo);
-  typeCheckers.UnisonHTConfig.check(config);
+  const typeCheckers = createCheckers(ConfigTypeInfo);
+  typeCheckers.Config.check(config);
 
   const server = new UnisonHTServer(config);
   server.addDeviceFactory(new MockDeviceFactory());

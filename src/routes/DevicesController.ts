@@ -44,7 +44,7 @@ interface GetDevicesResponse {
 
 interface GetDevicesResponseDevice {
   id: string;
-  name?: string;
+  name: string;
   active: boolean;
   powerState: PowerState;
 }

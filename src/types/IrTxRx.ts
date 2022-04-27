@@ -16,9 +16,7 @@ export interface IrTxRxFactory {
 }
 
 export abstract class IrTxRx {
-  updateSwaggerJson(swaggerJson: OpenApi): Promise<void> {
-    return Promise.resolve();
-  }
+  updateSwaggerJson(swaggerJson: OpenApi): void {}
 
   handleWebRequest(
     req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>,

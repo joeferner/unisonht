@@ -3,7 +3,7 @@ import Debug from "debug";
 import swaggerUi from "swagger-ui-express";
 import { createRouter, routerUpdateSwaggerJson } from "./routes";
 import path from "path";
-import { UnisonHTConfig } from "./types/Config";
+import { Config } from "./types/Config";
 import { getStatusCodeFromError } from "./types/ErrorWithStatusCode";
 import {
   Request,
@@ -14,6 +14,7 @@ import {
 import { ParsedQs } from "qs";
 import { Device, DeviceFactory } from "./types/Device";
 import { IrTxRx, IrTxRxFactory } from "./types/IrTxRx";
+import { Mode } from "./types/Mode";
 
 export class UnisonHTServer {
   private readonly debug = Debug("unisonht:unisonht:server");
@@ -21,11 +22,12 @@ export class UnisonHTServer {
   private readonly deviceFactories: DeviceFactory[] = [];
   private readonly irTxRxFactories: IrTxRxFactory[] = [];
   private readonly _devices: Device[] = [];
-  private readonly _config: UnisonHTConfig;
-  private _mode?: string;
+  private readonly _modes: Mode[] = [];
+  private readonly _config: Config;
+  private _modeId?: string;
   private _irTxRx?: IrTxRx;
 
-  constructor(config?: UnisonHTConfig) {
+  constructor(config?: Config) {
     const swaggerJson = require(path.join(
       __dirname,
       "..",
@@ -34,8 +36,8 @@ export class UnisonHTServer {
     ));
     this._config = {
       version: 1,
-      defaultMode: "OFF",
-      modes: ["OFF"],
+      defaultModeId: "OFF",
+      modes: [{ id: "zzz", name: "OFF", buttons: [] }],
       devices: [],
       ...config,
     };
@@ -46,12 +48,13 @@ export class UnisonHTServer {
       const newSwaggerJson = JSON.parse(JSON.stringify(swaggerJson));
 
       routerUpdateSwaggerJson(this, newSwaggerJson);
-      await this.irTxRx?.updateSwaggerJson(newSwaggerJson);
-      await Promise.all(
-        this.devices.map((device) => {
-          return device.updateSwaggerJson(newSwaggerJson);
-        })
-      );
+      this.irTxRx?.updateSwaggerJson(newSwaggerJson);
+      this.modes.forEach((mode) => {
+        mode.updateSwaggerJson(newSwaggerJson);
+      });
+      this.devices.forEach((device) => {
+        device.updateSwaggerJson(newSwaggerJson);
+      });
 
       resp.json(newSwaggerJson);
     });
@@ -69,8 +72,9 @@ export class UnisonHTServer {
 
   async start(options?: { port?: number }): Promise<void> {
     await this.createIrTxRx();
+    await this.createModes();
     await this.createDevices();
-    await this.switchMode(this.config.defaultMode);
+    await this.switchMode(this.config.defaultModeId);
 
     const angularPath = path.join(
       __dirname,
@@ -132,6 +136,20 @@ export class UnisonHTServer {
     }
   }
 
+  private async createModes(): Promise<void> {
+    for (const modeConfig of this.config.modes) {
+      const mode = new Mode(this, modeConfig);
+      this.app.use((req, resp, next) => {
+        if (this.modeId === mode.id) {
+          mode.handleWebRequest(req, resp, next);
+        } else {
+          next();
+        }
+      });
+      this._modes.push(mode);
+    }
+  }
+
   private async createDevices(): Promise<void> {
     for (const deviceConfig of this.config.devices) {
       const deviceFactory = this.deviceFactories.find(
@@ -160,33 +178,53 @@ export class UnisonHTServer {
     this.irTxRxFactories.push(irTxRxFactory);
   }
 
-  async switchMode(newMode: string): Promise<void> {
-    const oldMode = this._mode;
+  async switchMode(
+    newModeId: string,
+    deviceInputs?: { [deviceId: string]: string }
+  ): Promise<void> {
+    const oldModeId = this._modeId;
 
-    this.debug("switching mode: %s -> %s", oldMode, newMode);
-    if (!this.config.modes.includes(newMode)) {
-      throw new Error(`invalid mode: ${newMode}`);
+    this.debug("switching mode: %s -> %s", oldModeId, newModeId);
+    if (!this.config.modes.find((m) => m.id === newModeId)) {
+      throw new Error(`invalid mode: ${newModeId}`);
     }
 
     await Promise.all(
       this.devices.map((device) => {
-        return device.switchMode(oldMode, newMode);
+        return device.switchMode(oldModeId, newModeId);
       })
     );
 
-    this._mode = newMode;
+    if (deviceInputs) {
+      await Promise.all(
+        Object.keys(deviceInputs).map((deviceId) => {
+          const input = deviceInputs[deviceId];
+          const device = this.devices.find((d) => d.id === deviceId);
+          if (!device) {
+            throw new Error(`could not find device with id: ${deviceId}`);
+          }
+          return device.switchInput(input);
+        })
+      );
+    }
+
+    this._modeId = newModeId;
   }
 
-  get mode(): string | undefined {
-    return this._mode;
+  get modeId(): string | undefined {
+    return this._modeId;
   }
 
-  get config(): UnisonHTConfig {
+  get config(): Config {
     return this._config;
   }
 
   get devices(): Device[] {
     return this._devices;
+  }
+
+  get modes(): Mode[] {
+    return this._modes;
   }
 
   get irTxRx(): IrTxRx | undefined {
