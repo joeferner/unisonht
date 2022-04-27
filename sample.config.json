@@ -4,7 +4,8 @@
     "plugins": [
         {
             "id": "2cb14523-90cc-4e6b-ba2b-b286b0eb33e9",
-            "pluginFactoryId": "unisonht:mock-ir-tx-rx",
+            "name": "Web Remote",
+            "pluginFactoryId": "unisonht:web-remote",
             "data": {
                 "buttons": [
                     "POWER",

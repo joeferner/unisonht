@@ -18,7 +18,9 @@ export interface PluginFactory {
 }
 
 export abstract class Plugin {
-  protected readonly debug = Debug(`unisonht:unisonht:plugin:${this.id}`);
+  protected readonly debug = Debug(
+    `unisonht:unisonht:plugin:${this.name}:${this.id}`
+  );
   protected readonly router: express.Router;
 
   constructor(
@@ -40,6 +42,10 @@ export abstract class Plugin {
 
   get id(): string {
     return this.config.id;
+  }
+
+  get name(): string {
+    return this.config.name;
   }
 
   protected get urlPrefix(): string {

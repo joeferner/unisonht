@@ -1,10 +1,8 @@
-import { Body, Get, Post, Response, Route, SuccessResponse } from "tsoa";
-import { UnisonHTServer } from "../UnisonHTServer";
-import { StatusCodes } from "http-status-codes";
-import { setStatusCodeOnError } from "../types/ErrorWithStatusCode";
-import { Router } from "express-serve-static-core";
 import asyncHandler from "express-async-handler";
+import { Router } from "express-serve-static-core";
+import { Get, Route } from "tsoa";
 import { PowerState } from "../types/Device";
+import { UnisonHTServer } from "../UnisonHTServer";
 
 @Route("api/v1/devices")
 export class DevicesController {
@@ -28,7 +26,7 @@ export class DevicesController {
         this.server.devices.map(async (device) => {
           return {
             id: device.id,
-            name: device.config.name,
+            name: device.name,
             active: device.isActive(),
             powerState: await device.getPowerState(),
           };

@@ -42,6 +42,7 @@ export interface DeviceConfig {
 
 export interface PluginConfig {
   id: string;
+  name: string;
   pluginFactoryId: string;
   data: any;
 }

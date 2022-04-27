@@ -1,7 +1,10 @@
 import Debug from "debug";
 import express, { Express } from "express";
 import {
-  NextFunction, ParamsDictionary, Request, Response
+  NextFunction,
+  ParamsDictionary,
+  Request,
+  Response
 } from "express-serve-static-core";
 import path from "path";
 import { ParsedQs } from "qs";
@@ -42,7 +45,7 @@ export class UnisonHTServer {
 
     this.app = express();
     this.app.use(express.json());
-    this.app.get("/swagger.json", async (_req, resp) => {
+    this.app.get("/swagger.json", (_req, resp) => {
       const newSwaggerJson = JSON.parse(JSON.stringify(swaggerJson));
 
       routerUpdateSwaggerJson(this, newSwaggerJson);
@@ -185,7 +188,17 @@ export class UnisonHTServer {
   ): Promise<void> {
     const oldModeId = this._modeId;
 
-    this.debug("switching mode: %s -> %s", oldModeId, newModeId);
+    if (this.debug.enabled) {
+      const oldMode = this.modes.find((m) => m.id === oldModeId);
+      const newMode = this.modes.find((m) => m.id === newModeId);
+      this.debug(
+        "switching mode: %s%s -> %s%s",
+        oldModeId ?? "NOT SET",
+        oldMode ? ` (${oldMode.name})` : "",
+        newModeId,
+        newMode ? ` (${newMode.name})` : ""
+      );
+    }
     if (!this.config.modes.find((m) => m.id === newModeId)) {
       throw new Error(`invalid mode: ${newModeId}`);
     }
@@ -210,6 +223,14 @@ export class UnisonHTServer {
     }
 
     this._modeId = newModeId;
+  }
+
+  pressButton(button: string): Promise<void> {
+    const mode = this.modes.find((m) => m.id === this.modeId);
+    if (!mode) {
+      throw new Error("no mode selected");
+    }
+    return mode.pressButton(button);
   }
 
   get modeId(): string | undefined {

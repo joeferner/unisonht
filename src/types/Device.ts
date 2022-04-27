@@ -1,5 +1,6 @@
 import Debug from "debug";
 import express from "express";
+import asyncHandler from "express-async-handler";
 import {
   NextFunction,
   ParamsDictionary,
@@ -20,37 +21,37 @@ export interface DeviceFactory {
 }
 
 export abstract class Device {
-  protected readonly debug = Debug(`unisonht:unisonht:device:${this.id}`);
+  protected readonly debug = Debug(
+    `unisonht:unisonht:device:${this.name}:${this.id}`
+  );
   protected readonly router: express.Router;
 
   constructor(
-    private readonly _id: string,
-    private readonly _config: DeviceConfig,
-    private readonly _server: UnisonHTServer
+    protected readonly config: DeviceConfig,
+    protected readonly server: UnisonHTServer
   ) {
     this.router = express.Router();
-    this.router.post(`${this.urlPrefix}/button`, async (req, res) => {
-      if (!req.query.button) {
-        throw setStatusCodeOnError(
-          new Error("'button' is required"),
-          StatusCodes.BAD_REQUEST
-        );
-      }
-      await this.handleButtonPress(req.query.button?.toString());
-      res.json({});
-    });
+    this.router.post(
+      `${this.urlPrefix}/button`,
+      asyncHandler(async (req, res) => {
+        if (!req.query.button) {
+          throw setStatusCodeOnError(
+            new Error("'button' is required"),
+            StatusCodes.BAD_REQUEST
+          );
+        }
+        await this.handleButtonPress(req.query.button?.toString());
+        res.json({});
+      })
+    );
   }
 
   get id(): string {
-    return this._id;
+    return this.config.id;
   }
 
-  get config(): DeviceConfig {
-    return this._config;
-  }
-
-  get server(): UnisonHTServer {
-    return this._server;
+  get name(): string {
+    return this.config.name;
   }
 
   updateSwaggerJson(swaggerJson: OpenApi): void {

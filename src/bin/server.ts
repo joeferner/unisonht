@@ -2,7 +2,7 @@ import { UnisonHTServer } from "../UnisonHTServer";
 import yargs from "yargs";
 import fs from "fs";
 import { MockDeviceFactory } from "../devices/MockDevice";
-import { MockPluginFactory } from "../plugins/MockPlugin";
+import { WebRemotePluginFactory } from "../plugins/WebRemotePlugin";
 import { validateConfig } from "../types/TypeUtils";
 
 async function run() {
@@ -24,7 +24,7 @@ async function run() {
 
   const server = new UnisonHTServer(config);
   server.addDeviceFactory(new MockDeviceFactory());
-  server.addPluginFactory(new MockPluginFactory());
+  server.addPluginFactory(new WebRemotePluginFactory());
   server.start({ port: args.port });
 }
 
