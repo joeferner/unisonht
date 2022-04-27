@@ -1,31 +1,28 @@
-import express, { Express } from "express";
 import Debug from "debug";
+import express, { Express } from "express";
+import {
+  NextFunction, ParamsDictionary, Request, Response
+} from "express-serve-static-core";
+import path from "path";
+import { ParsedQs } from "qs";
 import swaggerUi from "swagger-ui-express";
 import { createRouter, routerUpdateSwaggerJson } from "./routes";
-import path from "path";
 import { Config } from "./types/Config";
-import { getStatusCodeFromError } from "./types/ErrorWithStatusCode";
-import {
-  Request,
-  ParamsDictionary,
-  Response,
-  NextFunction,
-} from "express-serve-static-core";
-import { ParsedQs } from "qs";
 import { Device, DeviceFactory } from "./types/Device";
-import { IrTxRx, IrTxRxFactory } from "./types/IrTxRx";
+import { getStatusCodeFromError } from "./types/ErrorWithStatusCode";
 import { Mode } from "./types/Mode";
+import { Plugin, PluginFactory } from "./types/Plugin";
 
 export class UnisonHTServer {
   private readonly debug = Debug("unisonht:unisonht:server");
   private readonly app: Express;
   private readonly deviceFactories: DeviceFactory[] = [];
-  private readonly irTxRxFactories: IrTxRxFactory[] = [];
+  private readonly pluginFactories: PluginFactory[] = [];
   private readonly _devices: Device[] = [];
   private readonly _modes: Mode[] = [];
+  private readonly _plugins: Plugin[] = [];
   private readonly _config: Config;
   private _modeId?: string;
-  private _irTxRx?: IrTxRx;
 
   constructor(config?: Config) {
     const swaggerJson = require(path.join(
@@ -37,8 +34,9 @@ export class UnisonHTServer {
     this._config = {
       version: 1,
       defaultModeId: "OFF",
-      modes: [{ id: "zzz", name: "OFF", buttons: [] }],
+      modes: [],
       devices: [],
+      plugins: [],
       ...config,
     };
 
@@ -48,7 +46,9 @@ export class UnisonHTServer {
       const newSwaggerJson = JSON.parse(JSON.stringify(swaggerJson));
 
       routerUpdateSwaggerJson(this, newSwaggerJson);
-      this.irTxRx?.updateSwaggerJson(newSwaggerJson);
+      this.plugins.forEach((plugin) => {
+        plugin.updateSwaggerJson(newSwaggerJson);
+      });
       this.modes.forEach((mode) => {
         mode.updateSwaggerJson(newSwaggerJson);
       });
@@ -71,8 +71,8 @@ export class UnisonHTServer {
   }
 
   async start(options?: { port?: number }): Promise<void> {
-    await this.createIrTxRx();
     await this.createModes();
+    await this.createPlugins();
     await this.createDevices();
     await this.switchMode(this.config.defaultModeId);
 
@@ -118,21 +118,22 @@ export class UnisonHTServer {
     });
   }
 
-  private async createIrTxRx(): Promise<void> {
-    if (this.config.irTxRx) {
-      const irTxRxFactoryId = this.config.irTxRx.irTxRxFactoryId;
-      const irTxRxFactory = this.irTxRxFactories.find(
-        (i) => i.id === irTxRxFactoryId
+  private async createPlugins(): Promise<void> {
+    for (const pluginConfig of this.config.plugins) {
+      const pluginFactory = this.pluginFactories.find(
+        (i) => i.id === pluginConfig.pluginFactoryId
       );
-      if (!irTxRxFactory) {
-        throw new Error(`Could not find IR Tx/Rx factory: ${irTxRxFactoryId}`);
+      if (!pluginFactory) {
+        throw new Error(
+          `Could not find plugin factory: ${pluginConfig.pluginFactoryId}`
+        );
       }
-      const irTxRx = await irTxRxFactory.createIrTxRx(this, this.config.irTxRx);
+      const plugin = await pluginFactory.createPlugin(this, pluginConfig);
       this.app.use((req, resp, next) => {
-        irTxRx.handleWebRequest(req, resp, next);
+        plugin.handleWebRequest(req, resp, next);
       });
 
-      this._irTxRx = irTxRx;
+      this._plugins.push(plugin);
     }
   }
 
@@ -174,8 +175,8 @@ export class UnisonHTServer {
     this.deviceFactories.push(deviceFactory);
   }
 
-  addIrTxRxFactory(irTxRxFactory: IrTxRxFactory): void {
-    this.irTxRxFactories.push(irTxRxFactory);
+  addPluginFactory(pluginFactory: PluginFactory): void {
+    this.pluginFactories.push(pluginFactory);
   }
 
   async switchMode(
@@ -227,7 +228,7 @@ export class UnisonHTServer {
     return this._modes;
   }
 
-  get irTxRx(): IrTxRx | undefined {
-    return this._irTxRx;
+  get plugins(): Plugin[] {
+    return this._plugins;
   }
 }

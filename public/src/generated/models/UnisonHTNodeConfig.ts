@@ -7,6 +7,6 @@ export type UnisonHTNodeConfig = {
     nodeFactoryId?: string;
     deviceId?: string;
     name?: string;
-    activeModes?: Array<string>;
+    activeModeIds?: Array<string>;
     data: any;
 };

@@ -1,9 +1,12 @@
+import Debug from "debug";
+import express from "express";
 import {
   NextFunction,
   ParamsDictionary,
   Request,
-  Response,
+  Response
 } from "express-serve-static-core";
+import { StatusCodes } from "http-status-codes";
 import { ParsedQs } from "qs";
 import { UnisonHTServer } from "../UnisonHTServer";
 import {
@@ -11,21 +14,18 @@ import {
   ForwardToDeviceAction,
   ModeConfig,
   ModeConfigButton,
-  SwitchModeAction,
+  SwitchModeAction
 } from "./Config";
-import { OpenApi } from "./openApi/v3/OpenApi";
-import express from "express";
-import Debug from "debug";
 import { setStatusCodeOnError } from "./ErrorWithStatusCode";
-import { StatusCodes } from "http-status-codes";
+import { OpenApi } from "./openApi/v3/OpenApi";
 
 export class Mode {
-  private readonly debug = Debug(`unisonht:unisonht:mode:${this.id}`);
-  private readonly router: express.Router;
+  protected readonly debug = Debug(`unisonht:unisonht:mode:${this.id}`);
+  protected readonly router: express.Router;
 
   constructor(
-    private readonly server: UnisonHTServer,
-    private readonly config: ModeConfig
+    protected readonly server: UnisonHTServer,
+    protected readonly config: ModeConfig
   ) {
     this.router = express.Router();
     this.router.post(`/api/v1/mode/${this.id}/button`, async (req, res) => {

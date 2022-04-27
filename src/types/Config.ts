@@ -3,7 +3,7 @@ export interface Config {
   defaultModeId: string;
   modes: ModeConfig[];
   devices: DeviceConfig[];
-  irTxRx?: IrTxRxConfig;
+  plugins: PluginConfig[];
 }
 
 export interface ModeConfig {
@@ -36,11 +36,12 @@ export interface DeviceConfig {
   id: string;
   deviceFactoryId: string;
   name: string;
-  activeModes: string[];
+  activeModeIds: string[];
   data: any;
 }
 
-export interface IrTxRxConfig {
-  irTxRxFactoryId: string;
+export interface PluginConfig {
+  id: string;
+  pluginFactoryId: string;
   data: any;
 }

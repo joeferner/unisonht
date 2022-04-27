@@ -1,16 +1,17 @@
+import Debug from "debug";
+import express from "express";
 import {
   NextFunction,
   ParamsDictionary,
   Request,
-  Response,
+  Response
 } from "express-serve-static-core";
+import { StatusCodes } from "http-status-codes";
 import { ParsedQs } from "qs";
 import { UnisonHTServer } from "../UnisonHTServer";
 import { DeviceConfig } from "./Config";
-import { OpenApi } from "./openApi/v3/OpenApi";
-import express from "express";
 import { setStatusCodeOnError } from "./ErrorWithStatusCode";
-import { StatusCodes } from "http-status-codes";
+import { OpenApi } from "./openApi/v3/OpenApi";
 
 export interface DeviceFactory {
   get id(): string;
@@ -19,7 +20,8 @@ export interface DeviceFactory {
 }
 
 export abstract class Device {
-  private readonly router: express.Router;
+  protected readonly debug = Debug(`unisonht:unisonht:device:${this.id}`);
+  protected readonly router: express.Router;
 
   constructor(
     private readonly _id: string,
@@ -100,8 +102,8 @@ export abstract class Device {
 
   abstract switchInput(inputName: string): Promise<void>;
 
-  protected shouldBeActiveForMode(mode: string): boolean {
-    return this.config.activeModes.includes(mode) ?? false;
+  protected shouldBeActiveForMode(modeId: string): boolean {
+    return this.config.activeModeIds.includes(modeId) ?? false;
   }
 
   isActive(): boolean {

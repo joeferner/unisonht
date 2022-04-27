@@ -1,6 +1,6 @@
 export { UnisonHTServer } from "./UnisonHTServer";
 export { DeviceFactory, Device, PowerState } from "./types/Device";
-export { IrTxRxFactory, IrTxRx } from "./types/IrTxRx";
+export { PluginFactory, Plugin } from "./types/Plugin";
 export {
   Config,
   ModeConfig,
@@ -8,5 +8,5 @@ export {
   Action,
   SwitchModeAction,
   DeviceConfig,
-  IrTxRxConfig,
+  PluginConfig,
 } from "./types/Config";

@@ -1,6 +1,6 @@
 import { UnisonHTServer } from "..";
-import { IrTxRxConfig } from "../types/Config";
-import { IrTxRx, IrTxRxFactory } from "../types/IrTxRx";
+import { PluginConfig } from "../types/Config";
+import { Plugin, PluginFactory } from "../types/Plugin";
 import {
   NextFunction,
   ParamsDictionary,
@@ -15,30 +15,23 @@ import { ButtonEvent } from "../types/events/ButtonEvent";
 import { setStatusCodeOnError } from "../types/ErrorWithStatusCode";
 import { StatusCodes } from "http-status-codes";
 
-export class MockIrTxRxFactory implements IrTxRxFactory {
+export class MockPluginFactory implements PluginFactory {
   get id(): string {
     return "unisonht:mock-ir-tx-rx";
   }
 
-  async createIrTxRx(
+  async createPlugin(
     server: UnisonHTServer,
-    config: IrTxRxConfig
-  ): Promise<IrTxRx> {
-    return new MockIrTxRx(server, config);
+    config: PluginConfig
+  ): Promise<Plugin> {
+    return new MockPlugin(server, config);
   }
 }
 
-export class MockIrTxRx extends IrTxRx {
-  private readonly debug = Debug("unisonht:unisonht:mockIrTxRx");
-  private readonly router: express.Router;
+export class MockPlugin extends Plugin {
+  constructor(server: UnisonHTServer, config: PluginConfig) {
+    super(server, config);
 
-  constructor(
-    private readonly server: UnisonHTServer,
-    private readonly config: IrTxRxConfig
-  ) {
-    super();
-
-    this.router = express.Router();
     this.router.post("/api/v1/ir/rx", async (req, res) => {
       if (!req.query.button) {
         throw setStatusCodeOnError(
