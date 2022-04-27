@@ -29,7 +29,7 @@ export abstract class Device {
     private readonly _server: UnisonHTServer
   ) {
     this.router = express.Router();
-    this.router.post(`/api/v1/device/${this.id}/button`, async (req, res) => {
+    this.router.post(`${this.urlPrefix}/button`, async (req, res) => {
       if (!req.query.button) {
         throw setStatusCodeOnError(
           new Error("'button' is required"),
@@ -54,7 +54,7 @@ export abstract class Device {
   }
 
   updateSwaggerJson(swaggerJson: OpenApi): void {
-    swaggerJson.paths[`/api/v1/device/${this.id}/button`] = {
+    swaggerJson.paths[`${this.urlPrefix}/button`] = {
       post: {
         operationId: "pressButton",
         tags: [`Device: ${this.config.name}`],
@@ -113,6 +113,10 @@ export abstract class Device {
   abstract getPowerState(): Promise<PowerState>;
 
   abstract get buttons(): string[];
+
+  protected get urlPrefix(): string {
+    return `/api/v1/device/${this.id}`;
+  }
 }
 
 export enum PowerState {

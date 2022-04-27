@@ -32,7 +32,7 @@ export class MockPlugin extends Plugin {
   constructor(server: UnisonHTServer, config: PluginConfig) {
     super(server, config);
 
-    this.router.post("/api/v1/ir/rx", async (req, res) => {
+    this.router.post(`${this.urlPrefix}/rx`, async (req, res) => {
       if (!req.query.button) {
         throw setStatusCodeOnError(
           new Error("'button' is required"),
@@ -60,10 +60,10 @@ export class MockPlugin extends Plugin {
   }
 
   override updateSwaggerJson(swaggerJson: OpenApi): Promise<void> {
-    swaggerJson.paths["/api/v1/ir/rx"] = {
+    swaggerJson.paths[`${this.urlPrefix}/rx`] = {
       post: {
         operationId: "irRx",
-        tags: ["ir"],
+        tags: ["Plugin: IR Rx"],
         parameters: [
           {
             in: "query",

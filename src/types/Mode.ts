@@ -28,7 +28,7 @@ export class Mode {
     protected readonly config: ModeConfig
   ) {
     this.router = express.Router();
-    this.router.post(`/api/v1/mode/${this.id}/button`, async (req, res) => {
+    this.router.post(`${this.urlPrefix}/button`, async (req, res) => {
       if (!req.query.button) {
         throw setStatusCodeOnError(
           new Error("'button' is required"),
@@ -61,7 +61,7 @@ export class Mode {
   }
 
   updateSwaggerJson(swaggerJson: OpenApi): void {
-    swaggerJson.paths[`/api/v1/mode/${this.id}/button`] = {
+    swaggerJson.paths[`${this.urlPrefix}/button`] = {
       post: {
         operationId: "pressButton",
         tags: [`Mode: ${this.config.name}`],
@@ -168,5 +168,9 @@ export class Mode {
       }
       return [button.name];
     });
+  }
+
+  protected get urlPrefix(): string {
+    return `/api/v1/mode/${this.id}`;
   }
 }
