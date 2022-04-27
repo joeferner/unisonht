@@ -32,7 +32,7 @@ export class Mode {
   ) {
     this.router = express.Router();
     this.router.post(
-      `${this.urlPrefix}/button`,
+      `${this.apiUrlPrefix}/button`,
       asyncHandler(async (req, res) => {
         if (!req.query.button) {
           throw setStatusCodeOnError(
@@ -60,7 +60,7 @@ export class Mode {
   }
 
   updateSwaggerJson(swaggerJson: OpenApi): void {
-    swaggerJson.paths[`${this.urlPrefix}/button`] = {
+    swaggerJson.paths[`${this.apiUrlPrefix}/button`] = {
       post: {
         operationId: "pressButton",
         tags: [`Mode: ${this.config.name}`],
@@ -192,6 +192,10 @@ export class Mode {
   }
 
   protected get urlPrefix(): string {
+    return `/mode/${this.id}`;
+  }
+
+  protected get apiUrlPrefix(): string {
     return `/api/v1/mode/${this.id}`;
   }
 }

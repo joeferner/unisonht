@@ -49,6 +49,10 @@ export abstract class Plugin {
   }
 
   protected get urlPrefix(): string {
+    return `/plugin/${this.id}`;
+  }
+
+  protected get apiUrlPrefix(): string {
     return `/api/v1/plugin/${this.id}`;
   }
 }

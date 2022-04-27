@@ -31,7 +31,7 @@ export class WebRemotePlugin extends Plugin {
     super(server, config);
 
     this.router.post(
-      `${this.urlPrefix}/button`,
+      `${this.apiUrlPrefix}/button`,
       asyncHandler(async (req, res) => {
         if (!req.query.button) {
           throw setStatusCodeOnError(
@@ -43,6 +43,51 @@ export class WebRemotePlugin extends Plugin {
         res.json({});
       })
     );
+
+    this.router.get(`${this.urlPrefix}`, (_req, res) => {
+      res.send(`<html>
+        <head>
+          <title>UnisonHT: ${this.name}</title>
+          <script type="text/javascript">
+            function handleButtonClick(buttonName) {
+              fetch(
+                '${
+                  this.apiUrlPrefix
+                }/button?button=' + encodeURIComponent(buttonName),
+                {
+                  method: 'POST'
+                }
+              ).then(res => {
+                switch (res.status) {
+                  case 200:
+                    break;
+                  case 404:
+                    alert("Not Found");
+                    break;
+                  case 500:
+                    alert("Server Error");
+                    break;
+                  default:
+                    console.error(res);
+                    alert(res.statusText)
+                    break;
+                }
+              }).catch(err => {
+                console.error(err);
+                alert(err.message);
+              })
+            }
+          </script>
+        </head>
+        <body>
+          ${this.webRemoteConfig.buttons
+            .map((button) => {
+              return `<div><button onclick="handleButtonClick('${button}')">${button}</button></div>`;
+            })
+            .join("")}
+        </body>
+      </html>`);
+    });
   }
 
   private handleWebRequestPressButton(button: string): Promise<void> {
@@ -58,7 +103,7 @@ export class WebRemotePlugin extends Plugin {
   }
 
   override updateSwaggerJson(swaggerJson: OpenApi): Promise<void> {
-    swaggerJson.paths[`${this.urlPrefix}/button`] = {
+    swaggerJson.paths[`${this.apiUrlPrefix}/button`] = {
       post: {
         operationId: "pressButton",
         tags: ["Plugin: Web Remote"],

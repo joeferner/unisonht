@@ -32,7 +32,7 @@ export abstract class Device {
   ) {
     this.router = express.Router();
     this.router.post(
-      `${this.urlPrefix}/button`,
+      `${this.apiUrlPrefix}/button`,
       asyncHandler(async (req, res) => {
         if (!req.query.button) {
           throw setStatusCodeOnError(
@@ -55,7 +55,7 @@ export abstract class Device {
   }
 
   updateSwaggerJson(swaggerJson: OpenApi): void {
-    swaggerJson.paths[`${this.urlPrefix}/button`] = {
+    swaggerJson.paths[`${this.apiUrlPrefix}/button`] = {
       post: {
         operationId: "pressButton",
         tags: [`Device: ${this.config.name}`],
@@ -116,6 +116,10 @@ export abstract class Device {
   abstract get buttons(): string[];
 
   protected get urlPrefix(): string {
+    return `/device/${this.id}`;
+  }
+
+  protected get apiUrlPrefix(): string {
     return `/api/v1/device/${this.id}`;
   }
 }
