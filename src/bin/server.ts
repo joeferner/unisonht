@@ -4,6 +4,8 @@ import fs from "fs";
 import { MockDeviceFactory } from "../devices/MockDevice";
 import { WebRemotePluginFactory } from "../plugins/WebRemotePlugin";
 import { validateConfig } from "../types/TypeUtils";
+import { ForwardToDeviceActionFactory } from "../actions/ForwardToDeviceAction";
+import { SwitchModeActionFactory } from "../actions/SwitchModeAction";
 
 async function run() {
   const args = await yargs
@@ -25,6 +27,8 @@ async function run() {
   const server = new UnisonHTServer(config);
   server.addDeviceFactory(new MockDeviceFactory());
   server.addPluginFactory(new WebRemotePluginFactory());
+  server.addActionFactory(new ForwardToDeviceActionFactory());
+  server.addActionFactory(new SwitchModeActionFactory());
   server.start({ port: args.port });
 }
 

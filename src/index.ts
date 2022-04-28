@@ -1,12 +1,8 @@
-export { UnisonHTServer } from "./UnisonHTServer";
-export { DeviceFactory, Device, PowerState } from "./types/Device";
-export { PluginFactory, Plugin } from "./types/Plugin";
 export {
-  Config,
-  ModeConfig,
-  ModeConfigButton,
-  Action,
-  SwitchModeAction,
-  DeviceConfig,
-  PluginConfig,
+  Config, DeviceConfig, ModeConfig,
+  ModeConfigButton, PluginConfig
 } from "./types/Config";
+export { Device, DeviceFactory, PowerState } from "./types/Device";
+export { Plugin, PluginFactory } from "./types/Plugin";
+export { UnisonHTServer } from "./UnisonHTServer";
+

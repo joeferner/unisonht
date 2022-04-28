@@ -4,13 +4,14 @@ import {
   NextFunction,
   ParamsDictionary,
   Request,
-  Response
+  Response,
 } from "express-serve-static-core";
 import path from "path";
 import { ParsedQs } from "qs";
 import swaggerUi from "swagger-ui-express";
 import { createRouter, routerUpdateSwaggerJson } from "./routes";
-import { Config } from "./types/Config";
+import { Action, ActionFactory } from "./types/Action";
+import { ActionConfig, Config } from "./types/Config";
 import { Device, DeviceFactory } from "./types/Device";
 import { getStatusCodeFromError } from "./types/ErrorWithStatusCode";
 import { Mode } from "./types/Mode";
@@ -21,6 +22,7 @@ export class UnisonHTServer {
   private readonly app: Express;
   private readonly deviceFactories: DeviceFactory[] = [];
   private readonly pluginFactories: PluginFactory[] = [];
+  private readonly actionFactories: ActionFactory[] = [];
   private readonly _devices: Device[] = [];
   private readonly _modes: Mode[] = [];
   private readonly _plugins: Plugin[] = [];
@@ -172,6 +174,20 @@ export class UnisonHTServer {
 
       this._devices.push(device);
     }
+  }
+
+  createAction(actionConfig: ActionConfig): Action {
+    const actionFactory = this.actionFactories.find(
+      (f) => f.type === actionConfig.type
+    );
+    if (!actionFactory) {
+      throw new Error(`invalid action ${actionConfig.type}`);
+    }
+    return actionFactory.createAction(this, actionConfig);
+  }
+
+  addActionFactory(actionFactory: ActionFactory): void {
+    this.actionFactories.push(actionFactory);
   }
 
   addDeviceFactory(deviceFactory: DeviceFactory): void {

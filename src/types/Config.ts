@@ -14,22 +14,11 @@ export interface ModeConfig {
 
 export interface ModeConfigButton {
   name: string;
-  actions: Action[];
+  actions: ActionConfig[];
 }
 
-export interface Action {
-  type: "switchMode" | "forwardToDevice";
-}
-
-export interface SwitchModeAction {
-  type: "switchMode";
-  modeId: string;
-  deviceInputs?: { [deviceId: string]: string };
-}
-
-export interface ForwardToDeviceAction {
-  type: "forwardToDevice";
-  deviceId: string;
+export interface ActionConfig {
+  type: string;
 }
 
 export interface DeviceConfig {

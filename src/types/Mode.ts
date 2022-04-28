@@ -1,5 +1,6 @@
 import Debug from "debug";
 import express from "express";
+import asyncHandler from "express-async-handler";
 import {
   NextFunction,
   ParamsDictionary,
@@ -8,28 +9,30 @@ import {
 } from "express-serve-static-core";
 import { StatusCodes } from "http-status-codes";
 import { ParsedQs } from "qs";
+import { ForwardToDeviceActionConfig } from "../actions/ForwardToDeviceAction";
 import { UnisonHTServer } from "../UnisonHTServer";
-import {
-  Action,
-  ForwardToDeviceAction,
-  ModeConfig,
-  ModeConfigButton,
-  SwitchModeAction,
-} from "./Config";
+import { Action } from "./Action";
+import { ModeConfig, ModeConfigButton } from "./Config";
 import { setStatusCodeOnError } from "./ErrorWithStatusCode";
 import { OpenApi } from "./openApi/v3/OpenApi";
-import asyncHandler from "express-async-handler";
 
 export class Mode {
   protected readonly debug = Debug(
     `unisonht:unisonht:mode:${this.name}:${this.id}`
   );
   protected readonly router: express.Router;
+  private readonly buttonActions: { [buttonName: string]: Action[] } = {};
 
   constructor(
     protected readonly server: UnisonHTServer,
     protected readonly config: ModeConfig
   ) {
+    for (const buttonConfig of config.buttons) {
+      this.buttonActions[buttonConfig.name] = buttonConfig.actions.map(
+        (actionConfig) => server.createAction(actionConfig)
+      );
+    }
+
     this.router = express.Router();
     this.router.post(
       `${this.apiUrlPrefix}/button`,
@@ -111,55 +114,17 @@ export class Mode {
 
   async pressButton(buttonName: string): Promise<void> {
     this.debug("handle button press: %s", buttonName);
-    const button = this.getButtonByName(buttonName);
-    if (!button) {
+    const buttonConfig = this.getButtonByName(buttonName);
+    if (!buttonConfig) {
       throw setStatusCodeOnError(
         new Error(`Could not find button: ${buttonName}`),
         StatusCodes.NOT_FOUND
       );
     }
-    for (const action of button.actions) {
-      await this.executeAction(action, buttonName);
+    const buttonActions = this.buttonActions[buttonConfig.name];
+    for (const action of buttonActions) {
+      await action.execute(buttonName);
     }
-  }
-
-  protected executeAction(action: Action, buttonName: string): Promise<void> {
-    switch (action.type) {
-      case "forwardToDevice":
-        return this.executeActionForwardToDevice(
-          action as ForwardToDeviceAction,
-          buttonName
-        );
-      case "switchMode":
-        return this.executeActionSwitchMode(action as SwitchModeAction);
-      default:
-        throw new Error(`unhandled action type: ${action.type}`);
-    }
-  }
-
-  private executeActionForwardToDevice(
-    action: ForwardToDeviceAction,
-    buttonName: string
-  ): Promise<void> {
-    const device = this.server.devices.find((d) => d.id === action.deviceId);
-    if (this.debug.enabled) {
-      this.debug(
-        'action: forwarding button "%s" to device %s%s',
-        buttonName,
-        action.deviceId,
-        device ? ` (${device.name})` : "NOT FOUND"
-      );
-    }
-
-    if (!device) {
-      throw new Error(`could not find device: ${action.deviceId}`);
-    }
-    return device.handleButtonPress(buttonName);
-  }
-
-  private executeActionSwitchMode(action: SwitchModeAction): Promise<void> {
-    this.debug("action: switching mode to %s", action.modeId);
-    return this.server.switchMode(action.modeId, action.deviceInputs);
   }
 
   get id(): string {
@@ -177,7 +142,8 @@ export class Mode {
         button.actions.length === 1 &&
         button.actions[0].type === "forwardToDevice"
       ) {
-        const deviceId = (button.actions[0] as ForwardToDeviceAction).deviceId;
+        const deviceId = (button.actions[0] as ForwardToDeviceActionConfig)
+          .deviceId;
         const device = this.server.devices.find((d) => d.id === deviceId);
         if (!device) {
           throw new Error(`could not find device with id: ${deviceId}`);
