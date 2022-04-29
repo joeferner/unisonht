@@ -21,7 +21,7 @@ export class Mode {
     `unisonht:unisonht:mode:${this.name}:${this.id}`
   );
   protected readonly router: express.Router;
-  private readonly buttonActions: { [buttonName: string]: Action[] } = {};
+  private readonly buttonActions: { [buttonName: string]: Action<any>[] } = {};
 
   constructor(
     protected readonly server: UnisonHTServer,

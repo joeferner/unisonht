@@ -2,20 +2,16 @@ import { UnisonHTServer } from "..";
 import { DeviceConfig } from "../types/Config";
 import { Device, DeviceFactory, PowerState } from "../types/Device";
 
-export class MockDeviceFactory implements DeviceFactory {
-  get id(): string {
-    return "unisonht:mock-device";
-  }
-
+export class MockDeviceFactory implements DeviceFactory<MockDeviceConfig> {
   async createDevice(
     server: UnisonHTServer,
-    config: DeviceConfig
-  ): Promise<Device> {
+    config: DeviceConfig<MockDeviceConfig>
+  ): Promise<Device<MockDeviceConfig>> {
     return new MockDevice(config, server);
   }
 }
 
-export class MockDevice extends Device {
+export class MockDevice extends Device<MockDeviceConfig> {
   private _powerState: PowerState = PowerState.OFF;
 
   override async switchMode(
@@ -48,11 +44,7 @@ export class MockDevice extends Device {
   }
 
   get buttons(): string[] {
-    return this.deviceConfig.buttons;
-  }
-
-  private get deviceConfig(): MockDeviceConfig {
-    return this.config.data as MockDeviceConfig;
+    return this.config.data.buttons;
   }
 }
 

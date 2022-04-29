@@ -2,8 +2,8 @@ export interface Config {
   version: 1;
   defaultModeId: string;
   modes: ModeConfig[];
-  devices: DeviceConfig[];
-  plugins: PluginConfig[];
+  devices: DeviceConfig<any>[];
+  plugins: PluginConfig<any>[];
 }
 
 export interface ModeConfig {
@@ -21,17 +21,17 @@ export interface ActionConfig {
   type: string;
 }
 
-export interface DeviceConfig {
+export interface DeviceConfig<TData> {
   id: string;
   deviceFactoryId: string;
   name: string;
   activeModeIds: string[];
-  data: any;
+  data: TData;
 }
 
-export interface PluginConfig {
+export interface PluginConfig<TData> {
   id: string;
   name: string;
   pluginFactoryId: string;
-  data: any;
+  data: TData;
 }

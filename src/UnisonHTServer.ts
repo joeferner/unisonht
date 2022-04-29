@@ -20,12 +20,12 @@ import { Plugin, PluginFactory } from "./types/Plugin";
 export class UnisonHTServer {
   private readonly debug = Debug("unisonht:unisonht:server");
   private readonly app: Express;
-  private readonly deviceFactories: DeviceFactory[] = [];
-  private readonly pluginFactories: PluginFactory[] = [];
-  private readonly actionFactories: ActionFactory[] = [];
-  private readonly _devices: Device[] = [];
+  private readonly deviceFactories: DeviceFactory<any>[] = [];
+  private readonly pluginFactories: PluginFactory<any>[] = [];
+  private readonly actionFactories: ActionFactory<any>[] = [];
+  private readonly _devices: Device<any>[] = [];
   private readonly _modes: Mode[] = [];
-  private readonly _plugins: Plugin[] = [];
+  private readonly _plugins: Plugin<any>[] = [];
   private readonly _config: Config;
   private _modeId?: string;
 
@@ -158,8 +158,8 @@ export class UnisonHTServer {
 
   private async createDevices(): Promise<void> {
     for (const deviceConfig of this.config.devices) {
-      const deviceFactory = this.deviceFactories.find(
-        (d) => d.id === deviceConfig.deviceFactoryId
+      const deviceFactory = await this.getDeviceFactory(
+        deviceConfig.deviceFactoryId
       );
       if (!deviceFactory) {
         throw new Error(
@@ -176,7 +176,41 @@ export class UnisonHTServer {
     }
   }
 
-  createAction(actionConfig: ActionConfig): Action {
+  private async getDeviceFactory(
+    deviceFactoryId: string
+  ): Promise<DeviceFactory<any> | undefined> {
+    const deviceFactory = this.deviceFactories.find(
+      (d) => (d as any).constructor.name === deviceFactoryId
+    );
+    if (deviceFactory) {
+      return deviceFactory;
+    }
+    const parts = deviceFactoryId.split(":", 2);
+    if (parts.length === 2) {
+      const module = this.loadModule(parts[0]);
+      const deviceFactoryClass = module[parts[1]];
+      if (deviceFactoryClass) {
+        const deviceFactory = new deviceFactoryClass();
+        this.deviceFactories.push(deviceFactory);
+        return deviceFactory;
+      }
+    }
+    return undefined;
+  }
+
+  private loadModule(moduleNameOrPath: string): any {
+    this.debug("loading device module: %s", moduleNameOrPath);
+    try {
+      return require(moduleNameOrPath);
+    } catch (err) {
+      if (moduleNameOrPath.startsWith(".")) {
+        return require(path.join(process.cwd(), moduleNameOrPath));
+      }
+      throw err;
+    }
+  }
+
+  createAction(actionConfig: ActionConfig): Action<any> {
     const actionFactory = this.actionFactories.find(
       (f) => f.type === actionConfig.type
     );
@@ -186,15 +220,15 @@ export class UnisonHTServer {
     return actionFactory.createAction(this, actionConfig);
   }
 
-  addActionFactory(actionFactory: ActionFactory): void {
+  addActionFactory(actionFactory: ActionFactory<any>): void {
     this.actionFactories.push(actionFactory);
   }
 
-  addDeviceFactory(deviceFactory: DeviceFactory): void {
+  addDeviceFactory(deviceFactory: DeviceFactory<any>): void {
     this.deviceFactories.push(deviceFactory);
   }
 
-  addPluginFactory(pluginFactory: PluginFactory): void {
+  addPluginFactory(pluginFactory: PluginFactory<any>): void {
     this.pluginFactories.push(pluginFactory);
   }
 
@@ -257,7 +291,7 @@ export class UnisonHTServer {
     return this._config;
   }
 
-  get devices(): Device[] {
+  get devices(): Device<any>[] {
     return this._devices;
   }
 
@@ -265,7 +299,7 @@ export class UnisonHTServer {
     return this._modes;
   }
 
-  get plugins(): Plugin[] {
+  get plugins(): Plugin<any>[] {
     return this._plugins;
   }
 }

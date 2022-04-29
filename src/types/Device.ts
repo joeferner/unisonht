@@ -5,7 +5,7 @@ import {
   NextFunction,
   ParamsDictionary,
   Request,
-  Response
+  Response,
 } from "express-serve-static-core";
 import { StatusCodes } from "http-status-codes";
 import { ParsedQs } from "qs";
@@ -14,20 +14,21 @@ import { DeviceConfig } from "./Config";
 import { setStatusCodeOnError } from "./ErrorWithStatusCode";
 import { OpenApi } from "./openApi/v3/OpenApi";
 
-export interface DeviceFactory {
-  get id(): string;
-
-  createDevice(server: UnisonHTServer, config: DeviceConfig): Promise<Device>;
+export interface DeviceFactory<TConfigData> {
+  createDevice(
+    server: UnisonHTServer,
+    config: DeviceConfig<TConfigData>
+  ): Promise<Device<TConfigData>>;
 }
 
-export abstract class Device {
+export abstract class Device<TConfigData> {
   protected readonly debug = Debug(
     `unisonht:unisonht:device:${this.name}:${this.id}`
   );
   protected readonly router: express.Router;
 
   constructor(
-    protected readonly config: DeviceConfig,
+    protected readonly config: DeviceConfig<TConfigData>,
     protected readonly server: UnisonHTServer
   ) {
     this.router = express.Router();

@@ -13,21 +13,21 @@ import { OpenApi } from "../types/openApi/v3/OpenApi";
 import { Plugin, PluginFactory } from "../types/Plugin";
 import asyncHandler from "express-async-handler";
 
-export class WebRemotePluginFactory implements PluginFactory {
+export class WebRemotePluginFactory implements PluginFactory<WebRemoteConfig> {
   get id(): string {
     return "unisonht:web-remote";
   }
 
   async createPlugin(
     server: UnisonHTServer,
-    config: PluginConfig
-  ): Promise<Plugin> {
+    config: PluginConfig<WebRemoteConfig>
+  ): Promise<Plugin<WebRemoteConfig>> {
     return new WebRemotePlugin(server, config);
   }
 }
 
-export class WebRemotePlugin extends Plugin {
-  constructor(server: UnisonHTServer, config: PluginConfig) {
+export class WebRemotePlugin extends Plugin<WebRemoteConfig> {
+  constructor(server: UnisonHTServer, config: PluginConfig<WebRemoteConfig>) {
     super(server, config);
 
     this.router.post(
@@ -80,7 +80,7 @@ export class WebRemotePlugin extends Plugin {
           </script>
         </head>
         <body>
-          ${this.webRemoteConfig.buttons
+          ${this.config.data.buttons
             .map((button) => {
               return `<div><button onclick="handleButtonClick('${button}')">${button}</button></div>`;
             })
@@ -91,7 +91,7 @@ export class WebRemotePlugin extends Plugin {
   }
 
   private handleWebRequestPressButton(button: string): Promise<void> {
-    if (!this.webRemoteConfig.buttons.includes(button)) {
+    if (!this.config.data.buttons.includes(button)) {
       throw setStatusCodeOnError(
         new Error(`Invalid button "${button}"`),
         StatusCodes.NOT_FOUND
@@ -114,7 +114,7 @@ export class WebRemotePlugin extends Plugin {
             required: true,
             schema: {
               type: "string",
-              enum: this.webRemoteConfig.buttons,
+              enum: this.config.data.buttons,
             },
           },
         ],
@@ -151,10 +151,6 @@ export class WebRemotePlugin extends Plugin {
     next: NextFunction
   ): void {
     this.router(req, res, next);
-  }
-
-  private get webRemoteConfig(): WebRemoteConfig {
-    return this.config.data as WebRemoteConfig;
   }
 }
 

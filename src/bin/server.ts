@@ -1,6 +1,7 @@
 import { UnisonHTServer } from "../UnisonHTServer";
 import yargs from "yargs";
 import fs from "fs";
+import path from "path";
 import { MockDeviceFactory } from "../devices/MockDevice";
 import { WebRemotePluginFactory } from "../plugins/WebRemotePlugin";
 import { validateConfig } from "../types/TypeUtils";

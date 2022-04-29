@@ -11,13 +11,16 @@ import { ParsedQs } from "qs";
 import express from "express";
 import Debug from "debug";
 
-export interface PluginFactory {
+export interface PluginFactory<TConfigData> {
   get id(): string;
 
-  createPlugin(server: UnisonHTServer, config: PluginConfig): Promise<Plugin>;
+  createPlugin(
+    server: UnisonHTServer,
+    config: PluginConfig<TConfigData>
+  ): Promise<Plugin<TConfigData>>;
 }
 
-export abstract class Plugin {
+export abstract class Plugin<TConfigData> {
   protected readonly debug = Debug(
     `unisonht:unisonht:plugin:${this.name}:${this.id}`
   );
@@ -25,7 +28,7 @@ export abstract class Plugin {
 
   constructor(
     protected readonly server: UnisonHTServer,
-    protected readonly config: PluginConfig
+    protected readonly config: PluginConfig<TConfigData>
   ) {
     this.router = express.Router();
   }

@@ -1,8 +1,9 @@
 {
-  "name": "unisonht",
+  "name": "@unisonht/unisonht",
   "version": "1.0.0",
   "description": "UnisonHT server",
   "main": "dist/index.js",
+  "types": "src/index.ts",
   "bin": {
     "unisonht-server": "dist/bin/server.js"
   },
