@@ -1,10 +1,9 @@
-import { Get, Post, Query, Response, Route, SuccessResponse } from 'tsoa';
-import { UnisonHTServer } from '../UnisonHTServer';
-import { StatusCodes } from 'http-status-codes';
-import { setStatusCodeOnError } from '../types/ErrorWithStatusCode';
 import { Router } from 'express-serve-static-core';
-import asyncHandler from 'express-async-handler';
+import { StatusCodes } from 'http-status-codes';
+import { Get, Post, Query, Response, Route, SuccessResponse } from 'tsoa';
+import { setStatusCodeOnError } from '../types/ErrorWithStatusCode';
 import { OpenApi } from '../types/openApi/v3/OpenApi';
+import { UnisonHTServer } from '../UnisonHTServer';
 
 @Route('api/v1/mode')
 export class ModeController {
@@ -13,19 +12,13 @@ export class ModeController {
   static init(server: UnisonHTServer, router: Router) {
     const modeController = new ModeController(server);
 
-    router.get(
-      '/api/v1/mode',
-      asyncHandler(async (_req, res) => {
-        res.send(await modeController.getMode());
-      }),
-    );
+    router.get('/api/v1/mode', async (_req, res) => {
+      res.send(await modeController.getMode());
+    });
 
-    router.post(
-      '/api/v1/mode',
-      asyncHandler(async (req, res) => {
-        res.send(await modeController.switchMode(req.query.newModeId?.toString() ?? 'NOT SET'));
-      }),
-    );
+    router.post('/api/v1/mode', async (req, res) => {
+      res.send(await modeController.switchMode(req.query.newModeId?.toString() ?? 'NOT SET'));
+    });
   }
 
   static updateSwaggerJson(server: UnisonHTServer, swaggerJson: OpenApi) {

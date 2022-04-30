@@ -1,5 +1,6 @@
 import Debug from 'debug';
 import express from 'express';
+import Router from 'express-promise-router';
 import { NextFunction, Request, Response } from 'express-serve-static-core';
 import { UnisonHTServer } from '../UnisonHTServer';
 import { PluginConfig } from './Config';
@@ -16,7 +17,11 @@ export abstract class Plugin<TConfigData> {
   protected readonly router: express.Router;
 
   constructor(protected readonly server: UnisonHTServer, protected readonly config: PluginConfig<TConfigData>) {
-    this.router = express.Router();
+    this.router = Router();
+  }
+
+  protected get swaggerTags(): string[] {
+    return [`Plugin: ${this.config.name}`];
   }
 
   updateSwaggerJson(swaggerJson: OpenApi): void {

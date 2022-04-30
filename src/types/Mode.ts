@@ -1,6 +1,6 @@
 import Debug from 'debug';
 import express from 'express';
-import asyncHandler from 'express-async-handler';
+import Router from 'express-promise-router';
 import { NextFunction, Request, Response } from 'express-serve-static-core';
 import { StatusCodes } from 'http-status-codes';
 import { ForwardToDeviceActionConfig } from '../actions/ForwardToDeviceAction';
@@ -22,18 +22,15 @@ export class Mode {
       );
     }
 
-    this.router = express.Router();
-    this.router.post(
-      `${this.apiUrlPrefix}/button`,
-      asyncHandler(async (req, res) => {
-        if (!req.query.button) {
-          throw setStatusCodeOnError(new Error("'button' is required"), StatusCodes.BAD_REQUEST);
-        }
-        const buttonName = req.query.button?.toString();
-        await this.pressButton(buttonName);
-        res.json({});
-      }),
-    );
+    this.router = Router();
+    this.router.post(`${this.apiUrlPrefix}/button`, async (req, res) => {
+      if (!req.query.button) {
+        throw setStatusCodeOnError(new Error("'button' is required"), StatusCodes.BAD_REQUEST);
+      }
+      const buttonName = req.query.button?.toString();
+      await this.pressButton(buttonName);
+      res.json({});
+    });
   }
 
   private getButtonByName(buttonName: string): ModeConfigButton | undefined {
@@ -48,11 +45,15 @@ export class Mode {
     return undefined;
   }
 
+  protected get swaggerTags(): string[] {
+    return [`Mode: ${this.config.name}`];
+  }
+
   updateSwaggerJson(swaggerJson: OpenApi): void {
     swaggerJson.paths[`${this.apiUrlPrefix}/button`] = {
       post: {
         operationId: 'pressButton',
-        tags: [`Mode: ${this.config.name}`],
+        tags: this.swaggerTags,
         parameters: [
           {
             in: 'query',

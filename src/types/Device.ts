@@ -1,6 +1,6 @@
 import Debug from 'debug';
 import express from 'express';
-import asyncHandler from 'express-async-handler';
+import Router from 'express-promise-router';
 import { NextFunction, Request, Response } from 'express-serve-static-core';
 import { StatusCodes } from 'http-status-codes';
 import { UnisonHTServer } from '../UnisonHTServer';
@@ -17,17 +17,14 @@ export abstract class Device<TConfigData> {
   protected readonly router: express.Router;
 
   constructor(protected readonly config: DeviceConfig<TConfigData>, protected readonly server: UnisonHTServer) {
-    this.router = express.Router();
-    this.router.post(
-      `${this.apiUrlPrefix}/button`,
-      asyncHandler(async (req, res) => {
-        if (!req.query.button) {
-          throw setStatusCodeOnError(new Error("'button' is required"), StatusCodes.BAD_REQUEST);
-        }
-        await this.handleButtonPress(req.query.button?.toString());
-        res.json({});
-      }),
-    );
+    this.router = Router();
+    this.router.post(`${this.apiUrlPrefix}/button`, async (req, res) => {
+      if (!req.query.button) {
+        throw setStatusCodeOnError(new Error("'button' is required"), StatusCodes.BAD_REQUEST);
+      }
+      await this.handleButtonPress(req.query.button?.toString());
+      res.json({});
+    });
   }
 
   get id(): string {
@@ -38,11 +35,15 @@ export abstract class Device<TConfigData> {
     return this.config.name;
   }
 
+  protected get swaggerTags(): string[] {
+    return [`Device: ${this.config.name}`];
+  }
+
   updateSwaggerJson(swaggerJson: OpenApi): void {
     swaggerJson.paths[`${this.apiUrlPrefix}/button`] = {
       post: {
         operationId: 'pressButton',
-        tags: [`Device: ${this.config.name}`],
+        tags: this.swaggerTags,
         parameters: [
           {
             in: 'query',

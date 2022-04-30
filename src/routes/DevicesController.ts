@@ -1,4 +1,3 @@
-import asyncHandler from 'express-async-handler';
 import { Router } from 'express-serve-static-core';
 import { Get, Route } from 'tsoa';
 import { PowerState } from '../types/Device';
@@ -11,12 +10,9 @@ export class DevicesController {
   static init(server: UnisonHTServer, router: Router) {
     const devicesController = new DevicesController(server);
 
-    router.get(
-      '/api/v1/devices',
-      asyncHandler(async (_req, res) => {
-        res.send(await devicesController.getDevices());
-      }),
-    );
+    router.get('/api/v1/devices', async (_req, res) => {
+      res.send(await devicesController.getDevices());
+    });
   }
 
   @Get('/')

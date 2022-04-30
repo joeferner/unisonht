@@ -1,4 +1,3 @@
-import asyncHandler from 'express-async-handler';
 import { NextFunction, Request, Response } from 'express-serve-static-core';
 import { StatusCodes } from 'http-status-codes';
 import { UnisonHTServer } from '..';
@@ -21,16 +20,13 @@ export class WebRemotePlugin extends Plugin<WebRemoteConfig> {
   constructor(server: UnisonHTServer, config: PluginConfig<WebRemoteConfig>) {
     super(server, config);
 
-    this.router.post(
-      `${this.apiUrlPrefix}/button`,
-      asyncHandler(async (req: Request, res) => {
-        if (!req.query.button) {
-          throw setStatusCodeOnError(new Error("'button' is required"), StatusCodes.BAD_REQUEST);
-        }
-        await this.handleWebRequestPressButton(req.query.button.toString());
-        res.json({});
-      }),
-    );
+    this.router.post(`${this.apiUrlPrefix}/button`, async (req: Request, res) => {
+      if (!req.query.button) {
+        throw setStatusCodeOnError(new Error("'button' is required"), StatusCodes.BAD_REQUEST);
+      }
+      await this.handleWebRequestPressButton(req.query.button.toString());
+      res.json({});
+    });
 
     this.router.get(`${this.urlPrefix}`, (_req, res) => {
       res.send(`<html>
@@ -86,10 +82,12 @@ export class WebRemotePlugin extends Plugin<WebRemoteConfig> {
   }
 
   override updateSwaggerJson(swaggerJson: OpenApi): Promise<void> {
+    super.updateSwaggerJson(swaggerJson);
+
     swaggerJson.paths[`${this.apiUrlPrefix}/button`] = {
       post: {
         operationId: 'pressButton',
-        tags: ['Plugin: Web Remote'],
+        tags: this.swaggerTags,
         parameters: [
           {
             in: 'query',
