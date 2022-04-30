@@ -1,20 +1,19 @@
 import Debug from 'debug';
 import express from 'express';
 import asyncHandler from 'express-async-handler';
-import { NextFunction, ParamsDictionary, Request, Response } from 'express-serve-static-core';
+import { NextFunction, Request, Response } from 'express-serve-static-core';
 import { StatusCodes } from 'http-status-codes';
-import { ParsedQs } from 'qs';
 import { ForwardToDeviceActionConfig } from '../actions/ForwardToDeviceAction';
 import { UnisonHTServer } from '../UnisonHTServer';
 import { Action } from './Action';
-import { ModeConfig, ModeConfigButton } from './Config';
+import { ActionConfig, ModeConfig, ModeConfigButton } from './Config';
 import { setStatusCodeOnError } from './ErrorWithStatusCode';
 import { OpenApi } from './openApi/v3/OpenApi';
 
 export class Mode {
   protected readonly debug = Debug(`unisonht:unisonht:mode:${this.name}:${this.id}`);
   protected readonly router: express.Router;
-  private readonly buttonActions: { [buttonName: string]: Action<any>[] } = {};
+  private readonly buttonActions: { [buttonName: string]: Action<ActionConfig>[] } = {};
 
   constructor(protected readonly server: UnisonHTServer, protected readonly config: ModeConfig) {
     for (const buttonConfig of config.buttons) {
@@ -91,11 +90,7 @@ export class Mode {
     };
   }
 
-  handleWebRequest(
-    req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>,
-    resp: Response<any, Record<string, any>, number>,
-    next: NextFunction,
-  ): void {
+  handleWebRequest(req: Request, resp: Response, next: NextFunction): void {
     this.router(req, resp, next);
   }
 

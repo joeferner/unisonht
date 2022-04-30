@@ -1,12 +1,11 @@
-import { NextFunction, ParamsDictionary, Request, Response } from 'express-serve-static-core';
+import asyncHandler from 'express-async-handler';
+import { NextFunction, Request, Response } from 'express-serve-static-core';
 import { StatusCodes } from 'http-status-codes';
-import { ParsedQs } from 'qs';
 import { UnisonHTServer } from '..';
 import { PluginConfig } from '../types/Config';
 import { setStatusCodeOnError } from '../types/ErrorWithStatusCode';
 import { OpenApi } from '../types/openApi/v3/OpenApi';
 import { Plugin, PluginFactory } from '../types/Plugin';
-import asyncHandler from 'express-async-handler';
 
 export class WebRemotePluginFactory implements PluginFactory<WebRemoteConfig> {
   get id(): string {
@@ -24,7 +23,7 @@ export class WebRemotePlugin extends Plugin<WebRemoteConfig> {
 
     this.router.post(
       `${this.apiUrlPrefix}/button`,
-      asyncHandler(async (req, res) => {
+      asyncHandler(async (req: Request, res) => {
         if (!req.query.button) {
           throw setStatusCodeOnError(new Error("'button' is required"), StatusCodes.BAD_REQUEST);
         }
@@ -129,11 +128,7 @@ export class WebRemotePlugin extends Plugin<WebRemoteConfig> {
     return Promise.resolve();
   }
 
-  override handleWebRequest(
-    req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>,
-    res: Response<any, Record<string, any>, number>,
-    next: NextFunction,
-  ): void {
+  override handleWebRequest(req: Request, res: Response, next: NextFunction): void {
     this.router(req, res, next);
   }
 }

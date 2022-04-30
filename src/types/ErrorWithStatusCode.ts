@@ -3,10 +3,10 @@ export interface ErrorWithStatusCode {
 }
 
 export function setStatusCodeOnError(err: Error, statusCode: number): Error {
-  (err as any as ErrorWithStatusCode).statusCode = statusCode;
+  (err as unknown as ErrorWithStatusCode).statusCode = statusCode;
   return err;
 }
 
 export function getStatusCodeFromError(err: Error): number | undefined {
-  return (err as any as ErrorWithStatusCode).statusCode;
+  return (err as unknown as ErrorWithStatusCode).statusCode;
 }

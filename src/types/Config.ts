@@ -2,8 +2,8 @@ export interface Config {
   version: 1;
   defaultModeId: string;
   modes: ModeConfig[];
-  devices: DeviceConfig<any>[];
-  plugins: PluginConfig<any>[];
+  devices: DeviceConfig<unknown>[];
+  plugins: PluginConfig<unknown>[];
 }
 
 export interface ModeConfig {

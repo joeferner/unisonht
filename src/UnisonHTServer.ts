@@ -1,8 +1,7 @@
 import Debug from 'debug';
 import express, { Express } from 'express';
-import { NextFunction, ParamsDictionary, Request, Response } from 'express-serve-static-core';
+import { NextFunction, Request, Response } from 'express-serve-static-core';
 import path from 'path';
-import { ParsedQs } from 'qs';
 import swaggerUi from 'swagger-ui-express';
 import { createRouter, routerUpdateSwaggerJson } from './routes';
 import { Action, ActionFactory } from './types/Action';
@@ -15,17 +14,17 @@ import { Plugin, PluginFactory } from './types/Plugin';
 export class UnisonHTServer {
   private readonly debug = Debug('unisonht:unisonht:server');
   private readonly app: Express;
-  private readonly deviceFactories: DeviceFactory<any>[] = [];
-  private readonly pluginFactories: PluginFactory<any>[] = [];
-  private readonly actionFactories: ActionFactory<any>[] = [];
-  private readonly _devices: Device<any>[] = [];
+  private readonly deviceFactories: DeviceFactory<unknown>[] = [];
+  private readonly pluginFactories: PluginFactory<unknown>[] = [];
+  private readonly actionFactories: ActionFactory<ActionConfig>[] = [];
+  private readonly _devices: Device<unknown>[] = [];
   private readonly _modes: Mode[] = [];
-  private readonly _plugins: Plugin<any>[] = [];
+  private readonly _plugins: Plugin<unknown>[] = [];
   private readonly _config: Config;
   private _modeId?: string;
 
   constructor(config?: Config) {
-    // eslint-disable-next-line
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const swaggerJson = require(path.join(__dirname, '..', 'dist', 'swagger.json'));
     this._config = {
       version: 1,
@@ -80,21 +79,14 @@ export class UnisonHTServer {
       this.app.all('/*', (_req, res) => {
         res.sendFile('index.html', { root: angularPath });
       });
-      this.app.use(
-        (
-          err: Error,
-          _req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>,
-          res: Response<any, Record<string, any>, number>,
-          next: NextFunction,
-        ) => {
-          this.debug('error: %o', err);
-          if (res.headersSent) {
-            return next(err);
-          }
-          res.status(getStatusCodeFromError(err) ?? 500);
-          res.json({ error: err.message });
-        },
-      );
+      this.app.use((err: Error, _req: Request, res: Response, next: NextFunction) => {
+        this.debug('error: %o', err);
+        if (res.headersSent) {
+          return next(err);
+        }
+        res.status(getStatusCodeFromError(err) ?? 500);
+        res.json({ error: err.message });
+      });
       this.app.listen(port, () => {
         this.debug(`listening http://localhost:${port}`);
         resolve();
@@ -147,7 +139,8 @@ export class UnisonHTServer {
     }
   }
 
-  private async getDeviceFactory(deviceFactoryId: string): Promise<DeviceFactory<any> | undefined> {
+  private async getDeviceFactory(deviceFactoryId: string): Promise<DeviceFactory<unknown> | undefined> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const deviceFactory = this.deviceFactories.find((d) => (d as any).constructor.name === deviceFactoryId);
     if (deviceFactory) {
       return deviceFactory;
@@ -155,7 +148,8 @@ export class UnisonHTServer {
     const parts = deviceFactoryId.split(':', 2);
     if (parts.length === 2) {
       const module = this.loadModule(parts[0]);
-      const deviceFactoryClass = module[parts[1]];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const deviceFactoryClass = module[parts[1]] as any;
       if (deviceFactoryClass) {
         const deviceFactory = new deviceFactoryClass();
         this.deviceFactories.push(deviceFactory);
@@ -165,7 +159,7 @@ export class UnisonHTServer {
     return undefined;
   }
 
-  private loadModule(moduleNameOrPath: string): any {
+  private loadModule(moduleNameOrPath: string): Record<string, unknown> {
     this.debug('loading device module: %s', moduleNameOrPath);
     try {
       return require(moduleNameOrPath);
@@ -177,7 +171,7 @@ export class UnisonHTServer {
     }
   }
 
-  createAction(actionConfig: ActionConfig): Action<any> {
+  createAction(actionConfig: ActionConfig): Action<ActionConfig> {
     const actionFactory = this.actionFactories.find((f) => f.type === actionConfig.type);
     if (!actionFactory) {
       throw new Error(`invalid action ${actionConfig.type}`);
@@ -185,15 +179,15 @@ export class UnisonHTServer {
     return actionFactory.createAction(this, actionConfig);
   }
 
-  addActionFactory(actionFactory: ActionFactory<any>): void {
+  addActionFactory(actionFactory: ActionFactory<ActionConfig>): void {
     this.actionFactories.push(actionFactory);
   }
 
-  addDeviceFactory(deviceFactory: DeviceFactory<any>): void {
+  addDeviceFactory(deviceFactory: DeviceFactory<unknown>): void {
     this.deviceFactories.push(deviceFactory);
   }
 
-  addPluginFactory(pluginFactory: PluginFactory<any>): void {
+  addPluginFactory(pluginFactory: PluginFactory<unknown>): void {
     this.pluginFactories.push(pluginFactory);
   }
 
@@ -253,7 +247,7 @@ export class UnisonHTServer {
     return this._config;
   }
 
-  get devices(): Device<any>[] {
+  get devices(): Device<unknown>[] {
     return this._devices;
   }
 
@@ -261,7 +255,7 @@ export class UnisonHTServer {
     return this._modes;
   }
 
-  get plugins(): Plugin<any>[] {
+  get plugins(): Plugin<unknown>[] {
     return this._plugins;
   }
 }

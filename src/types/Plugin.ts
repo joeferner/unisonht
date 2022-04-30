@@ -1,10 +1,9 @@
+import Debug from 'debug';
+import express from 'express';
+import { NextFunction, Request, Response } from 'express-serve-static-core';
 import { UnisonHTServer } from '../UnisonHTServer';
 import { PluginConfig } from './Config';
 import { OpenApi } from './openApi/v3/OpenApi';
-import { NextFunction, ParamsDictionary, Request, Response } from 'express-serve-static-core';
-import { ParsedQs } from 'qs';
-import express from 'express';
-import Debug from 'debug';
 
 export interface PluginFactory<TConfigData> {
   get id(): string;
@@ -24,11 +23,7 @@ export abstract class Plugin<TConfigData> {
     // Allow override
   }
 
-  handleWebRequest(
-    req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>,
-    resp: Response<any, Record<string, any>, number>,
-    next: NextFunction,
-  ): void {
+  handleWebRequest(req: Request, resp: Response, next: NextFunction): void {
     this.router(req, resp, next);
   }
 
