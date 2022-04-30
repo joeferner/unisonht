@@ -1,44 +1,33 @@
-import { UnisonHTServer } from "../UnisonHTServer";
-import { PluginConfig } from "./Config";
-import { OpenApi } from "./openApi/v3/OpenApi";
-import {
-  NextFunction,
-  ParamsDictionary,
-  Request,
-  Response,
-} from "express-serve-static-core";
-import { ParsedQs } from "qs";
-import express from "express";
-import Debug from "debug";
+import { UnisonHTServer } from '../UnisonHTServer';
+import { PluginConfig } from './Config';
+import { OpenApi } from './openApi/v3/OpenApi';
+import { NextFunction, ParamsDictionary, Request, Response } from 'express-serve-static-core';
+import { ParsedQs } from 'qs';
+import express from 'express';
+import Debug from 'debug';
 
 export interface PluginFactory<TConfigData> {
   get id(): string;
 
-  createPlugin(
-    server: UnisonHTServer,
-    config: PluginConfig<TConfigData>
-  ): Promise<Plugin<TConfigData>>;
+  createPlugin(server: UnisonHTServer, config: PluginConfig<TConfigData>): Promise<Plugin<TConfigData>>;
 }
 
 export abstract class Plugin<TConfigData> {
-  protected readonly debug = Debug(
-    `unisonht:unisonht:plugin:${this.name}:${this.id}`
-  );
+  protected readonly debug = Debug(`unisonht:unisonht:plugin:${this.name}:${this.id}`);
   protected readonly router: express.Router;
 
-  constructor(
-    protected readonly server: UnisonHTServer,
-    protected readonly config: PluginConfig<TConfigData>
-  ) {
+  constructor(protected readonly server: UnisonHTServer, protected readonly config: PluginConfig<TConfigData>) {
     this.router = express.Router();
   }
 
-  updateSwaggerJson(swaggerJson: OpenApi): void {}
+  updateSwaggerJson(swaggerJson: OpenApi): void {
+    // Allow override
+  }
 
   handleWebRequest(
     req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>,
     resp: Response<any, Record<string, any>, number>,
-    next: NextFunction
+    next: NextFunction,
   ): void {
     this.router(req, resp, next);
   }

@@ -1,35 +1,25 @@
-import Debug from "debug";
-import express from "express";
-import asyncHandler from "express-async-handler";
-import {
-  NextFunction,
-  ParamsDictionary,
-  Request,
-  Response,
-} from "express-serve-static-core";
-import { StatusCodes } from "http-status-codes";
-import { ParsedQs } from "qs";
-import { ForwardToDeviceActionConfig } from "../actions/ForwardToDeviceAction";
-import { UnisonHTServer } from "../UnisonHTServer";
-import { Action } from "./Action";
-import { ModeConfig, ModeConfigButton } from "./Config";
-import { setStatusCodeOnError } from "./ErrorWithStatusCode";
-import { OpenApi } from "./openApi/v3/OpenApi";
+import Debug from 'debug';
+import express from 'express';
+import asyncHandler from 'express-async-handler';
+import { NextFunction, ParamsDictionary, Request, Response } from 'express-serve-static-core';
+import { StatusCodes } from 'http-status-codes';
+import { ParsedQs } from 'qs';
+import { ForwardToDeviceActionConfig } from '../actions/ForwardToDeviceAction';
+import { UnisonHTServer } from '../UnisonHTServer';
+import { Action } from './Action';
+import { ModeConfig, ModeConfigButton } from './Config';
+import { setStatusCodeOnError } from './ErrorWithStatusCode';
+import { OpenApi } from './openApi/v3/OpenApi';
 
 export class Mode {
-  protected readonly debug = Debug(
-    `unisonht:unisonht:mode:${this.name}:${this.id}`
-  );
+  protected readonly debug = Debug(`unisonht:unisonht:mode:${this.name}:${this.id}`);
   protected readonly router: express.Router;
   private readonly buttonActions: { [buttonName: string]: Action<any>[] } = {};
 
-  constructor(
-    protected readonly server: UnisonHTServer,
-    protected readonly config: ModeConfig
-  ) {
+  constructor(protected readonly server: UnisonHTServer, protected readonly config: ModeConfig) {
     for (const buttonConfig of config.buttons) {
-      this.buttonActions[buttonConfig.name] = buttonConfig.actions.map(
-        (actionConfig) => server.createAction(actionConfig)
+      this.buttonActions[buttonConfig.name] = buttonConfig.actions.map((actionConfig) =>
+        server.createAction(actionConfig),
       );
     }
 
@@ -38,15 +28,12 @@ export class Mode {
       `${this.apiUrlPrefix}/button`,
       asyncHandler(async (req, res) => {
         if (!req.query.button) {
-          throw setStatusCodeOnError(
-            new Error("'button' is required"),
-            StatusCodes.BAD_REQUEST
-          );
+          throw setStatusCodeOnError(new Error("'button' is required"), StatusCodes.BAD_REQUEST);
         }
         const buttonName = req.query.button?.toString();
         await this.pressButton(buttonName);
         res.json({});
-      })
+      }),
     );
   }
 
@@ -55,7 +42,7 @@ export class Mode {
     if (button) {
       return button;
     }
-    button = this.config.buttons.find((b) => b.name === "*");
+    button = this.config.buttons.find((b) => b.name === '*');
     if (button) {
       return button;
     }
@@ -65,36 +52,36 @@ export class Mode {
   updateSwaggerJson(swaggerJson: OpenApi): void {
     swaggerJson.paths[`${this.apiUrlPrefix}/button`] = {
       post: {
-        operationId: "pressButton",
+        operationId: 'pressButton',
         tags: [`Mode: ${this.config.name}`],
         parameters: [
           {
-            in: "query",
-            name: "button",
+            in: 'query',
+            name: 'button',
             required: true,
             schema: {
-              type: "string",
+              type: 'string',
               enum: this.buttons,
             },
           },
         ],
         responses: {
           [200]: {
-            description: "OK",
+            description: 'OK',
             content: {
-              "application/json": {
+              'application/json': {
                 schema: {
-                  type: "object",
+                  type: 'object',
                 },
               },
             },
           },
           [404]: {
-            description: "Button not found",
+            description: 'Button not found',
             content: {
-              "application/json": {
+              'application/json': {
                 schema: {
-                  type: "object",
+                  type: 'object',
                 },
               },
             },
@@ -107,19 +94,16 @@ export class Mode {
   handleWebRequest(
     req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>,
     resp: Response<any, Record<string, any>, number>,
-    next: NextFunction
+    next: NextFunction,
   ): void {
     this.router(req, resp, next);
   }
 
   async pressButton(buttonName: string): Promise<void> {
-    this.debug("handle button press: %s", buttonName);
+    this.debug('handle button press: %s', buttonName);
     const buttonConfig = this.getButtonByName(buttonName);
     if (!buttonConfig) {
-      throw setStatusCodeOnError(
-        new Error(`Could not find button: ${buttonName}`),
-        StatusCodes.NOT_FOUND
-      );
+      throw setStatusCodeOnError(new Error(`Could not find button: ${buttonName}`), StatusCodes.NOT_FOUND);
     }
     const buttonActions = this.buttonActions[buttonConfig.name];
     for (const action of buttonActions) {
@@ -137,21 +121,13 @@ export class Mode {
 
   get buttons(): string[] {
     return this.config.buttons.flatMap((button) => {
-      if (
-        button.name === "*" &&
-        button.actions.length === 1 &&
-        button.actions[0].type === "forwardToDevice"
-      ) {
-        const deviceId = (button.actions[0] as ForwardToDeviceActionConfig)
-          .deviceId;
+      if (button.name === '*' && button.actions.length === 1 && button.actions[0].type === 'forwardToDevice') {
+        const deviceId = (button.actions[0] as ForwardToDeviceActionConfig).deviceId;
         const device = this.server.devices.find((d) => d.id === deviceId);
         if (!device) {
           throw new Error(`could not find device with id: ${deviceId}`);
         }
-        return device.buttons.filter(
-          (deviceButton) =>
-            !this.config.buttons.find((b) => b.name === deviceButton)
-        );
+        return device.buttons.filter((deviceButton) => !this.config.buttons.find((b) => b.name === deviceButton));
       }
       return [button.name];
     });

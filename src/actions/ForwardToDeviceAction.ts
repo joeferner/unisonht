@@ -1,18 +1,13 @@
-import { Action, ActionFactory } from "../types/Action";
-import { ActionConfig } from "../types/Config";
-import { UnisonHTServer } from "../UnisonHTServer";
+import { Action, ActionFactory } from '../types/Action';
+import { ActionConfig } from '../types/Config';
+import { UnisonHTServer } from '../UnisonHTServer';
 
-export class ForwardToDeviceActionFactory
-  implements ActionFactory<ForwardToDeviceActionConfig>
-{
+export class ForwardToDeviceActionFactory implements ActionFactory<ForwardToDeviceActionConfig> {
   get type(): string {
-    return "forwardToDevice";
+    return 'forwardToDevice';
   }
 
-  createAction(
-    server: UnisonHTServer,
-    config: ForwardToDeviceActionConfig
-  ): Action<ForwardToDeviceActionConfig> {
+  createAction(server: UnisonHTServer, config: ForwardToDeviceActionConfig): Action<ForwardToDeviceActionConfig> {
     return new ForwardToDeviceAction(server, config);
   }
 }
@@ -27,15 +22,13 @@ export class ForwardToDeviceAction extends Action<ForwardToDeviceActionConfig> {
   }
 
   execute(buttonName: string): Promise<void> {
-    const device = this.server.devices.find(
-      (d) => d.id === this.config.deviceId
-    );
+    const device = this.server.devices.find((d) => d.id === this.config.deviceId);
     if (this.debug.enabled) {
       this.debug(
         'action: forwarding button "%s" to device %s%s',
         buttonName,
         this.config.deviceId,
-        device ? ` (${device.name})` : "NOT FOUND"
+        device ? ` (${device.name})` : 'NOT FOUND',
       );
     }
 
@@ -47,6 +40,6 @@ export class ForwardToDeviceAction extends Action<ForwardToDeviceActionConfig> {
 }
 
 export interface ForwardToDeviceActionConfig extends ActionConfig {
-  type: "forwardToDevice";
+  type: 'forwardToDevice';
   deviceId: string;
 }

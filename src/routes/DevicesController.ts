@@ -1,10 +1,10 @@
-import asyncHandler from "express-async-handler";
-import { Router } from "express-serve-static-core";
-import { Get, Route } from "tsoa";
-import { PowerState } from "../types/Device";
-import { UnisonHTServer } from "../UnisonHTServer";
+import asyncHandler from 'express-async-handler';
+import { Router } from 'express-serve-static-core';
+import { Get, Route } from 'tsoa';
+import { PowerState } from '../types/Device';
+import { UnisonHTServer } from '../UnisonHTServer';
 
-@Route("api/v1/devices")
+@Route('api/v1/devices')
 export class DevicesController {
   constructor(private readonly server: UnisonHTServer) {}
 
@@ -12,14 +12,14 @@ export class DevicesController {
     const devicesController = new DevicesController(server);
 
     router.get(
-      "/api/v1/devices",
+      '/api/v1/devices',
       asyncHandler(async (_req, res) => {
         res.send(await devicesController.getDevices());
-      })
+      }),
     );
   }
 
-  @Get("/")
+  @Get('/')
   public async getDevices(): Promise<GetDevicesResponse> {
     return {
       devices: await Promise.all(
@@ -30,7 +30,7 @@ export class DevicesController {
             active: device.isActive(),
             powerState: await device.getPowerState(),
           };
-        })
+        }),
       ),
     };
   }

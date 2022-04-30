@@ -18,9 +18,9 @@ export function roundRect(
   y: number,
   width: number,
   height: number,
-  radius: number = 5,
-  fill: boolean = false,
-  stroke: boolean = true
+  radius = 5,
+  fill = false,
+  stroke = true
 ): void {
   ctx.beginPath();
   ctx.moveTo(x + radius, y);
@@ -46,13 +46,13 @@ export function truncateString(
   str: string,
   maxWidth: number
 ) {
-  var width = ctx.measureText(str).width;
-  var ellipsis = '…';
-  var ellipsisWidth = ctx.measureText(ellipsis).width;
+  let width = ctx.measureText(str).width;
+  const ellipsis = '…';
+  const ellipsisWidth = ctx.measureText(ellipsis).width;
   if (width <= maxWidth || width <= ellipsisWidth) {
     return str;
   } else {
-    var len = str.length;
+    let len = str.length;
     while (width >= maxWidth - ellipsisWidth && len-- > 0) {
       str = str.substring(0, len);
       width = ctx.measureText(str).width;

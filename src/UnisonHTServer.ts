@@ -1,24 +1,19 @@
-import Debug from "debug";
-import express, { Express } from "express";
-import {
-  NextFunction,
-  ParamsDictionary,
-  Request,
-  Response,
-} from "express-serve-static-core";
-import path from "path";
-import { ParsedQs } from "qs";
-import swaggerUi from "swagger-ui-express";
-import { createRouter, routerUpdateSwaggerJson } from "./routes";
-import { Action, ActionFactory } from "./types/Action";
-import { ActionConfig, Config } from "./types/Config";
-import { Device, DeviceFactory } from "./types/Device";
-import { getStatusCodeFromError } from "./types/ErrorWithStatusCode";
-import { Mode } from "./types/Mode";
-import { Plugin, PluginFactory } from "./types/Plugin";
+import Debug from 'debug';
+import express, { Express } from 'express';
+import { NextFunction, ParamsDictionary, Request, Response } from 'express-serve-static-core';
+import path from 'path';
+import { ParsedQs } from 'qs';
+import swaggerUi from 'swagger-ui-express';
+import { createRouter, routerUpdateSwaggerJson } from './routes';
+import { Action, ActionFactory } from './types/Action';
+import { ActionConfig, Config } from './types/Config';
+import { Device, DeviceFactory } from './types/Device';
+import { getStatusCodeFromError } from './types/ErrorWithStatusCode';
+import { Mode } from './types/Mode';
+import { Plugin, PluginFactory } from './types/Plugin';
 
 export class UnisonHTServer {
-  private readonly debug = Debug("unisonht:unisonht:server");
+  private readonly debug = Debug('unisonht:unisonht:server');
   private readonly app: Express;
   private readonly deviceFactories: DeviceFactory<any>[] = [];
   private readonly pluginFactories: PluginFactory<any>[] = [];
@@ -30,15 +25,11 @@ export class UnisonHTServer {
   private _modeId?: string;
 
   constructor(config?: Config) {
-    const swaggerJson = require(path.join(
-      __dirname,
-      "..",
-      "dist",
-      "swagger.json"
-    ));
+    // eslint-disable-next-line
+    const swaggerJson = require(path.join(__dirname, '..', 'dist', 'swagger.json'));
     this._config = {
       version: 1,
-      defaultModeId: "OFF",
+      defaultModeId: 'OFF',
       modes: [],
       devices: [],
       plugins: [],
@@ -47,7 +38,7 @@ export class UnisonHTServer {
 
     this.app = express();
     this.app.use(express.json());
-    this.app.get("/swagger.json", (_req, resp) => {
+    this.app.get('/swagger.json', (_req, resp) => {
       const newSwaggerJson = JSON.parse(JSON.stringify(swaggerJson));
 
       routerUpdateSwaggerJson(this, newSwaggerJson);
@@ -64,13 +55,13 @@ export class UnisonHTServer {
       resp.json(newSwaggerJson);
     });
     this.app.use(
-      "/api/docs",
+      '/api/docs',
       swaggerUi.serve,
       swaggerUi.setup(undefined, {
         swaggerOptions: {
-          url: "/swagger.json",
+          url: '/swagger.json',
         },
-      })
+      }),
     );
     this.app.use(createRouter(this));
   }
@@ -81,40 +72,28 @@ export class UnisonHTServer {
     await this.createDevices();
     await this.switchMode(this.config.defaultModeId);
 
-    const angularPath = path.join(
-      __dirname,
-      "..",
-      "public",
-      "dist",
-      "unisonht-public"
-    );
+    const angularPath = path.join(__dirname, '..', 'public', 'dist', 'unisonht-public');
 
     return new Promise((resolve) => {
       const port = options?.port || 4201;
       this.app.use(express.static(angularPath));
-      this.app.all("/*", (_req, res) => {
-        res.sendFile("index.html", { root: angularPath });
+      this.app.all('/*', (_req, res) => {
+        res.sendFile('index.html', { root: angularPath });
       });
       this.app.use(
         (
           err: Error,
-          _req: Request<
-            ParamsDictionary,
-            any,
-            any,
-            ParsedQs,
-            Record<string, any>
-          >,
+          _req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>,
           res: Response<any, Record<string, any>, number>,
-          next: NextFunction
+          next: NextFunction,
         ) => {
-          this.debug("error: %o", err);
+          this.debug('error: %o', err);
           if (res.headersSent) {
             return next(err);
           }
           res.status(getStatusCodeFromError(err) ?? 500);
           res.json({ error: err.message });
-        }
+        },
       );
       this.app.listen(port, () => {
         this.debug(`listening http://localhost:${port}`);
@@ -125,13 +104,9 @@ export class UnisonHTServer {
 
   private async createPlugins(): Promise<void> {
     for (const pluginConfig of this.config.plugins) {
-      const pluginFactory = this.pluginFactories.find(
-        (i) => i.id === pluginConfig.pluginFactoryId
-      );
+      const pluginFactory = this.pluginFactories.find((i) => i.id === pluginConfig.pluginFactoryId);
       if (!pluginFactory) {
-        throw new Error(
-          `Could not find plugin factory: ${pluginConfig.pluginFactoryId}`
-        );
+        throw new Error(`Could not find plugin factory: ${pluginConfig.pluginFactoryId}`);
       }
       const plugin = await pluginFactory.createPlugin(this, pluginConfig);
       this.app.use((req, resp, next) => {
@@ -158,13 +133,9 @@ export class UnisonHTServer {
 
   private async createDevices(): Promise<void> {
     for (const deviceConfig of this.config.devices) {
-      const deviceFactory = await this.getDeviceFactory(
-        deviceConfig.deviceFactoryId
-      );
+      const deviceFactory = await this.getDeviceFactory(deviceConfig.deviceFactoryId);
       if (!deviceFactory) {
-        throw new Error(
-          `Could not find device factory: ${deviceConfig.deviceFactoryId} for device ${deviceConfig.id}`
-        );
+        throw new Error(`Could not find device factory: ${deviceConfig.deviceFactoryId} for device ${deviceConfig.id}`);
       }
       const device = await deviceFactory.createDevice(this, deviceConfig);
 
@@ -176,16 +147,12 @@ export class UnisonHTServer {
     }
   }
 
-  private async getDeviceFactory(
-    deviceFactoryId: string
-  ): Promise<DeviceFactory<any> | undefined> {
-    const deviceFactory = this.deviceFactories.find(
-      (d) => (d as any).constructor.name === deviceFactoryId
-    );
+  private async getDeviceFactory(deviceFactoryId: string): Promise<DeviceFactory<any> | undefined> {
+    const deviceFactory = this.deviceFactories.find((d) => (d as any).constructor.name === deviceFactoryId);
     if (deviceFactory) {
       return deviceFactory;
     }
-    const parts = deviceFactoryId.split(":", 2);
+    const parts = deviceFactoryId.split(':', 2);
     if (parts.length === 2) {
       const module = this.loadModule(parts[0]);
       const deviceFactoryClass = module[parts[1]];
@@ -199,11 +166,11 @@ export class UnisonHTServer {
   }
 
   private loadModule(moduleNameOrPath: string): any {
-    this.debug("loading device module: %s", moduleNameOrPath);
+    this.debug('loading device module: %s', moduleNameOrPath);
     try {
       return require(moduleNameOrPath);
     } catch (err) {
-      if (moduleNameOrPath.startsWith(".")) {
+      if (moduleNameOrPath.startsWith('.')) {
         return require(path.join(process.cwd(), moduleNameOrPath));
       }
       throw err;
@@ -211,9 +178,7 @@ export class UnisonHTServer {
   }
 
   createAction(actionConfig: ActionConfig): Action<any> {
-    const actionFactory = this.actionFactories.find(
-      (f) => f.type === actionConfig.type
-    );
+    const actionFactory = this.actionFactories.find((f) => f.type === actionConfig.type);
     if (!actionFactory) {
       throw new Error(`invalid action ${actionConfig.type}`);
     }
@@ -232,21 +197,18 @@ export class UnisonHTServer {
     this.pluginFactories.push(pluginFactory);
   }
 
-  async switchMode(
-    newModeId: string,
-    deviceInputs?: { [deviceId: string]: string }
-  ): Promise<void> {
+  async switchMode(newModeId: string, deviceInputs?: { [deviceId: string]: string }): Promise<void> {
     const oldModeId = this._modeId;
 
     if (this.debug.enabled) {
       const oldMode = this.modes.find((m) => m.id === oldModeId);
       const newMode = this.modes.find((m) => m.id === newModeId);
       this.debug(
-        "switching mode: %s%s -> %s%s",
-        oldModeId ?? "NOT SET",
-        oldMode ? ` (${oldMode.name})` : "",
+        'switching mode: %s%s -> %s%s',
+        oldModeId ?? 'NOT SET',
+        oldMode ? ` (${oldMode.name})` : '',
         newModeId,
-        newMode ? ` (${newMode.name})` : ""
+        newMode ? ` (${newMode.name})` : '',
       );
     }
     if (!this.config.modes.find((m) => m.id === newModeId)) {
@@ -256,7 +218,7 @@ export class UnisonHTServer {
     await Promise.all(
       this.devices.map((device) => {
         return device.switchMode(oldModeId, newModeId);
-      })
+      }),
     );
 
     if (deviceInputs) {
@@ -268,7 +230,7 @@ export class UnisonHTServer {
             throw new Error(`could not find device with id: ${deviceId}`);
           }
           return device.switchInput(input);
-        })
+        }),
       );
     }
 
@@ -278,7 +240,7 @@ export class UnisonHTServer {
   pressButton(button: string): Promise<void> {
     const mode = this.modes.find((m) => m.id === this.modeId);
     if (!mode) {
-      throw new Error("no mode selected");
+      throw new Error('no mode selected');
     }
     return mode.pressButton(button);
   }

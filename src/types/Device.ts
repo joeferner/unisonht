@@ -1,49 +1,33 @@
-import Debug from "debug";
-import express from "express";
-import asyncHandler from "express-async-handler";
-import {
-  NextFunction,
-  ParamsDictionary,
-  Request,
-  Response,
-} from "express-serve-static-core";
-import { StatusCodes } from "http-status-codes";
-import { ParsedQs } from "qs";
-import { UnisonHTServer } from "../UnisonHTServer";
-import { DeviceConfig } from "./Config";
-import { setStatusCodeOnError } from "./ErrorWithStatusCode";
-import { OpenApi } from "./openApi/v3/OpenApi";
+import Debug from 'debug';
+import express from 'express';
+import asyncHandler from 'express-async-handler';
+import { NextFunction, ParamsDictionary, Request, Response } from 'express-serve-static-core';
+import { StatusCodes } from 'http-status-codes';
+import { ParsedQs } from 'qs';
+import { UnisonHTServer } from '../UnisonHTServer';
+import { DeviceConfig } from './Config';
+import { setStatusCodeOnError } from './ErrorWithStatusCode';
+import { OpenApi } from './openApi/v3/OpenApi';
 
 export interface DeviceFactory<TConfigData> {
-  createDevice(
-    server: UnisonHTServer,
-    config: DeviceConfig<TConfigData>
-  ): Promise<Device<TConfigData>>;
+  createDevice(server: UnisonHTServer, config: DeviceConfig<TConfigData>): Promise<Device<TConfigData>>;
 }
 
 export abstract class Device<TConfigData> {
-  protected readonly debug = Debug(
-    `unisonht:unisonht:device:${this.name}:${this.id}`
-  );
+  protected readonly debug = Debug(`unisonht:unisonht:device:${this.name}:${this.id}`);
   protected readonly router: express.Router;
 
-  constructor(
-    protected readonly config: DeviceConfig<TConfigData>,
-    protected readonly server: UnisonHTServer
-  ) {
+  constructor(protected readonly config: DeviceConfig<TConfigData>, protected readonly server: UnisonHTServer) {
     this.router = express.Router();
     this.router.post(
       `${this.apiUrlPrefix}/button`,
       asyncHandler(async (req, res) => {
         if (!req.query.button) {
-          throw setStatusCodeOnError(
-            new Error("'button' is required"),
-            StatusCodes.BAD_REQUEST
-          );
+          throw setStatusCodeOnError(new Error("'button' is required"), StatusCodes.BAD_REQUEST);
         }
         await this.handleButtonPress(req.query.button?.toString());
         res.json({});
-      })
+      }),
     );
   }
 
@@ -58,26 +42,26 @@ export abstract class Device<TConfigData> {
   updateSwaggerJson(swaggerJson: OpenApi): void {
     swaggerJson.paths[`${this.apiUrlPrefix}/button`] = {
       post: {
-        operationId: "pressButton",
+        operationId: 'pressButton',
         tags: [`Device: ${this.config.name}`],
         parameters: [
           {
-            in: "query",
-            name: "button",
+            in: 'query',
+            name: 'button',
             required: true,
             schema: {
-              type: "string",
+              type: 'string',
               enum: this.buttons,
             },
           },
         ],
         responses: {
           [200]: {
-            description: "OK",
+            description: 'OK',
             content: {
-              "application/json": {
+              'application/json': {
                 schema: {
-                  type: "object",
+                  type: 'object',
                 },
               },
             },
@@ -90,17 +74,14 @@ export abstract class Device<TConfigData> {
   handleWebRequest(
     req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>,
     resp: Response<any, Record<string, any>, number>,
-    next: NextFunction
+    next: NextFunction,
   ): void {
     this.router(req, resp, next);
   }
 
   abstract handleButtonPress(button: string): Promise<void>;
 
-  abstract switchMode(
-    oldModeId: string | undefined,
-    newModeId: string
-  ): Promise<void>;
+  abstract switchMode(oldModeId: string | undefined, newModeId: string): Promise<void>;
 
   abstract switchInput(inputName: string): Promise<void>;
 
@@ -109,7 +90,7 @@ export abstract class Device<TConfigData> {
   }
 
   isActive(): boolean {
-    return this.shouldBeActiveForMode(this.server.modeId ?? "NOT SET");
+    return this.shouldBeActiveForMode(this.server.modeId ?? 'NOT SET');
   }
 
   abstract getPowerState(): Promise<PowerState>;
@@ -126,6 +107,6 @@ export abstract class Device<TConfigData> {
 }
 
 export enum PowerState {
-  ON = "ON",
-  OFF = "OFF",
+  ON = 'ON',
+  OFF = 'OFF',
 }

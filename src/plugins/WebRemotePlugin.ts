@@ -1,27 +1,19 @@
-import {
-  NextFunction,
-  ParamsDictionary,
-  Request,
-  Response,
-} from "express-serve-static-core";
-import { StatusCodes } from "http-status-codes";
-import { ParsedQs } from "qs";
-import { UnisonHTServer } from "..";
-import { PluginConfig } from "../types/Config";
-import { setStatusCodeOnError } from "../types/ErrorWithStatusCode";
-import { OpenApi } from "../types/openApi/v3/OpenApi";
-import { Plugin, PluginFactory } from "../types/Plugin";
-import asyncHandler from "express-async-handler";
+import { NextFunction, ParamsDictionary, Request, Response } from 'express-serve-static-core';
+import { StatusCodes } from 'http-status-codes';
+import { ParsedQs } from 'qs';
+import { UnisonHTServer } from '..';
+import { PluginConfig } from '../types/Config';
+import { setStatusCodeOnError } from '../types/ErrorWithStatusCode';
+import { OpenApi } from '../types/openApi/v3/OpenApi';
+import { Plugin, PluginFactory } from '../types/Plugin';
+import asyncHandler from 'express-async-handler';
 
 export class WebRemotePluginFactory implements PluginFactory<WebRemoteConfig> {
   get id(): string {
-    return "unisonht:web-remote";
+    return 'unisonht:web-remote';
   }
 
-  async createPlugin(
-    server: UnisonHTServer,
-    config: PluginConfig<WebRemoteConfig>
-  ): Promise<Plugin<WebRemoteConfig>> {
+  async createPlugin(server: UnisonHTServer, config: PluginConfig<WebRemoteConfig>): Promise<Plugin<WebRemoteConfig>> {
     return new WebRemotePlugin(server, config);
   }
 }
@@ -34,14 +26,11 @@ export class WebRemotePlugin extends Plugin<WebRemoteConfig> {
       `${this.apiUrlPrefix}/button`,
       asyncHandler(async (req, res) => {
         if (!req.query.button) {
-          throw setStatusCodeOnError(
-            new Error("'button' is required"),
-            StatusCodes.BAD_REQUEST
-          );
+          throw setStatusCodeOnError(new Error("'button' is required"), StatusCodes.BAD_REQUEST);
         }
         await this.handleWebRequestPressButton(req.query.button.toString());
         res.json({});
-      })
+      }),
     );
 
     this.router.get(`${this.urlPrefix}`, (_req, res) => {
@@ -51,9 +40,7 @@ export class WebRemotePlugin extends Plugin<WebRemoteConfig> {
           <script type="text/javascript">
             function handleButtonClick(buttonName) {
               fetch(
-                '${
-                  this.apiUrlPrefix
-                }/button?button=' + encodeURIComponent(buttonName),
+                '${this.apiUrlPrefix}/button?button=' + encodeURIComponent(buttonName),
                 {
                   method: 'POST'
                 }
@@ -84,7 +71,7 @@ export class WebRemotePlugin extends Plugin<WebRemoteConfig> {
             .map((button) => {
               return `<div><button onclick="handleButtonClick('${button}')">${button}</button></div>`;
             })
-            .join("")}
+            .join('')}
         </body>
       </html>`);
     });
@@ -92,49 +79,46 @@ export class WebRemotePlugin extends Plugin<WebRemoteConfig> {
 
   private handleWebRequestPressButton(button: string): Promise<void> {
     if (!this.config.data.buttons.includes(button)) {
-      throw setStatusCodeOnError(
-        new Error(`Invalid button "${button}"`),
-        StatusCodes.NOT_FOUND
-      );
+      throw setStatusCodeOnError(new Error(`Invalid button "${button}"`), StatusCodes.NOT_FOUND);
     }
 
-    this.debug("press button: %s", button);
+    this.debug('press button: %s', button);
     return this.server.pressButton(button);
   }
 
   override updateSwaggerJson(swaggerJson: OpenApi): Promise<void> {
     swaggerJson.paths[`${this.apiUrlPrefix}/button`] = {
       post: {
-        operationId: "pressButton",
-        tags: ["Plugin: Web Remote"],
+        operationId: 'pressButton',
+        tags: ['Plugin: Web Remote'],
         parameters: [
           {
-            in: "query",
-            name: "button",
+            in: 'query',
+            name: 'button',
             required: true,
             schema: {
-              type: "string",
+              type: 'string',
               enum: this.config.data.buttons,
             },
           },
         ],
         responses: {
           [200]: {
-            description: "OK",
+            description: 'OK',
             content: {
-              "application/json": {
+              'application/json': {
                 schema: {
-                  type: "object",
+                  type: 'object',
                 },
               },
             },
           },
           [404]: {
-            description: "Button not found",
+            description: 'Button not found',
             content: {
-              "application/json": {
+              'application/json': {
                 schema: {
-                  type: "object",
+                  type: 'object',
                 },
               },
             },
@@ -148,7 +132,7 @@ export class WebRemotePlugin extends Plugin<WebRemoteConfig> {
   override handleWebRequest(
     req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>,
     res: Response<any, Record<string, any>, number>,
-    next: NextFunction
+    next: NextFunction,
   ): void {
     this.router(req, res, next);
   }
