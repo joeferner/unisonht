@@ -1,10 +1,13 @@
 import { NextFunction, Request, Response } from 'express-serve-static-core';
 import { StatusCodes } from 'http-status-codes';
-import { UnisonHTServer } from '..';
+import path from 'path';
 import { PluginConfig } from '../types/Config';
 import { setStatusCodeOnError } from '../types/ErrorWithStatusCode';
 import { OpenApi } from '../types/openApi/v3/OpenApi';
 import { Plugin, PluginFactory } from '../types/Plugin';
+import { validateJson } from '../types/TypeUtils';
+import { UnisonHTServer } from '../UnisonHTServer';
+import { WebRemoteConfig } from './WebRemotePluginConfig';
 
 export class WebRemotePluginFactory implements PluginFactory<WebRemoteConfig> {
   get id(): string {
@@ -19,6 +22,11 @@ export class WebRemotePluginFactory implements PluginFactory<WebRemoteConfig> {
 export class WebRemotePlugin extends Plugin<WebRemoteConfig> {
   constructor(server: UnisonHTServer, config: PluginConfig<WebRemoteConfig>) {
     super(server, config);
+
+    validateJson('WebRemoteConfig', config.data, {
+      sourcePath: path.join(__dirname, 'WebRemotePluginConfig.ts'),
+      tsconfigPath: path.join(__dirname, '../../tsconfig.json'),
+    });
 
     this.router.post(`${this.apiUrlPrefix}/button`, async (req: Request, res) => {
       if (!req.query.button) {
@@ -129,8 +137,4 @@ export class WebRemotePlugin extends Plugin<WebRemoteConfig> {
   override handleWebRequest(req: Request, res: Response, next: NextFunction): void {
     this.router(req, res, next);
   }
-}
-
-export interface WebRemoteConfig {
-  buttons: string[];
 }

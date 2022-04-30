@@ -19,11 +19,12 @@ export interface ModeConfigButton {
 
 export interface ActionConfig {
   type: string;
+  [name: string]: unknown;
 }
 
 export interface DeviceConfig<TData> {
   id: string;
-  deviceFactoryId: string;
+  deviceFactory: string;
   name: string;
   activeModeIds: string[];
   data: TData;
@@ -32,6 +33,6 @@ export interface DeviceConfig<TData> {
 export interface PluginConfig<TData> {
   id: string;
   name: string;
-  pluginFactoryId: string;
+  pluginFactory: string;
   data: TData;
 }

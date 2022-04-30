@@ -5,7 +5,7 @@
         {
             "id": "2cb14523-90cc-4e6b-ba2b-b286b0eb33e9",
             "name": "Web Remote",
-            "pluginFactoryId": "unisonht:web-remote",
+            "pluginFactory": "WebRemotePluginFactory",
             "data": {
                 "buttons": [
                     "POWER",
@@ -62,7 +62,7 @@
     "devices": [
         {
             "id": "f0dfaa58-cf1c-495e-938d-bec5744dc51a",
-            "deviceFactoryId": "unisonht:mock-device",
+            "deviceFactory": "MockDeviceFactory",
             "name": "Mock Device",
             "activeModeIds": [
                 "1d4a0294-39e4-4631-a615-1c7a14e14ae0"

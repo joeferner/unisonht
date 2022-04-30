@@ -96,9 +96,9 @@ export class UnisonHTServer {
 
   private async createPlugins(): Promise<void> {
     for (const pluginConfig of this.config.plugins) {
-      const pluginFactory = this.pluginFactories.find((i) => i.id === pluginConfig.pluginFactoryId);
+      const pluginFactory = await this.getPluginFactory(pluginConfig.pluginFactory);
       if (!pluginFactory) {
-        throw new Error(`Could not find plugin factory: ${pluginConfig.pluginFactoryId}`);
+        throw new Error(`Could not find plugin factory: ${pluginConfig.pluginFactory}`);
       }
       const plugin = await pluginFactory.createPlugin(this, pluginConfig);
       this.app.use((req, resp, next) => {
@@ -107,6 +107,22 @@ export class UnisonHTServer {
 
       this._plugins.push(plugin);
     }
+  }
+
+  private async getPluginFactory(pluginFactoryName: string): Promise<PluginFactory<unknown> | undefined> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let pluginFactory = this.pluginFactories.find((d) => (d as any).constructor.name === pluginFactoryName);
+    if (pluginFactory) {
+      return pluginFactory;
+    }
+
+    pluginFactory = this.instantiateClass(pluginFactoryName);
+    if (pluginFactory) {
+      this.pluginFactories.push(pluginFactory);
+      return pluginFactory;
+    }
+
+    return undefined;
   }
 
   private async createModes(): Promise<void> {
@@ -125,9 +141,9 @@ export class UnisonHTServer {
 
   private async createDevices(): Promise<void> {
     for (const deviceConfig of this.config.devices) {
-      const deviceFactory = await this.getDeviceFactory(deviceConfig.deviceFactoryId);
+      const deviceFactory = await this.getDeviceFactory(deviceConfig.deviceFactory);
       if (!deviceFactory) {
-        throw new Error(`Could not find device factory: ${deviceConfig.deviceFactoryId} for device ${deviceConfig.id}`);
+        throw new Error(`Could not find device factory: ${deviceConfig.deviceFactory} for device ${deviceConfig.id}`);
       }
       const device = await deviceFactory.createDevice(this, deviceConfig);
 
@@ -139,21 +155,30 @@ export class UnisonHTServer {
     }
   }
 
-  private async getDeviceFactory(deviceFactoryId: string): Promise<DeviceFactory<unknown> | undefined> {
+  private async getDeviceFactory(deviceFactoryName: string): Promise<DeviceFactory<unknown> | undefined> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const deviceFactory = this.deviceFactories.find((d) => (d as any).constructor.name === deviceFactoryId);
+    let deviceFactory = this.deviceFactories.find((d) => (d as any).constructor.name === deviceFactoryName);
     if (deviceFactory) {
       return deviceFactory;
     }
-    const parts = deviceFactoryId.split(':', 2);
+
+    deviceFactory = this.instantiateClass(deviceFactoryName);
+    if (deviceFactory) {
+      this.deviceFactories.push(deviceFactory);
+      return deviceFactory;
+    }
+
+    return undefined;
+  }
+
+  private instantiateClass<T>(qualifiedName: string): T | undefined {
+    const parts = qualifiedName.split(':', 2);
     if (parts.length === 2) {
       const module = this.loadModule(parts[0]);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const deviceFactoryClass = module[parts[1]] as any;
-      if (deviceFactoryClass) {
-        const deviceFactory = new deviceFactoryClass();
-        this.deviceFactories.push(deviceFactory);
-        return deviceFactory;
+      const loadedClass = module[parts[1]] as any;
+      if (loadedClass) {
+        return new loadedClass();
       }
     }
     return undefined;
