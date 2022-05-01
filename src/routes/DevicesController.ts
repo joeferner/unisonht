@@ -62,6 +62,7 @@ export class DevicesController {
                         enum: [PowerState.ON, PowerState.OFF],
                       },
                     },
+                    required: ['id', 'name', 'active', 'powerState'],
                   },
                 },
               },
