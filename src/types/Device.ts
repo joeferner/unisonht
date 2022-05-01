@@ -39,6 +39,10 @@ export abstract class Device<TConfigData> {
     return [`Device: ${this.config.name}`];
   }
 
+  getDecoratedSwaggerFiles(): string[] {
+    return [];
+  }
+
   updateSwaggerJson(swaggerJson: OpenApi): void {
     swaggerJson.paths[`${this.apiUrlPrefix}/button`] = {
       post: {

@@ -14,7 +14,8 @@
     "noImplicitOverride": true,
     "skipLibCheck": true,
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+    "noUncheckedIndexedAccess": true
   },
   "exclude": [
     "node_modules/",

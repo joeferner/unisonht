@@ -9,6 +9,7 @@ import { Action } from './Action';
 import { ActionConfig, ModeConfig, ModeConfigButton } from './Config';
 import { setStatusCodeOnError } from './ErrorWithStatusCode';
 import { OpenApi } from './openApi/v3/OpenApi';
+import { MyPost, MyQueryParam } from './openApiDecorators';
 
 export class Mode {
   protected readonly debug = Debug(`unisonht:unisonht:mode:${this.name}:${this.id}`);
@@ -47,6 +48,10 @@ export class Mode {
 
   protected get swaggerTags(): string[] {
     return [`Mode: ${this.config.name}`];
+  }
+
+  getDecoratedSwaggerFiles(): string[] {
+    return [];
   }
 
   updateSwaggerJson(swaggerJson: OpenApi): void {
@@ -95,13 +100,17 @@ export class Mode {
     this.router(req, resp, next);
   }
 
-  async pressButton(buttonName: string): Promise<void> {
+  @MyPost('${apiUrlPrefix}/button')
+  async pressButton(@MyQueryParam('button') buttonName: string): Promise<void> {
     this.debug('handle button press: %s', buttonName);
     const buttonConfig = this.getButtonByName(buttonName);
     if (!buttonConfig) {
       throw setStatusCodeOnError(new Error(`Could not find button: ${buttonName}`), StatusCodes.NOT_FOUND);
     }
     const buttonActions = this.buttonActions[buttonConfig.name];
+    if (!buttonActions) {
+      throw new Error(`could not find button actions: ${buttonConfig.name}`);
+    }
     for (const action of buttonActions) {
       await action.execute(buttonName);
     }
@@ -117,7 +126,7 @@ export class Mode {
 
   get buttons(): string[] {
     return this.config.buttons.flatMap((button) => {
-      if (button.name === '*' && button.actions.length === 1 && button.actions[0].type === 'forwardToDevice') {
+      if (button.name === '*' && button.actions.length === 1 && button.actions[0]?.type === 'forwardToDevice') {
         const deviceId = (button.actions[0] as ForwardToDeviceActionConfig).deviceId;
         const device = this.server.devices.find((d) => d.id === deviceId);
         if (!device) {

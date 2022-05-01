@@ -8,14 +8,10 @@
     "unisonht-server": "dist/bin/server.js"
   },
   "scripts": {
-    "predev": "npm run swagger",
-    "prebuild": "npm run swagger",
     "build": "tsc",
     "build:watch": "tsc --watch | awk '{gsub(/\\033c/,\"\") system(\"\")}1'",
-    "server:watch": "ts-node-dev --respawn --transpile-only --ignore-watch public/ src/bin/server.ts --config sample.config.json",
-    "start:watch": "DEBUG=unisonht:* concurrently \"npm run build:watch\" \"npm run server:watch\" \"npm run swagger:watch\"",
-    "swagger": "tsoa spec",
-    "swagger:watch": "nodemon --ext ts --ignore public/ --ignore dist/ -x npm run swagger",
+    "server:watch": "DEBUG=unisonht:* ts-node-dev --respawn --transpile-only --ignore-watch public/ src/bin/server.ts --config sample.config.json",
+    "start:watch": "concurrently \"npm run build:watch\" \"npm run server:watch\"",
     "format": "prettier --write \"src/**/*.ts\"",
     "lint": "eslint --fix --ext .ts .",
     "lint-staged": "lint-staged",

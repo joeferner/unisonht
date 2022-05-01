@@ -1,11 +1,11 @@
 import { Router } from 'express-serve-static-core';
 import { StatusCodes } from 'http-status-codes';
-import { Get, Post, Query, Response, Route, SuccessResponse } from 'tsoa';
+import { Query, Response } from 'tsoa';
 import { setStatusCodeOnError } from '../types/ErrorWithStatusCode';
 import { OpenApi } from '../types/openApi/v3/OpenApi';
+import { MyGet, MyPost } from '../types/openApiDecorators';
 import { UnisonHTServer } from '../UnisonHTServer';
 
-@Route('api/v1/mode')
 export class ModeController {
   constructor(private readonly server: UnisonHTServer) {}
 
@@ -22,37 +22,41 @@ export class ModeController {
   }
 
   static updateSwaggerJson(server: UnisonHTServer, swaggerJson: OpenApi) {
-    if (!swaggerJson.components?.schemas || !swaggerJson.paths['/api/v1/mode']?.post?.parameters) {
-      throw new Error('invalid state');
+    if (swaggerJson.components?.schemas) {
+      swaggerJson.components.schemas.GetModeResponse.properties.mode = {
+        $ref: '#/components/schemas/Modes',
+      };
+      swaggerJson.components.schemas.SetModeResponse.properties.oldMode = {
+        $ref: '#/components/schemas/Modes',
+      };
+      swaggerJson.components.schemas.SetModeResponse.properties.mode = {
+        $ref: '#/components/schemas/Modes',
+      };
+      swaggerJson.components.schemas.Modes = {
+        type: 'string',
+        enum: server.config.modes,
+      };
+    } else {
+      console.error('missing: swaggerJson.components.schemas');
     }
-    swaggerJson.components.schemas.GetModeResponse.properties.mode = {
-      $ref: '#/components/schemas/Modes',
-    };
-    swaggerJson.components.schemas.SetModeResponse.properties.oldMode = {
-      $ref: '#/components/schemas/Modes',
-    };
-    swaggerJson.components.schemas.SetModeResponse.properties.mode = {
-      $ref: '#/components/schemas/Modes',
-    };
-    swaggerJson.paths['/api/v1/mode'].post.parameters[0].schema = {
-      $ref: '#/components/schemas/Modes',
-    };
 
-    swaggerJson.components.schemas.Modes = {
-      type: 'string',
-      enum: server.config.modes,
-    };
+    if (swaggerJson.paths?.['/api/v1/mode']?.post?.parameters?.[0]) {
+      swaggerJson.paths['/api/v1/mode'].post.parameters[0].schema = {
+        $ref: '#/components/schemas/Modes',
+      };
+    } else {
+      console.error("missing: swaggerJson.paths['/api/v1/mode'].post.parameters[0]");
+    }
   }
 
-  @Get('/')
+  @MyGet('/api/v1/mode')
   public async getMode(): Promise<GetModeResponse> {
     return {
       mode: this.server.modeId ?? this.server.config.defaultModeId,
     };
   }
 
-  @Post('/')
-  @SuccessResponse(StatusCodes.OK)
+  @MyPost('/api/v1/mode')
   @Response(StatusCodes.NOT_FOUND, 'Mode not found')
   public async switchMode(@Query() newModeId: string): Promise<SetModeResponse> {
     if (!newModeId || !this.server.config.modes.find((m) => m.id === newModeId)) {

@@ -1,9 +1,11 @@
 import { NextFunction, Request, Response } from 'express-serve-static-core';
 import { StatusCodes } from 'http-status-codes';
 import path from 'path';
+import { Query } from 'tsoa';
 import { PluginConfig } from '../types/Config';
 import { setStatusCodeOnError } from '../types/ErrorWithStatusCode';
 import { OpenApi } from '../types/openApi/v3/OpenApi';
+import { MyPost, MyQueryParam as MyQueryParam } from '../types/openApiDecorators';
 import { Plugin, PluginFactory } from '../types/Plugin';
 import { validateJson } from '../types/TypeUtils';
 import { UnisonHTServer } from '../UnisonHTServer';
@@ -28,13 +30,16 @@ export class WebRemotePlugin extends Plugin<WebRemoteConfig> {
       tsconfigPath: path.join(__dirname, '../../tsconfig.json'),
     });
 
-    this.router.post(`${this.apiUrlPrefix}/button`, async (req: Request, res) => {
-      if (!req.query.button) {
-        throw setStatusCodeOnError(new Error("'button' is required"), StatusCodes.BAD_REQUEST);
-      }
-      await this.handleWebRequestPressButton(req.query.button.toString());
-      res.json({});
-    });
+    this.router.post(
+      `${this.apiUrlPrefix}/button`,
+      async (req: Request<unknown, unknown, unknown, WebRemoteButtonQuery>, res) => {
+        if (!req.query.button) {
+          throw setStatusCodeOnError(new Error("'button' is required"), StatusCodes.BAD_REQUEST);
+        }
+        await this.handleWebRequestPressButton(req.query.button.toString());
+        res.json({});
+      },
+    );
 
     this.router.get(`${this.urlPrefix}`, (_req, res) => {
       res.send(`<html>
@@ -80,7 +85,8 @@ export class WebRemotePlugin extends Plugin<WebRemoteConfig> {
     });
   }
 
-  private handleWebRequestPressButton(button: string): Promise<void> {
+  @MyPost('/api/button')
+  private handleWebRequestPressButton(@MyQueryParam('button') button: string): Promise<void> {
     if (!this.config.data.buttons.includes(button)) {
       throw setStatusCodeOnError(new Error(`Invalid button "${button}"`), StatusCodes.NOT_FOUND);
     }
@@ -137,4 +143,8 @@ export class WebRemotePlugin extends Plugin<WebRemoteConfig> {
   override handleWebRequest(req: Request, res: Response, next: NextFunction): void {
     this.router(req, res, next);
   }
+}
+
+export interface WebRemoteButtonQuery {
+  button: string;
 }

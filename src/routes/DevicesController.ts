@@ -1,9 +1,8 @@
 import { Router } from 'express-serve-static-core';
-import { Get, Route } from 'tsoa';
 import { PowerState } from '../types/Device';
+import { MyGet } from '../types/openApiDecorators';
 import { UnisonHTServer } from '../UnisonHTServer';
 
-@Route('api/v1/devices')
 export class DevicesController {
   constructor(private readonly server: UnisonHTServer) {}
 
@@ -15,7 +14,7 @@ export class DevicesController {
     });
   }
 
-  @Get('/')
+  @MyGet('/api/v1/devices')
   public async getDevices(): Promise<GetDevicesResponse> {
     return {
       devices: await Promise.all(

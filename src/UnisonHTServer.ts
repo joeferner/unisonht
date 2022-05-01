@@ -9,6 +9,8 @@ import { ActionConfig, Config } from './types/Config';
 import { Device, DeviceFactory } from './types/Device';
 import { getStatusCodeFromError } from './types/ErrorWithStatusCode';
 import { Mode } from './types/Mode';
+import { OpenApi } from './types/openApi/v3/OpenApi';
+import { generateOpenApi } from './types/openApiGenerator';
 import { Plugin, PluginFactory } from './types/Plugin';
 
 export class UnisonHTServer {
@@ -22,10 +24,10 @@ export class UnisonHTServer {
   private readonly _plugins: Plugin<unknown>[] = [];
   private readonly _config: Config;
   private _modeId?: string;
+  private swaggerJson?: OpenApi;
 
   constructor(config?: Config) {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const swaggerJson = require(path.join(__dirname, '..', 'dist', 'swagger.json'));
     this._config = {
       version: 1,
       defaultModeId: 'OFF',
@@ -37,21 +39,10 @@ export class UnisonHTServer {
 
     this.app = express();
     this.app.use(express.json());
-    this.app.get('/swagger.json', (_req, resp) => {
-      const newSwaggerJson = JSON.parse(JSON.stringify(swaggerJson));
-
-      routerUpdateSwaggerJson(this, newSwaggerJson);
-      this.plugins.forEach((plugin) => {
-        plugin.updateSwaggerJson(newSwaggerJson);
-      });
-      this.modes.forEach((mode) => {
-        mode.updateSwaggerJson(newSwaggerJson);
-      });
-      this.devices.forEach((device) => {
-        device.updateSwaggerJson(newSwaggerJson);
-      });
-
-      resp.json(newSwaggerJson);
+    this.app.get('/swagger.json', (_req, resp, next) => {
+      this.getSwaggerJson()
+        .then((json) => resp.json(json))
+        .catch((err) => next(err));
     });
     this.app.use(
       '/api/docs',
@@ -65,11 +56,50 @@ export class UnisonHTServer {
     this.app.use(createRouter(this));
   }
 
+  private async getSwaggerJson(): Promise<string> {
+    if (!this.swaggerJson) {
+      const decoratedSwaggerFiles = [
+        path.join(__dirname, '../src/routes/index.ts'),
+        path.join(__dirname, '../src/plugins/WebRemotePlugin.ts'),
+      ];
+      this.plugins.forEach((plugin) => {
+        decoratedSwaggerFiles.push(...plugin.getDecoratedSwaggerFiles());
+      });
+      this.modes.forEach((mode) => {
+        decoratedSwaggerFiles.push(...mode.getDecoratedSwaggerFiles());
+      });
+      this.devices.forEach((device) => {
+        decoratedSwaggerFiles.push(...device.getDecoratedSwaggerFiles());
+      });
+      this.swaggerJson = await generateOpenApi(decoratedSwaggerFiles);
+    }
+
+    const swaggerJson = JSON.parse(JSON.stringify(this.swaggerJson));
+
+    routerUpdateSwaggerJson(this, swaggerJson);
+    this.plugins.forEach((plugin) => {
+      plugin.updateSwaggerJson(swaggerJson);
+    });
+    this.modes.forEach((mode) => {
+      mode.updateSwaggerJson(swaggerJson);
+    });
+    this.devices.forEach((device) => {
+      device.updateSwaggerJson(swaggerJson);
+    });
+
+    return swaggerJson;
+  }
+
   async start(options?: { port?: number }): Promise<void> {
     await this.createModes();
     await this.createPlugins();
     await this.createDevices();
     await this.switchMode(this.config.defaultModeId);
+
+    // lazy initialize swagger
+    setTimeout(() => {
+      this.getSwaggerJson();
+    }, 1);
 
     const angularPath = path.join(__dirname, '..', 'public', 'dist', 'unisonht-public');
 
@@ -110,8 +140,7 @@ export class UnisonHTServer {
   }
 
   private async getPluginFactory(pluginFactoryName: string): Promise<PluginFactory<unknown> | undefined> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let pluginFactory = this.pluginFactories.find((d) => (d as any).constructor.name === pluginFactoryName);
+    let pluginFactory = this.pluginFactories.find((d) => (d as Object).constructor.name === pluginFactoryName);
     if (pluginFactory) {
       return pluginFactory;
     }
@@ -156,8 +185,7 @@ export class UnisonHTServer {
   }
 
   private async getDeviceFactory(deviceFactoryName: string): Promise<DeviceFactory<unknown> | undefined> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let deviceFactory = this.deviceFactories.find((d) => (d as any).constructor.name === deviceFactoryName);
+    let deviceFactory = this.deviceFactories.find((d) => (d as Object).constructor.name === deviceFactoryName);
     if (deviceFactory) {
       return deviceFactory;
     }
@@ -173,7 +201,7 @@ export class UnisonHTServer {
 
   private instantiateClass<T>(qualifiedName: string): T | undefined {
     const parts = qualifiedName.split(':', 2);
-    if (parts.length === 2) {
+    if (parts.length === 2 && parts[0] && parts[1]) {
       const module = this.loadModule(parts[0]);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const loadedClass = module[parts[1]] as any;
@@ -244,6 +272,9 @@ export class UnisonHTServer {
       await Promise.all(
         Object.keys(deviceInputs).map((deviceId) => {
           const input = deviceInputs[deviceId];
+          if (!input) {
+            throw new Error('invalid state');
+          }
           const device = this.devices.find((d) => d.id === deviceId);
           if (!device) {
             throw new Error(`could not find device with id: ${deviceId}`);

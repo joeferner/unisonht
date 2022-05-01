@@ -6,3 +6,4 @@ export { StandardButtons } from './types/StandardButtons';
 export { StandardInputs } from './types/StandardInputs';
 export { OpenApi } from './types/openApi/v3/OpenApi';
 export { validateJson } from './types/TypeUtils';
+export { MyGet, MyPost, MyQueryParam } from './types/openApiDecorators';
