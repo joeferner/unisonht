@@ -35,19 +35,15 @@ export abstract class Device<TConfigData> {
     return this.config.name;
   }
 
-  protected get swaggerTags(): string[] {
+  protected get openApiTags(): string[] {
     return [`Device: ${this.config.name}`];
   }
 
-  getDecoratedSwaggerFiles(): string[] {
-    return [];
-  }
-
-  updateSwaggerJson(swaggerJson: OpenApi): void {
-    swaggerJson.paths[`${this.apiUrlPrefix}/button`] = {
+  updateOpenApi(openApi: OpenApi): void {
+    openApi.paths[`${this.apiUrlPrefix}/button`] = {
       post: {
         operationId: 'pressButton',
-        tags: this.swaggerTags,
+        tags: this.openApiTags,
         parameters: [
           {
             in: 'query',

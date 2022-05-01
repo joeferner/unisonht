@@ -1,11 +1,9 @@
 import { NextFunction, Request, Response } from 'express-serve-static-core';
 import { StatusCodes } from 'http-status-codes';
 import path from 'path';
-import { Query } from 'tsoa';
 import { PluginConfig } from '../types/Config';
 import { setStatusCodeOnError } from '../types/ErrorWithStatusCode';
 import { OpenApi } from '../types/openApi/v3/OpenApi';
-import { MyPost, MyQueryParam as MyQueryParam } from '../types/openApiDecorators';
 import { Plugin, PluginFactory } from '../types/Plugin';
 import { validateJson } from '../types/TypeUtils';
 import { UnisonHTServer } from '../UnisonHTServer';
@@ -85,8 +83,7 @@ export class WebRemotePlugin extends Plugin<WebRemoteConfig> {
     });
   }
 
-  @MyPost('/api/button')
-  private handleWebRequestPressButton(@MyQueryParam('button') button: string): Promise<void> {
+  private handleWebRequestPressButton(button: string): Promise<void> {
     if (!this.config.data.buttons.includes(button)) {
       throw setStatusCodeOnError(new Error(`Invalid button "${button}"`), StatusCodes.NOT_FOUND);
     }
@@ -95,13 +92,13 @@ export class WebRemotePlugin extends Plugin<WebRemoteConfig> {
     return this.server.pressButton(button);
   }
 
-  override updateSwaggerJson(swaggerJson: OpenApi): Promise<void> {
-    super.updateSwaggerJson(swaggerJson);
+  override updateOpenApi(opanApi: OpenApi): Promise<void> {
+    super.updateOpenApi(opanApi);
 
-    swaggerJson.paths[`${this.apiUrlPrefix}/button`] = {
+    opanApi.paths[`${this.apiUrlPrefix}/button`] = {
       post: {
         operationId: 'pressButton',
-        tags: this.swaggerTags,
+        tags: this.openApiTags,
         parameters: [
           {
             in: 'query',

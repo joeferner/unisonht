@@ -20,11 +20,11 @@ export abstract class Plugin<TConfigData> {
     this.router = Router();
   }
 
-  protected get swaggerTags(): string[] {
+  protected get openApiTags(): string[] {
     return [`Plugin: ${this.config.name}`];
   }
 
-  updateSwaggerJson(swaggerJson: OpenApi): void {
+  updateOpenApi(openApi: OpenApi): void {
     // Allow override
   }
 

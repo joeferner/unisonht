@@ -3,14 +3,13 @@ import express, { Express } from 'express';
 import { NextFunction, Request, Response } from 'express-serve-static-core';
 import path from 'path';
 import swaggerUi from 'swagger-ui-express';
-import { createRouter, routerUpdateSwaggerJson } from './routes';
+import { createRouter, routerUpdateOpenApi } from './routes';
 import { Action, ActionFactory } from './types/Action';
 import { ActionConfig, Config } from './types/Config';
 import { Device, DeviceFactory } from './types/Device';
 import { getStatusCodeFromError } from './types/ErrorWithStatusCode';
 import { Mode } from './types/Mode';
 import { OpenApi } from './types/openApi/v3/OpenApi';
-import { generateOpenApi } from './types/openApiGenerator';
 import { Plugin, PluginFactory } from './types/Plugin';
 
 export class UnisonHTServer {
@@ -24,7 +23,6 @@ export class UnisonHTServer {
   private readonly _plugins: Plugin<unknown>[] = [];
   private readonly _config: Config;
   private _modeId?: string;
-  private swaggerJson?: OpenApi;
 
   constructor(config?: Config) {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -40,8 +38,8 @@ export class UnisonHTServer {
     this.app = express();
     this.app.use(express.json());
     this.app.get('/swagger.json', (_req, resp, next) => {
-      this.getSwaggerJson()
-        .then((json) => resp.json(json))
+      this.getOpenApi()
+        .then((openApi) => resp.json(openApi))
         .catch((err) => next(err));
     });
     this.app.use(
@@ -56,38 +54,28 @@ export class UnisonHTServer {
     this.app.use(createRouter(this));
   }
 
-  private async getSwaggerJson(): Promise<string> {
-    if (!this.swaggerJson) {
-      const decoratedSwaggerFiles = [
-        path.join(__dirname, '../src/routes/index.ts'),
-        path.join(__dirname, '../src/plugins/WebRemotePlugin.ts'),
-      ];
-      this.plugins.forEach((plugin) => {
-        decoratedSwaggerFiles.push(...plugin.getDecoratedSwaggerFiles());
-      });
-      this.modes.forEach((mode) => {
-        decoratedSwaggerFiles.push(...mode.getDecoratedSwaggerFiles());
-      });
-      this.devices.forEach((device) => {
-        decoratedSwaggerFiles.push(...device.getDecoratedSwaggerFiles());
-      });
-      this.swaggerJson = await generateOpenApi(decoratedSwaggerFiles);
-    }
+  private async getOpenApi(): Promise<OpenApi> {
+    const openApi: OpenApi = {
+      openapi: '3.0.0',
+      info: {
+        title: 'UnisonHT',
+        version: '1.0.0',
+      },
+      paths: {},
+    };
 
-    const swaggerJson = JSON.parse(JSON.stringify(this.swaggerJson));
-
-    routerUpdateSwaggerJson(this, swaggerJson);
+    routerUpdateOpenApi(this, openApi);
     this.plugins.forEach((plugin) => {
-      plugin.updateSwaggerJson(swaggerJson);
+      plugin.updateOpenApi(openApi);
     });
     this.modes.forEach((mode) => {
-      mode.updateSwaggerJson(swaggerJson);
+      mode.updateOpenApi(openApi);
     });
     this.devices.forEach((device) => {
-      device.updateSwaggerJson(swaggerJson);
+      device.updateOpenApi(openApi);
     });
 
-    return swaggerJson;
+    return openApi;
   }
 
   async start(options?: { port?: number }): Promise<void> {
@@ -95,11 +83,6 @@ export class UnisonHTServer {
     await this.createPlugins();
     await this.createDevices();
     await this.switchMode(this.config.defaultModeId);
-
-    // lazy initialize swagger
-    setTimeout(() => {
-      this.getSwaggerJson();
-    }, 1);
 
     const angularPath = path.join(__dirname, '..', 'public', 'dist', 'unisonht-public');
 
@@ -140,7 +123,8 @@ export class UnisonHTServer {
   }
 
   private async getPluginFactory(pluginFactoryName: string): Promise<PluginFactory<unknown> | undefined> {
-    let pluginFactory = this.pluginFactories.find((d) => (d as Object).constructor.name === pluginFactoryName);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let pluginFactory = this.pluginFactories.find((d) => (d as any).constructor.name === pluginFactoryName);
     if (pluginFactory) {
       return pluginFactory;
     }
@@ -185,7 +169,8 @@ export class UnisonHTServer {
   }
 
   private async getDeviceFactory(deviceFactoryName: string): Promise<DeviceFactory<unknown> | undefined> {
-    let deviceFactory = this.deviceFactories.find((d) => (d as Object).constructor.name === deviceFactoryName);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let deviceFactory = this.deviceFactories.find((d) => (d as any).constructor.name === deviceFactoryName);
     if (deviceFactory) {
       return deviceFactory;
     }

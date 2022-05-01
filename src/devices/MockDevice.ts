@@ -1,7 +1,6 @@
 import { UnisonHTServer } from '..';
 import { DeviceConfig } from '../types/Config';
 import { Device, DeviceFactory, PowerState } from '../types/Device';
-import path from 'path';
 
 export class MockDeviceFactory implements DeviceFactory<MockDeviceConfig> {
   async createDevice(
@@ -27,10 +26,6 @@ export class MockDevice extends Device<MockDeviceConfig> {
         this._powerState = PowerState.OFF;
       }
     }
-  }
-
-  override getDecoratedSwaggerFiles(): string[] {
-    return [__filename];
   }
 
   getPowerState(): Promise<PowerState> {

@@ -9,7 +9,6 @@ import { Action } from './Action';
 import { ActionConfig, ModeConfig, ModeConfigButton } from './Config';
 import { setStatusCodeOnError } from './ErrorWithStatusCode';
 import { OpenApi } from './openApi/v3/OpenApi';
-import { MyPost, MyQueryParam } from './openApiDecorators';
 
 export class Mode {
   protected readonly debug = Debug(`unisonht:unisonht:mode:${this.name}:${this.id}`);
@@ -46,19 +45,15 @@ export class Mode {
     return undefined;
   }
 
-  protected get swaggerTags(): string[] {
+  protected get openApiTags(): string[] {
     return [`Mode: ${this.config.name}`];
   }
 
-  getDecoratedSwaggerFiles(): string[] {
-    return [];
-  }
-
-  updateSwaggerJson(swaggerJson: OpenApi): void {
-    swaggerJson.paths[`${this.apiUrlPrefix}/button`] = {
+  updateOpenApi(openApi: OpenApi): void {
+    openApi.paths[`${this.apiUrlPrefix}/button`] = {
       post: {
         operationId: 'pressButton',
-        tags: this.swaggerTags,
+        tags: this.openApiTags,
         parameters: [
           {
             in: 'query',
@@ -100,8 +95,7 @@ export class Mode {
     this.router(req, resp, next);
   }
 
-  @MyPost('${apiUrlPrefix}/button')
-  async pressButton(@MyQueryParam('button') buttonName: string): Promise<void> {
+  async pressButton(buttonName: string): Promise<void> {
     this.debug('handle button press: %s', buttonName);
     const buttonConfig = this.getButtonByName(buttonName);
     if (!buttonConfig) {
