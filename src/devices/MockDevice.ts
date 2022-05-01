@@ -7,7 +7,7 @@ export class MockDeviceFactory implements DeviceFactory<MockDeviceConfig> {
     server: UnisonHTServer,
     config: DeviceConfig<MockDeviceConfig>,
   ): Promise<Device<MockDeviceConfig>> {
-    return new MockDevice(config, server);
+    return new MockDevice(server, config);
   }
 }
 

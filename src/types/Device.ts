@@ -16,7 +16,7 @@ export abstract class Device<TConfigData> {
   protected readonly debug = Debug(`unisonht:unisonht:device:${this.name}:${this.id}`);
   protected readonly router: express.Router;
 
-  constructor(protected readonly config: DeviceConfig<TConfigData>, protected readonly server: UnisonHTServer) {
+  constructor(protected readonly server: UnisonHTServer, protected readonly config: DeviceConfig<TConfigData>) {
     this.router = Router();
     this.router.post(`${this.apiUrlPrefix}/button`, async (req, res) => {
       if (!req.query.button) {

@@ -7,8 +7,6 @@ import { PluginConfig } from './Config';
 import { OpenApi } from './openApi/v3/OpenApi';
 
 export interface PluginFactory<TConfigData> {
-  get id(): string;
-
   createPlugin(server: UnisonHTServer, config: PluginConfig<TConfigData>): Promise<Plugin<TConfigData>>;
 }
 
