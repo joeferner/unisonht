@@ -1,5 +1,6 @@
+import Debug from 'debug';
 import NestedError from 'nested-error-stacks';
-import { Method, Type } from 'tst-reflect';
+import { Method, Property, Type } from 'tst-reflect';
 import { OpenApi } from './openApi/v3/OpenApi';
 import { OpenApiOperation } from './openApi/v3/OpenApiOperation';
 import { OpenApiParameter } from './openApi/v3/OpenApiParameter';
@@ -8,16 +9,20 @@ import { OpenApiResponses } from './openApi/v3/OpenApiResponses';
 import { OpenApiSchema } from './openApi/v3/OpenApiSchema';
 import { OpenApiProvider } from './OpenApiProvider';
 
+const debug = Debug('unisonht:openApiDecorators');
+
 const openApiDecoratorData: OpenApiDecoratorData = {};
 
 export function Get(path: string) {
   return function (target: any, methodName: string, descriptor: PropertyDescriptor) {
+    debug('Found GET %s.%s', target.constructor.name, methodName);
     addRequestMethod(target.constructor.name, methodName, 'get', path);
   };
 }
 
 export function Post(path: string) {
   return function (target: any, methodName: string, descriptor: PropertyDescriptor) {
+    debug('Found POST %s.%s', target.constructor.name, methodName);
     addRequestMethod(target.constructor.name, methodName, 'post', path);
   };
 }
@@ -50,12 +55,12 @@ export function openApiDecoratorsUpdateOpenApi(openApi: OpenApi, provider: OpenA
   for (const method of Object.entries(c)) {
     const mType = type.getMethods().find((m) => m.name === method[0]);
     if (!mType) {
-      throw new Error(`could not find method ${method} in type ${className}`);
+      throw new Error(`could not find method ${method[0]} in type ${className}`);
     }
     try {
       openApiDecoratorsUpdateOpenApiMethod(openApi, provider, method[1], mType);
     } catch (err) {
-      throw new NestedError(`failed on method ${method} in type ${className}`, err as Error);
+      throw new NestedError(`failed on method ${method[0]} in type ${className}`, err as Error);
     }
   }
 }
@@ -178,7 +183,7 @@ function typeToOpenApiSchema(type: Type, provider: OpenApiProvider, options?: Qu
   } else {
     const required: string[] = [];
     const properties: { [propertyName: string]: OpenApiSchema } = {};
-    for (const prop of type.getProperties()) {
+    for (const prop of getProperties(type)) {
       const propSchema = typeToOpenApiSchema(prop.type, provider, options);
       if (propSchema === null) {
         throw new Error(`could not convert property ${prop.name} or type ${type.name}`);
@@ -195,6 +200,14 @@ function typeToOpenApiSchema(type: Type, provider: OpenApiProvider, options?: Qu
     };
     return schema;
   }
+}
+
+function getProperties(type: Type): Property[] {
+  const properties = [...type.getProperties()];
+  if (type.baseType) {
+    properties.push(...getProperties(type.baseType));
+  }
+  return properties;
 }
 
 function evaluateString(objThis: any, str: string): any {
