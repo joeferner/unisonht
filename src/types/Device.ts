@@ -3,16 +3,18 @@ import express from 'express';
 import Router from 'express-promise-router';
 import { NextFunction, Request, Response } from 'express-serve-static-core';
 import { StatusCodes } from 'http-status-codes';
+import { Type } from 'tst-reflect';
 import { UnisonHTServer } from '../UnisonHTServer';
 import { DeviceConfig } from './Config';
 import { setStatusCodeOnError } from './ErrorWithStatusCode';
 import { OpenApi } from './openApi/v3/OpenApi';
+import { OpenApiProvider } from './OpenApiProvider';
 
 export interface DeviceFactory<TConfigData> {
   createDevice(server: UnisonHTServer, config: DeviceConfig<TConfigData>): Promise<Device<TConfigData>>;
 }
 
-export abstract class Device<TConfigData> {
+export abstract class Device<TConfigData> implements OpenApiProvider {
   protected readonly debug = Debug(`unisonht:unisonht:device:${this.name}:${this.id}`);
   protected readonly router: express.Router;
 
@@ -35,8 +37,12 @@ export abstract class Device<TConfigData> {
     return this.config.name;
   }
 
-  protected get openApiTags(): string[] {
+  get openApiTags(): string[] {
     return [`Device: ${this.config.name}`];
+  }
+
+  getOpenApiType(): Type | undefined {
+    return undefined;
   }
 
   updateOpenApi(openApi: OpenApi): void {
@@ -93,11 +99,11 @@ export abstract class Device<TConfigData> {
 
   abstract get buttons(): string[];
 
-  protected get urlPrefix(): string {
+  get urlPrefix(): string {
     return `/device/${this.id}`;
   }
 
-  protected get apiUrlPrefix(): string {
+  get apiUrlPrefix(): string {
     return `/api/v1/device/${this.id}`;
   }
 }

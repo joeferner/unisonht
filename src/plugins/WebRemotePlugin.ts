@@ -1,9 +1,10 @@
 import { NextFunction, Request, Response } from 'express-serve-static-core';
 import { StatusCodes } from 'http-status-codes';
 import path from 'path';
+import { getType, Type } from 'tst-reflect';
 import { PluginConfig } from '../types/Config';
 import { setStatusCodeOnError } from '../types/ErrorWithStatusCode';
-import { OpenApi } from '../types/openApi/v3/OpenApi';
+import { OpenApiResponse, Post, QueryParam } from '../types/openApiDecorators';
 import { Plugin, PluginFactory } from '../types/Plugin';
 import { validateJson } from '../types/TypeUtils';
 import { UnisonHTServer } from '../UnisonHTServer';
@@ -34,8 +35,8 @@ export class WebRemotePlugin extends Plugin<WebRemoteConfig> {
         if (!req.query.button) {
           throw setStatusCodeOnError(new Error("'button' is required"), StatusCodes.BAD_REQUEST);
         }
-        await this.handleWebRequestPressButton(req.query.button.toString());
-        res.json({});
+        await this.pressButton(req.query.button.toString());
+        res.send();
       },
     );
 
@@ -83,7 +84,9 @@ export class WebRemotePlugin extends Plugin<WebRemoteConfig> {
     });
   }
 
-  private handleWebRequestPressButton(button: string): Promise<void> {
+  @Post('`${this.apiUrlPrefix}/button`')
+  @OpenApiResponse(404, 'Button not found')
+  private pressButton(@QueryParam({ enum: 'this.config.data.buttons' }) button: string): Promise<void> {
     if (!this.config.data.buttons.includes(button)) {
       throw setStatusCodeOnError(new Error(`Invalid button "${button}"`), StatusCodes.NOT_FOUND);
     }
@@ -92,49 +95,8 @@ export class WebRemotePlugin extends Plugin<WebRemoteConfig> {
     return this.server.pressButton(button);
   }
 
-  override updateOpenApi(opanApi: OpenApi): Promise<void> {
-    super.updateOpenApi(opanApi);
-
-    opanApi.paths[`${this.apiUrlPrefix}/button`] = {
-      post: {
-        operationId: 'pressButton',
-        tags: this.openApiTags,
-        parameters: [
-          {
-            in: 'query',
-            name: 'button',
-            required: true,
-            schema: {
-              type: 'string',
-              enum: this.config.data.buttons,
-            },
-          },
-        ],
-        responses: {
-          [200]: {
-            description: 'OK',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                },
-              },
-            },
-          },
-          [404]: {
-            description: 'Button not found',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                },
-              },
-            },
-          },
-        },
-      },
-    };
-    return Promise.resolve();
+  override getOpenApiType(): Type | undefined {
+    return getType<WebRemotePlugin>();
   }
 
   override handleWebRequest(req: Request, res: Response, next: NextFunction): void {

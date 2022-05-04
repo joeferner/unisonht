@@ -1,21 +1,33 @@
 import { Router } from 'express-serve-static-core';
+import { getType, Type } from 'tst-reflect';
 import { OPENAPI_UNISONHT_CORE_TAGS } from '.';
 import { PowerState } from '../types/Device';
 import { OpenApi } from '../types/openApi/v3/OpenApi';
+import { Get } from '../types/openApiDecorators';
+import { OpenApiProvider } from '../types/OpenApiProvider';
 import { UnisonHTServer } from '../UnisonHTServer';
 
 const ROUTE_DEVICES = '/api/v1/devices';
-export class DevicesController {
-  constructor(private readonly server: UnisonHTServer) {}
-
-  static init(server: UnisonHTServer, router: Router) {
-    const devicesController = new DevicesController(server);
-
+export class DevicesController implements OpenApiProvider {
+  constructor(private readonly server: UnisonHTServer, router: Router) {
     router.get(ROUTE_DEVICES, async (_req, res) => {
-      res.send(await devicesController.getDevices());
+      res.send(await this.getDevices());
     });
   }
 
+  get openApiTags(): string[] {
+    return OPENAPI_UNISONHT_CORE_TAGS;
+  }
+
+  get apiUrlPrefix(): string {
+    return ROUTE_DEVICES;
+  }
+
+  getOpenApiType(): Type | undefined {
+    return getType<DevicesController>();
+  }
+
+  @Get('`${this.apiUrlPrefix}`')
   public async getDevices(): Promise<GetDevicesResponse> {
     return {
       devices: await Promise.all(
@@ -31,47 +43,7 @@ export class DevicesController {
     };
   }
 
-  static updateOpenApi(server: UnisonHTServer, openApi: OpenApi) {
-    const deviceIds = server.devices.map((d) => d.id);
-    openApi.paths[ROUTE_DEVICES] = {
-      get: {
-        operationId: 'getDevices',
-        tags: OPENAPI_UNISONHT_CORE_TAGS,
-        responses: {
-          [200]: {
-            description: 'list of devices',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      id: {
-                        type: 'string',
-                        enum: deviceIds,
-                      },
-                      name: {
-                        type: 'string',
-                      },
-                      active: {
-                        type: 'boolean',
-                      },
-                      powerState: {
-                        type: 'string',
-                        enum: [PowerState.ON, PowerState.OFF],
-                      },
-                    },
-                    required: ['id', 'name', 'active', 'powerState'],
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    };
-  }
+  updateOpenApi(openApi: OpenApi): void {}
 }
 
 interface GetDevicesResponse {

@@ -2,15 +2,17 @@ import Debug from 'debug';
 import express from 'express';
 import Router from 'express-promise-router';
 import { NextFunction, Request, Response } from 'express-serve-static-core';
+import { Type } from 'tst-reflect';
 import { UnisonHTServer } from '../UnisonHTServer';
 import { PluginConfig } from './Config';
 import { OpenApi } from './openApi/v3/OpenApi';
+import { OpenApiProvider } from './OpenApiProvider';
 
 export interface PluginFactory<TConfigData> {
   createPlugin(server: UnisonHTServer, config: PluginConfig<TConfigData>): Promise<Plugin<TConfigData>>;
 }
 
-export abstract class Plugin<TConfigData> {
+export abstract class Plugin<TConfigData> implements OpenApiProvider {
   protected readonly debug = Debug(`unisonht:unisonht:plugin:${this.name}:${this.id}`);
   protected readonly router: express.Router;
 
@@ -18,8 +20,12 @@ export abstract class Plugin<TConfigData> {
     this.router = Router();
   }
 
-  protected get openApiTags(): string[] {
+  get openApiTags(): string[] {
     return [`Plugin: ${this.config.name}`];
+  }
+
+  getOpenApiType(): Type | undefined {
+    return undefined;
   }
 
   updateOpenApi(openApi: OpenApi): void {
@@ -38,11 +44,11 @@ export abstract class Plugin<TConfigData> {
     return this.config.name;
   }
 
-  protected get urlPrefix(): string {
+  get urlPrefix(): string {
     return `/plugin/${this.id}`;
   }
 
-  protected get apiUrlPrefix(): string {
+  get apiUrlPrefix(): string {
     return `/api/v1/plugin/${this.id}`;
   }
 }

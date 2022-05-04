@@ -1,111 +1,54 @@
 import { Router } from 'express-serve-static-core';
 import { StatusCodes } from 'http-status-codes';
+import { getType, Type } from 'tst-reflect';
 import { OPENAPI_UNISONHT_CORE_TAGS } from '.';
 import { setStatusCodeOnError } from '../types/ErrorWithStatusCode';
 import { OpenApi } from '../types/openApi/v3/OpenApi';
+import { Get, OpenApiResponse, Post, QueryParam } from '../types/openApiDecorators';
+import { OpenApiProvider } from '../types/OpenApiProvider';
 import { UnisonHTServer } from '../UnisonHTServer';
 
 const ROUTE_MODE = '/api/v1/mode';
 
-export class ModeController {
-  constructor(private readonly server: UnisonHTServer) {}
-
-  static init(server: UnisonHTServer, router: Router) {
-    const modeController = new ModeController(server);
-
+export class ModeController implements OpenApiProvider {
+  constructor(private readonly server: UnisonHTServer, router: Router) {
     router.get(ROUTE_MODE, async (_req, res) => {
-      res.send(await modeController.getCurrentMode());
+      res.send(await this.getCurrentMode());
     });
 
     router.post(ROUTE_MODE, async (req, res) => {
-      res.send(await modeController.switchMode(req.query.newModeId?.toString() ?? 'NOT SET'));
+      res.send(await this.switchMode(req.query.newModeId?.toString() ?? 'NOT SET'));
     });
   }
 
-  static updateOpenApi(server: UnisonHTServer, openApi: OpenApi) {
-    const modeIds = server.config.modes.map((m) => m.id);
-    openApi.paths[ROUTE_MODE] = {
-      get: {
-        operationId: 'getCurrentMode',
-        tags: OPENAPI_UNISONHT_CORE_TAGS,
-        responses: {
-          [200]: {
-            description: 'current mode',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                  properties: {
-                    mode: {
-                      type: 'string',
-                      enum: modeIds,
-                    },
-                  },
-                  required: ['mode'],
-                },
-              },
-            },
-          },
-        },
-      },
-      post: {
-        operationId: 'switchMode',
-        tags: OPENAPI_UNISONHT_CORE_TAGS,
-        parameters: [
-          {
-            in: 'query',
-            name: 'mode',
-            required: true,
-            schema: {
-              type: 'string',
-              enum: modeIds,
-            },
-          },
-        ],
-        responses: {
-          [200]: {
-            description: 'switch mode',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                  properties: {
-                    oldModeId: {
-                      type: 'string',
-                      enum: modeIds,
-                    },
-                    modeId: {
-                      type: 'string',
-                      enum: modeIds,
-                    },
-                  },
-                  required: ['modeId'],
-                },
-              },
-            },
-          },
-          [404]: {
-            description: 'mode not found',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                },
-              },
-            },
-          },
-        },
-      },
-    };
+  get openApiTags(): string[] {
+    return OPENAPI_UNISONHT_CORE_TAGS;
   }
 
+  get apiUrlPrefix(): string {
+    return ROUTE_MODE;
+  }
+
+  getOpenApiType(): Type | undefined {
+    return getType<ModeController>();
+  }
+
+  get modeIds(): string[] {
+    return this.server.config.modes.map((m) => m.id);
+  }
+
+  updateOpenApi(openApi: OpenApi): void {}
+
+  @Get('`${this.apiUrlPrefix}`')
   public async getCurrentMode(): Promise<GetModeResponse> {
     return {
       mode: this.server.modeId ?? this.server.config.defaultModeId,
     };
   }
 
-  public async switchMode(newModeId: string): Promise<SetModeResponse> {
+  @Post('`${this.apiUrlPrefix}`')
+  @OpenApiResponse(404, 'Mode not found')
+  public async switchMode(@QueryParam({ enum: 'this.modeIds' }) newModeId: string): Promise<SetModeResponse> {
     if (!newModeId || !this.server.config.modes.find((m) => m.id === newModeId)) {
       throw setStatusCodeOnError(new Error(`invalid mode: ${newModeId}`), StatusCodes.NOT_FOUND);
     }

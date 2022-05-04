@@ -3,13 +3,14 @@ import express, { Express } from 'express';
 import { NextFunction, Request, Response } from 'express-serve-static-core';
 import path from 'path';
 import swaggerUi from 'swagger-ui-express';
-import { createRouter, routerUpdateOpenApi } from './routes';
+import { createRouter, routerGetControllers } from './routes';
 import { Action, ActionFactory } from './types/Action';
 import { ActionConfig, Config } from './types/Config';
 import { Device, DeviceFactory } from './types/Device';
 import { getStatusCodeFromError } from './types/ErrorWithStatusCode';
 import { Mode } from './types/Mode';
 import { OpenApi } from './types/openApi/v3/OpenApi';
+import { openApiDecoratorsUpdateOpenApi } from './types/openApiDecorators';
 import { Plugin, PluginFactory } from './types/Plugin';
 
 export class UnisonHTServer {
@@ -64,15 +65,12 @@ export class UnisonHTServer {
       paths: {},
     };
 
-    routerUpdateOpenApi(this, openApi);
-    this.plugins.forEach((plugin) => {
-      plugin.updateOpenApi(openApi);
-    });
-    this.modes.forEach((mode) => {
-      mode.updateOpenApi(openApi);
-    });
-    this.devices.forEach((device) => {
-      device.updateOpenApi(openApi);
+    [...routerGetControllers(), ...this.plugins, ...this.modes, ...this.devices].forEach((o) => {
+      const t = o.getOpenApiType();
+      if (t) {
+        openApiDecoratorsUpdateOpenApi(openApi, o, t);
+      }
+      o.updateOpenApi(openApi);
     });
 
     return openApi;
@@ -83,6 +81,8 @@ export class UnisonHTServer {
     await this.createPlugins();
     await this.createDevices();
     await this.switchMode(this.config.defaultModeId);
+
+    this.getOpenApi().catch(console.error);
 
     const angularPath = path.join(__dirname, '..', 'public', 'dist', 'unisonht-public');
 

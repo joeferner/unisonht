@@ -9,8 +9,11 @@ import { Action } from './Action';
 import { ActionConfig, ModeConfig, ModeConfigButton } from './Config';
 import { setStatusCodeOnError } from './ErrorWithStatusCode';
 import { OpenApi } from './openApi/v3/OpenApi';
+import { OpenApiProvider } from './OpenApiProvider';
+import { getType, Type } from 'tst-reflect';
+import { OpenApiResponse, Post, QueryParam } from './openApiDecorators';
 
-export class Mode {
+export class Mode implements OpenApiProvider {
   protected readonly debug = Debug(`unisonht:unisonht:mode:${this.name}:${this.id}`);
   protected readonly router: express.Router;
   private readonly buttonActions: { [buttonName: string]: Action<ActionConfig>[] } = {};
@@ -45,68 +48,34 @@ export class Mode {
     return undefined;
   }
 
-  protected get openApiTags(): string[] {
+  get openApiTags(): string[] {
     return [`Mode: ${this.config.name}`];
   }
 
-  updateOpenApi(openApi: OpenApi): void {
-    openApi.paths[`${this.apiUrlPrefix}/button`] = {
-      post: {
-        operationId: 'pressButton',
-        tags: this.openApiTags,
-        parameters: [
-          {
-            in: 'query',
-            name: 'button',
-            required: true,
-            schema: {
-              type: 'string',
-              enum: this.buttons,
-            },
-          },
-        ],
-        responses: {
-          [200]: {
-            description: 'OK',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                },
-              },
-            },
-          },
-          [404]: {
-            description: 'Button not found',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                },
-              },
-            },
-          },
-        },
-      },
-    };
+  getOpenApiType(): Type | undefined {
+    return getType<Mode>();
   }
+
+  updateOpenApi(openApi: OpenApi): void {}
 
   handleWebRequest(req: Request, resp: Response, next: NextFunction): void {
     this.router(req, resp, next);
   }
 
-  async pressButton(buttonName: string): Promise<void> {
-    this.debug('handle button press: %s', buttonName);
-    const buttonConfig = this.getButtonByName(buttonName);
+  @Post('`${this.apiUrlPrefix}/button`')
+  @OpenApiResponse(404, 'Button not found')
+  async pressButton(@QueryParam({ enum: 'this.buttons' }) button: string): Promise<void> {
+    this.debug('handle button press: %s', button);
+    const buttonConfig = this.getButtonByName(button);
     if (!buttonConfig) {
-      throw setStatusCodeOnError(new Error(`Could not find button: ${buttonName}`), StatusCodes.NOT_FOUND);
+      throw setStatusCodeOnError(new Error(`Could not find button: ${button}`), StatusCodes.NOT_FOUND);
     }
     const buttonActions = this.buttonActions[buttonConfig.name];
     if (!buttonActions) {
       throw new Error(`could not find button actions: ${buttonConfig.name}`);
     }
     for (const action of buttonActions) {
-      await action.execute(buttonName);
+      await action.execute(button);
     }
   }
 
@@ -132,11 +101,11 @@ export class Mode {
     });
   }
 
-  protected get urlPrefix(): string {
+  get urlPrefix(): string {
     return `/mode/${this.id}`;
   }
 
-  protected get apiUrlPrefix(): string {
+  get apiUrlPrefix(): string {
     return `/api/v1/mode/${this.id}`;
   }
 }

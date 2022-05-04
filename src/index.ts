@@ -6,3 +6,4 @@ export { StandardButtons } from './types/StandardButtons';
 export { StandardInputs } from './types/StandardInputs';
 export { validateJson } from './types/TypeUtils';
 export { UnisonHTServer } from './UnisonHTServer';
+export { Get, Post, QueryParam } from './types/openApiDecorators';

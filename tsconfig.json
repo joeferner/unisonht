@@ -15,7 +15,10 @@
     "skipLibCheck": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "noUncheckedIndexedAccess": true
+    "noUncheckedIndexedAccess": true,
+    "plugins": [{
+      "transform": "tst-reflect-transformer"
+    }]
   },
   "exclude": [
     "node_modules/",
