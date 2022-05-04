@@ -24,7 +24,7 @@ export abstract class Device<TConfigData> implements OpenApiProvider {
       if (!req.query.button) {
         throw setStatusCodeOnError(new Error("'button' is required"), StatusCodes.BAD_REQUEST);
       }
-      await this.handleButtonPress(req.query.button?.toString());
+      await this.buttonPress(req.query.button?.toString());
       res.json({});
     });
   }
@@ -81,7 +81,7 @@ export abstract class Device<TConfigData> implements OpenApiProvider {
     this.router(req, resp, next);
   }
 
-  abstract handleButtonPress(button: string): Promise<void>;
+  abstract buttonPress(button: string): Promise<void>;
 
   abstract switchMode(oldModeId: string | undefined, newModeId: string): Promise<void>;
 

@@ -99,12 +99,22 @@ function openApiDecoratorsUpdateOpenApiMethod(
     }
 
     parameters = parameters || [];
-    parameters.push({
-      in: 'query',
-      name: methodParameter.name,
-      required: !methodParameter.optional,
-      schema,
-    });
+    if (schema.type === 'object' && schema.properties) {
+      for (const prop of Object.entries(schema.properties)) {
+        parameters.push({
+          in: 'query',
+          name: prop[0],
+          schema: prop[1] as OpenApiSchema,
+        });
+      }
+    } else {
+      parameters.push({
+        in: 'query',
+        name: methodParameter.name,
+        required: !methodParameter.optional,
+        schema,
+      });
+    }
   }
 
   const responses: OpenApiResponses = {};
@@ -139,12 +149,46 @@ function openApiDecoratorsUpdateOpenApiMethod(
 }
 
 function typeToOpenApiSchema(type: Type, provider: OpenApiProvider, options?: QueryParamOptions): OpenApiSchema | null {
-  if (type.isEnum()) {
-    const schema: OpenApiSchema = {
+  if (type.fullName === 'undefined' || type.fullName === 'null') {
+    return null;
+  } else if (type.fullName === 'true' || type.fullName === 'false') {
+    return {
+      type: 'boolean',
+    };
+  } else if (type.literalValue) {
+    return {
+      type: 'string',
+      enum: [type.literalValue],
+    };
+  } else if (type.types.length > 1) {
+    let types = type.types.map((t) => typeToOpenApiSchema(t, provider, options)).filter((t) => t) as OpenApiSchema[];
+    if (types.length === 0) {
+      return null;
+    }
+    const stringEnumTypes = types.filter((t) => t.type === 'string' && t.enum);
+    if (stringEnumTypes.length > 1) {
+      const stringEnumType: OpenApiSchema = {
+        type: 'string',
+        enum: stringEnumTypes.flatMap((t) => t.enum || []),
+      };
+      const nonStringEnumTypes = types.filter((t) => !(t.type === 'string' && t.enum));
+      types = [stringEnumType, ...nonStringEnumTypes];
+    }
+    if (types[0]) {
+      return types[0];
+    }
+    return {
+      oneOf: types,
+    };
+  } else if (type.isNumber()) {
+    return {
+      type: 'number',
+    };
+  } else if (type.isEnum()) {
+    return {
       type: 'string',
       enum: type.getEnum()?.getValues(),
     };
-    return schema;
   } else if (type.isArray()) {
     const elemType = type.getTypeArguments()[0];
     if (!elemType) {

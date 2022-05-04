@@ -35,7 +35,7 @@ export class ForwardToDeviceAction extends Action<ForwardToDeviceActionConfig> {
     if (!device) {
       throw new Error(`could not find device: ${this.config.deviceId}`);
     }
-    return device.handleButtonPress(buttonName);
+    return device.buttonPress(buttonName);
   }
 }
 

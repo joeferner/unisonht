@@ -32,7 +32,7 @@ export class MockDevice extends Device<MockDeviceConfig> {
     return Promise.resolve(this._powerState);
   }
 
-  async handleButtonPress(button: string): Promise<void> {
+  async buttonPress(button: string): Promise<void> {
     this.debug('button press: %s', button);
   }
 
