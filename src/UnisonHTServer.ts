@@ -82,7 +82,8 @@ export class UnisonHTServer {
     await this.createDevices();
     await this.switchMode(this.config.defaultModeId);
 
-    this.getOpenApi().catch(console.error);
+    this.debug('validating open api');
+    await this.getOpenApi();
 
     const angularPath = path.join(__dirname, '..', 'public', 'dist', 'unisonht-public');
 

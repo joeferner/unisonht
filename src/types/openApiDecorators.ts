@@ -1,12 +1,11 @@
-import { OpenApi } from './openApi/v3/OpenApi';
-import { Plugin } from './Plugin';
-import { Type, Method } from 'tst-reflect';
 import NestedError from 'nested-error-stacks';
-import { OpenApiPath } from './openApi/v3/OpenApiPath';
+import { Method, Type } from 'tst-reflect';
+import { OpenApi } from './openApi/v3/OpenApi';
 import { OpenApiOperation } from './openApi/v3/OpenApiOperation';
 import { OpenApiParameter } from './openApi/v3/OpenApiParameter';
-import { OpenApiSchema } from './openApi/v3/OpenApiSchema';
+import { OpenApiPath } from './openApi/v3/OpenApiPath';
 import { OpenApiResponses } from './openApi/v3/OpenApiResponses';
+import { OpenApiSchema } from './openApi/v3/OpenApiSchema';
 import { OpenApiProvider } from './OpenApiProvider';
 
 const openApiDecoratorData: OpenApiDecoratorData = {};

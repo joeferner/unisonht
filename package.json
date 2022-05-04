@@ -11,7 +11,7 @@
   "scripts": {
     "build": "ttsc",
     "build:watch": "nodemon --watch src --ext ts --exec ttsc",
-    "server:watch": "DEBUG=unisonht:* nodemon --watch dist -- dist/bin/server.js --config sample.config.json",
+    "server:watch": "DEBUG=unisonht:* nodemon --watch src --ext ts -- ts-node-dev dist/bin/server.js --config sample.config.json",
     "start:watch": "concurrently \"npm run build:watch\" \"npm run server:watch\"",
     "format": "prettier --write \"src/**/*.ts\"",
     "lint": "eslint --fix --ext .ts .",
