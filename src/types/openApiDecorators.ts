@@ -214,27 +214,27 @@ function addMethod(className: string, methodName: string) {
   return (c[methodName] = c[methodName] ?? { queryParams: [], responses: {} });
 }
 
-export interface OpenApiDecoratorData {
+interface OpenApiDecoratorData {
   [className: string]: OpenApiDecoratorDataClass;
 }
 
-export interface OpenApiDecoratorDataClass {
+interface OpenApiDecoratorDataClass {
   [methodName: string]: OpenApiDecoratorDataMethod;
 }
 
-export interface OpenApiDecoratorDataMethod {
+interface OpenApiDecoratorDataMethod {
   httpVerb?: string;
   path?: string;
   queryParams: OpenApiDecoratorDataQueryParam[];
   responses: { [code: number]: OpenApiDecoratorDataResponse };
 }
 
-export interface OpenApiDecoratorDataQueryParam {
+interface OpenApiDecoratorDataQueryParam {
   parameterIndex: number;
   options?: QueryParamOptions;
 }
 
-export interface OpenApiDecoratorDataResponse {
+interface OpenApiDecoratorDataResponse {
   description: string;
 }
 
