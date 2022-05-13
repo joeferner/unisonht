@@ -24,10 +24,7 @@ export class WebRemotePlugin extends Plugin<WebRemoteConfig> {
   constructor(server: UnisonHTServer, config: PluginConfig<WebRemoteConfig>) {
     super(server, config);
 
-    validateJson('WebRemoteConfig', config.data, {
-      sourcePath: path.join(__dirname, 'WebRemotePluginConfig.ts'),
-      tsconfigPath: path.join(__dirname, '../../tsconfig.json'),
-    });
+    validateJson(getType<WebRemoteConfig>(), config.data);
 
     this.router.post(
       `${this.apiUrlPrefix}/button`,
