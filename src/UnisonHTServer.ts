@@ -10,7 +10,8 @@ import { Device, DeviceFactory } from './types/Device';
 import { getStatusCodeFromError } from './types/ErrorWithStatusCode';
 import { Mode } from './types/Mode';
 import { OpenApi } from './types/openApi/v3/OpenApi';
-import { openApiDecoratorsUpdateOpenApi } from './types/openApiDecorators';
+import { createOpenApiFromOpenApiProviders } from './types/openApiDecorators';
+import { OpenApiProvider } from './types/OpenApiProvider';
 import { Plugin, PluginFactory } from './types/Plugin';
 
 export class UnisonHTServer {
@@ -56,23 +57,16 @@ export class UnisonHTServer {
   }
 
   private async getOpenApi(): Promise<OpenApi> {
-    const openApi: OpenApi = {
-      openapi: '3.0.0',
-      info: {
-        title: 'UnisonHT',
-        version: '1.0.0',
-      },
-      paths: {},
-    };
-
-    [...routerGetControllers(), ...this.plugins, ...this.modes, ...this.devices].forEach((o) => {
-      const t = o.getOpenApiType();
-      if (t) {
-        openApiDecoratorsUpdateOpenApi(openApi, o, t);
-      }
+    const openApiProviders: OpenApiProvider[] = [
+      ...routerGetControllers(),
+      ...this.plugins,
+      ...this.modes,
+      ...this.devices,
+    ];
+    const openApi = createOpenApiFromOpenApiProviders(openApiProviders);
+    openApiProviders.forEach((o) => {
       o.updateOpenApi(openApi);
     });
-
     return openApi;
   }
 

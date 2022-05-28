@@ -1,257 +1,176 @@
 import Debug from 'debug';
-import NestedError from 'nested-error-stacks';
-import { Method, Property, Type } from 'tst-reflect';
+import { JSONSchema7Definition } from 'json-schema';
+import { Decorator, Method, Property, Type } from 'tst-reflect';
+import { createJsonSchema } from 'tst-reflect-json-schema-generator';
 import { OpenApi } from './openApi/v3/OpenApi';
 import { OpenApiOperation } from './openApi/v3/OpenApiOperation';
 import { OpenApiParameter } from './openApi/v3/OpenApiParameter';
 import { OpenApiPath } from './openApi/v3/OpenApiPath';
+import { OpenApiPaths } from './openApi/v3/OpenApiPaths';
 import { OpenApiResponses } from './openApi/v3/OpenApiResponses';
 import { OpenApiSchema } from './openApi/v3/OpenApiSchema';
 import { OpenApiProvider } from './OpenApiProvider';
 
 const debug = Debug('unisonht:openApiDecorators');
 
-const openApiDecoratorData: OpenApiDecoratorData = {};
-
-export function Get(path: string) {
-  return function (target: any, methodName: string, descriptor: PropertyDescriptor) {
-    debug('Found GET %s.%s', target.constructor.name, methodName);
-    addRequestMethod(target.constructor.name, methodName, 'get', path);
-  };
+export function Get(_path: string) {
+  return function (_target: any, _methodName: string, _descriptor: PropertyDescriptor) {};
 }
 
-export function Post(path: string) {
-  return function (target: any, methodName: string, descriptor: PropertyDescriptor) {
-    debug('Found POST %s.%s', target.constructor.name, methodName);
-    addRequestMethod(target.constructor.name, methodName, 'post', path);
-  };
+export function Post(_path: string) {
+  return function (_target: any, _methodName: string, _descriptor: PropertyDescriptor) {};
 }
 
-export function QueryParam(options?: QueryParamOptions) {
-  return function (target: any, methodName: string | symbol, parameterIndex: number) {
-    methodName = methodName.toString();
-    const m = addMethod(target.constructor.name, methodName);
-    m.queryParams.push({
-      parameterIndex,
-      options,
-    });
-  };
+export function QueryParam(_options?: QueryParamOptions) {
+  return function (_target: any, _methodName: string | symbol, _parameterIndex: number) {};
 }
 
-export function OpenApiResponse(code: number, description: string) {
-  return function (target: any, methodName: string | symbol, descriptor: PropertyDescriptor) {
-    methodName = methodName.toString();
-    const m = addMethod(target.constructor.name, methodName);
-    m.responses[code] = { description };
-  };
+export function OpenApiResponse(_code: number, _description: string) {
+  return function (_target: any, _methodName: string | symbol, _descriptor: PropertyDescriptor) {};
 }
 
-export function openApiDecoratorsUpdateOpenApi(openApi: OpenApi, provider: OpenApiProvider, type: Type): void {
-  const className = provider.constructor.name;
-  const c = openApiDecoratorData[className];
-  if (!c) {
-    throw new Error(`Could not find decorators in class: ${className}`);
-  }
-  for (const method of Object.entries(c)) {
-    const mType = type.getMethods().find((m) => m.name === method[0]);
-    if (!mType) {
-      throw new Error(`could not find method ${method[0]} in type ${className}`);
-    }
-    try {
-      openApiDecoratorsUpdateOpenApiMethod(openApi, provider, method[1], mType);
-    } catch (err) {
-      throw new NestedError(`failed on method ${method[0]} in type ${className}`, err as Error);
-    }
-  }
+interface OpenApiProviderWithTypeAndMethods {
+  openApiProvider: OpenApiProvider;
+  openApiType: Type;
+  methods: Method[];
 }
 
-function openApiDecoratorsUpdateOpenApiMethod(
-  openApi: OpenApi,
-  provider: OpenApiProvider,
-  decoratorMethod: OpenApiDecoratorDataMethod,
-  method: Method,
-) {
-  let path = decoratorMethod.path;
-  if (path === undefined) {
-    throw new Error('path not set');
-  }
-  const httpVerb = decoratorMethod.httpVerb;
-  if (!httpVerb) {
-    throw new Error('httpVerb not set');
-  }
+export function createOpenApiFromOpenApiProviders(openApiProviders: OpenApiProvider[]): OpenApi {
+  // const openApiTypes: Type[] = openApiProviders.map((p) => p.getOpenApiType()).filter((p): p is Type => !!p);
 
-  path = evaluateString(provider, path) as string;
-  const p: OpenApiPath = openApi.paths[path] ?? (openApi.paths[path] = {});
-  if ((p as any)[httpVerb]) {
-    throw new Error(`path ${path} with verb ${httpVerb} already set`);
-  }
-
-  let parameters: OpenApiParameter[] | undefined;
-  for (const queryParam of decoratorMethod.queryParams) {
-    const methodParameter = method.getParameters()[queryParam.parameterIndex];
-    if (!methodParameter) {
-      throw new Error(`could not get parameter index ${queryParam}`);
-    }
-
-    const schema = typeToOpenApiSchema(methodParameter.type, provider, queryParam.options);
-    if (!schema) {
-      throw new Error(`invalid type for parameter index ${queryParam}`);
-    }
-
-    parameters = parameters || [];
-    if (schema.type === 'object' && schema.properties) {
-      for (const prop of Object.entries(schema.properties)) {
-        parameters.push({
-          in: 'query',
-          name: prop[0],
-          schema: prop[1] as OpenApiSchema,
-        });
+  const typeAndMethods = openApiProviders
+    .flatMap((openApiProvider) => {
+      const openApiType = openApiProvider.getOpenApiType();
+      if (!openApiType) {
+        return undefined;
       }
-    } else {
-      parameters.push({
-        in: 'query',
-        name: methodParameter.name,
-        required: !methodParameter.optional,
-        schema,
+      return { openApiProvider, openApiType, methods: getOpenApiMethods(openApiType) };
+    })
+    .filter((tm): tm is OpenApiProviderWithTypeAndMethods => (tm?.methods?.length ?? 0) > 0);
+  const jsonSchemaTypes: Type[] = typeAndMethods
+    .flatMap((tm) => {
+      return tm.methods.flatMap((m) => {
+        return [...m.getParameters().map((p) => p.type), m.returnType];
       });
+    })
+    .map(getUnwrappedType)
+    .filter((t) => {
+      return t.fullName !== 'void' && t.fullName !== 'String';
+    });
+  const jsonSchema = createJsonSchema(jsonSchemaTypes);
+
+  return {
+    openapi: '3.0.0',
+    info: {
+      title: 'UnisonHT',
+      version: '1.0.0',
+    },
+    paths: createPathsFromTypesAndMethods(typeAndMethods),
+    components: {
+      schemas: {
+        ...updateJsonSchemaRefsToOpenApiRefs(jsonSchema.definitions ?? {}),
+      },
+    },
+  };
+}
+
+function createPathsFromTypesAndMethods(typesAndMethods: OpenApiProviderWithTypeAndMethods[]): OpenApiPaths {
+  const paths: OpenApiPaths = {};
+  for (const typeAndMethods of typesAndMethods) {
+    const type = typeAndMethods.openApiType;
+    for (const method of typeAndMethods.methods) {
+      const methodDecorator = method.getDecorators().find(isMethodDecorator);
+      if (!methodDecorator) {
+        throw new Error('could not find method decorator');
+      }
+      const httpMethod = getHttpMethodFromMethodDecorator(methodDecorator);
+      const pathArg = methodDecorator.getArguments()[0];
+      const path = evaluateString(typeAndMethods.openApiProvider, pathArg);
+      const p = (paths[path] = paths[path] ?? {});
+      if (p[httpMethod]) {
+        throw new Error(`Method ${httpMethod} already exists on path ${path}`);
+      }
+      p[httpMethod] = {
+        operationId: method.name,
+        tags: typeAndMethods.openApiProvider.openApiTags,
+        parameters: [],
+        responses: getResponses(method),
+      };
     }
   }
+  return paths;
+}
 
+function getResponses(method: Method): OpenApiResponses {
   const responses: OpenApiResponses = {};
+  method
+    .getDecorators()
+    .filter((d) => d.name === 'OpenApiResponse')
+    .forEach((d) => {
+      const args = d.getArguments();
+      const code = args[0];
+      const description = args[1];
+      responses[code] = {
+        description,
+      };
+    });
 
-  const returnSchema = typeToOpenApiSchema(method.returnType, provider);
-  if (returnSchema === null) {
-    responses[204] = { description: 'Success' };
+  const returnType = getUnwrappedType(method.returnType);
+  if (returnType.name === 'void') {
+    responses[204] = {
+      description: 'OK',
+    };
   } else {
     responses[200] = {
-      description: 'Success',
+      description: 'OK',
       content: {
         'application/json': {
-          schema: typeToOpenApiSchema(method.returnType, provider),
+          schema: {
+            $ref: `#/components/schemas/${returnType.name}`,
+          },
         },
       },
     };
   }
+  return responses;
+}
 
-  for (const entry of Object.entries(decoratorMethod.responses)) {
-    responses[entry[0]] = {
-      description: entry[1].description,
-    };
-  }
-
-  const op: OpenApiOperation = {
-    operationId: method.name,
-    tags: provider.openApiTags,
-    parameters,
-    responses,
+function updateJsonSchemaRefsToOpenApiRefs(
+  definitions: Record<string, JSONSchema7Definition>,
+): Record<string, OpenApiSchema> {
+  const seen: Set<any> = new Set<any>();
+  const update = (obj: any): void => {
+    if (seen.has(obj)) {
+      return;
+    }
+    seen.add(obj);
+    if (Array.isArray(obj)) {
+      for (const i of obj) {
+        update(i);
+      }
+    } else {
+      for (const key of Object.keys(obj)) {
+        const value = obj[key];
+        if (key === '$ref') {
+          obj[key] = value.replace('#/definitions/', '#/components/schemas/');
+        } else {
+          update(value);
+        }
+      }
+    }
   };
-  (p as any)[httpVerb] = op;
+  update(definitions);
+  return definitions as Record<string, OpenApiSchema>;
 }
 
-function typeToOpenApiSchema(type: Type, provider: OpenApiProvider, options?: QueryParamOptions): OpenApiSchema | null {
-  if (type.fullName === 'undefined' || type.fullName === 'null') {
-    return null;
-  } else if (type.fullName === 'true' || type.fullName === 'false') {
-    return {
-      type: 'boolean',
-    };
-  } else if (type.literalValue) {
-    return {
-      type: 'string',
-      enum: [type.literalValue],
-    };
-  } else if (type.types.length > 1) {
-    let types = type.types.map((t) => typeToOpenApiSchema(t, provider, options)).filter((t) => t) as OpenApiSchema[];
-    if (types.length === 0) {
-      return null;
-    }
-    const stringEnumTypes = types.filter((t) => t.type === 'string' && t.enum);
-    if (stringEnumTypes.length > 1) {
-      const stringEnumType: OpenApiSchema = {
-        type: 'string',
-        enum: stringEnumTypes.flatMap((t) => t.enum || []),
-      };
-      const nonStringEnumTypes = types.filter((t) => !(t.type === 'string' && t.enum));
-      types = [stringEnumType, ...nonStringEnumTypes];
-    }
-    if (types[0]) {
-      return types[0];
-    }
-    return {
-      oneOf: types,
-    };
-  } else if (type.isNumber()) {
-    return {
-      type: 'number',
-    };
-  } else if (type.isEnum()) {
-    return {
-      type: 'string',
-      enum: type.getEnum()?.getValues(),
-    };
-  } else if (type.isArray()) {
-    const elemType = type.getTypeArguments()[0];
-    if (!elemType) {
-      throw new Error('could not get element type of array');
-    }
-    const items = typeToOpenApiSchema(elemType, provider, options);
-    if (!items) {
-      throw new Error('could not get element items from array');
-    }
-    const schema: OpenApiSchema = {
-      type: 'array',
-      items,
-    };
-    return schema;
-  } else if (type.fullName === 'String') {
-    const schema: OpenApiSchema = {
-      type: 'string',
-    };
-    if (options?.enum) {
-      schema.enum = evaluateString(provider, options.enum);
-    }
-    return schema;
-  } else if (type.fullName === 'Boolean') {
-    const schema: OpenApiSchema = {
-      type: 'boolean',
-    };
-    return schema;
-  } else if (type.fullName === 'void') {
-    return null;
-  } else if (type.fullName === 'Promise') {
-    const arg = type.getTypeArguments()[0];
-    if (!arg) {
-      throw new Error('missing type argument for promise');
-    }
-    return typeToOpenApiSchema(arg, provider, options);
-  } else {
-    const required: string[] = [];
-    const properties: { [propertyName: string]: OpenApiSchema } = {};
-    for (const prop of getProperties(type)) {
-      const propSchema = typeToOpenApiSchema(prop.type, provider, options);
-      if (propSchema === null) {
-        throw new Error(`could not convert property ${prop.name} or type ${type.name}`);
-      }
-      properties[prop.name] = propSchema;
-      if (!prop.optional) {
-        required.push(prop.name);
-      }
-    }
-    const schema: OpenApiSchema = {
-      type: 'object',
-      properties,
-      required,
-    };
-    return schema;
-  }
+function getOpenApiMethods(type: Type): readonly Method[] {
+  return type.getMethods().filter((m) => {
+    return m.getDecorators().some(isMethodDecorator);
+  });
 }
 
-function getProperties(type: Type): Property[] {
-  const properties = [...type.getProperties()];
-  if (type.baseType) {
-    properties.push(...getProperties(type.baseType));
-  }
-  return properties;
+function isMethodDecorator(d: Decorator): boolean {
+  return d.name === 'Post' || d.name === 'Get';
 }
 
 function evaluateString(objThis: any, str: string): any {
@@ -259,41 +178,28 @@ function evaluateString(objThis: any, str: string): any {
   return fn.bind(objThis)();
 }
 
-function addRequestMethod(className: string, methodName: string, httpVerb: string, path: string) {
-  const m = addMethod(className, methodName);
-  m.httpVerb = httpVerb;
-  m.path = path;
-}
-
-function addMethod(className: string, methodName: string) {
-  const c = (openApiDecoratorData[className] = openApiDecoratorData[className] ?? {});
-  return (c[methodName] = c[methodName] ?? { queryParams: [], responses: {} });
-}
-
-interface OpenApiDecoratorData {
-  [className: string]: OpenApiDecoratorDataClass;
-}
-
-interface OpenApiDecoratorDataClass {
-  [methodName: string]: OpenApiDecoratorDataMethod;
-}
-
-interface OpenApiDecoratorDataMethod {
-  httpVerb?: string;
-  path?: string;
-  queryParams: OpenApiDecoratorDataQueryParam[];
-  responses: { [code: number]: OpenApiDecoratorDataResponse };
-}
-
-interface OpenApiDecoratorDataQueryParam {
-  parameterIndex: number;
-  options?: QueryParamOptions;
-}
-
-interface OpenApiDecoratorDataResponse {
-  description: string;
-}
-
 export interface QueryParamOptions {
   enum: string;
+}
+
+function getHttpMethodFromMethodDecorator(methodDecorator: Decorator) {
+  switch (methodDecorator.name) {
+    case 'Post':
+      return 'post';
+    case 'Get':
+      return 'get';
+    default:
+      throw new Error(`invalid method: ${methodDecorator.name}`);
+  }
+}
+
+function getUnwrappedType(type: Type): Type {
+  if (type.fullName === 'Promise') {
+    const typeArgs = type.getTypeArguments();
+    if (typeArgs.length !== 1) {
+      throw new Error('promise missing type arguments');
+    }
+    type = typeArgs[0]!;
+  }
+  return type;
 }
