@@ -2,11 +2,11 @@
 
 ## Raspberry Pi
 
-1. Write the latest "Raspberry Pi OS Lite" to an SD Card (enable SSH, SSH key authentication, and note the hostname)
-1. Start the Raspberry Pi, open a command prompt and ```ping <hostname>```
-1. Install "Remote Development" extension pack for VSCode.
-1. Connect VSCode via ssh
-1. Open the terminal in VSCode (Raspberry Pi)
+1.  Write the latest "Raspberry Pi OS Lite" to an SD Card (enable SSH, SSH key authentication, and note the hostname)
+1.  Start the Raspberry Pi, open a command prompt and `ping <hostname>`
+1.  Install "Remote Development" extension pack for VSCode.
+1.  Connect VSCode via ssh
+1.  Open the terminal in VSCode (Raspberry Pi)
 
         sudo apt -y update
         sudo apt -y upgrade
