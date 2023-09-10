@@ -49,12 +49,11 @@ export interface InputEventMsc {
   value: number;
 }
 
-
 export type InputEvent = InputEventRaw | InputEventSyn | InputEventMsc;
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export declare interface InputEventReader {
-  on(event: 'input', listener: (event: InputEvent) => void): this;
+  on(event: "input", listener: (event: InputEvent) => void): this;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
@@ -63,9 +62,9 @@ export class InputEventReader extends events.EventEmitter {
 
   public async open(path: string): Promise<void> {
     if (this.fd) {
-      throw new Error('input device already open');
+      throw new Error("input device already open");
     }
-    this.fd = await fs.promises.open(path, 'r');
+    this.fd = await fs.promises.open(path, "r");
     setTimeout(() => {
       this.read();
     });
@@ -92,23 +91,24 @@ export class InputEventReader extends events.EventEmitter {
 
   private decodeAndEmitPacket(packet: fs.promises.FileReadResult<Buffer>): void {
     let event: InputEvent;
-    if (process.arch === 'x64') {
+    if (process.arch === "x64") {
       event = {
         timeS: readUInt64LE(packet.buffer, 0),
         timeMS: readUInt64LE(packet.buffer, 8),
         type: packet.buffer.readUInt16LE(16),
         code: packet.buffer.readUInt16LE(18),
-        value: packet.buffer.readInt32LE(20)
+        value: packet.buffer.readInt32LE(20),
       };
-    } else { // arm or ia32
+    } else {
+      // arm or ia32
       event = {
         timeS: packet.buffer.readUInt32LE(0),
         timeMS: packet.buffer.readUInt32LE(4),
         type: packet.buffer.readUInt16LE(8),
         code: packet.buffer.readUInt16LE(10),
-        value: packet.buffer.readInt32LE(12)
+        value: packet.buffer.readInt32LE(12),
       };
     }
-    this.emit('input', event);
+    this.emit("input", event);
   }
 }
