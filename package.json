@@ -4,7 +4,7 @@
   "description": "UnisonHT home theatre control",
   "main": "index.js",
   "scripts": {
-    "start": "ts-node src/index.ts",
+    "start": "nodemon --watch 'src/**' --ext 'ts,json' --ignore 'src/**/*.spec.ts' --exec 'ts-node src/index.ts'",
     "build": "tsc",
     "serve": "node dist/index.js",
     "format": "eslint . && prettier . --write"
@@ -19,6 +19,7 @@
     "@typescript-eslint/parser": "^6.6.0",
     "eslint": "^8.49.0",
     "eslint-config-prettier": "^9.0.0",
+    "nodemon": "^3.0.1",
     "prettier": "^3.0.3",
     "ts-node": "^10.9.1",
     "typescript": "^5.2.2"

@@ -1,8 +1,16 @@
 {
   "cSpell.words": [
+    "gpio",
     "joeferner",
+    "keytable",
     "lirc",
     "lircd",
     "unisonht"
+  ],
+  "remote.SSH.defaultExtensions": [
+    "streetsidesoftware.code-spell-checker",
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "timonwong.shellcheck"
   ]
 }
