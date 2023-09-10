@@ -23,6 +23,7 @@
         chmod 400 ~/.ssh/id_rsa
 
         git clone git@github.com:joeferner/unisonht.git
+        ./scripts/raspberry-pi-dev-setup.sh
 
 # IR Remote Control
 
