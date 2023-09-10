@@ -18,3 +18,29 @@
 
         nvm install 18
         npm install -g pnpm
+
+        git clone git@github.com:joeferner/unisonht.git
+
+# LIRC
+
+See https://devkimchi.com/2020/08/12/turning-raspberry-pi-into-remote-controller/
+
+## Setup
+
+```
+sudo ./scripts/raspberry-pi-lirc-setup.sh
+sudo reboot
+```
+
+## Remotes
+
+Remotes see https://lirc-remotes.sourceforge.net/remotes-table.html or `git clone https://git.code.sf.net/p/lirc-remotes/code lirc-remotes-code` and `/etc/lirc/lircd.conf.d`
+
+## Manual Remotes
+
+```
+sudo vi /boot/config.txt # comment out line with gpio-ir-tx
+sudo systemctl stop lircd
+sudo mode2 -m -d /dev/lirc0
+sudo irrecord -d /dev/lirc0 --disable-namespace
+```
