@@ -1,8 +1,6 @@
 import events from "events";
 import fs from "fs";
-import ioctl from "ioctl";
-import { NestedError } from "../../helpers/NestedError";
-import { _IOR, _IOW } from "../../helpers/ioctlHelpers";
+import { _IOR, _IOW, readIoctl32, writeIoctl32 } from "../../helpers/ioctlHelpers";
 
 const SCAN_CODE_SIZE = (64 + 16 + 16 + 32 + 64) / 8;
 
@@ -74,8 +72,8 @@ export class LircEventReader extends events.EventEmitter {
       throw new Error("lirc device already open");
     }
     this.fd = await fs.promises.open(path, "r");
-    const _features = await this.readIoctl32(LircIoCtlCommand.GetFeatures);
-    await this.writeIoctl32(LircIoCtlCommand.SetReceiveMode, LircMode.ScanCode);
+    const _features = await readIoctl32(this.fd, LircIoCtlCommand.GetFeatures);
+    await writeIoctl32(this.fd, LircIoCtlCommand.SetReceiveMode, LircMode.ScanCode);
     setTimeout(() => {
       this.read();
     });
@@ -84,36 +82,6 @@ export class LircEventReader extends events.EventEmitter {
   public async close(): Promise<void> {
     await this.fd?.close();
     this.fd = undefined;
-  }
-
-  private async readIoctl32(cmd: LircIoCtlCommand): Promise<number> {
-    if (!this.fd) {
-      throw new Error("device not open");
-    }
-    const v = Buffer.alloc(4);
-    try {
-      if (ioctl(this.fd.fd, cmd, v) !== 0) {
-        throw new Error("failed to set receive mode");
-      }
-    } catch (err) {
-      throw NestedError(`failed to ioctl (cmd: 0x${cmd.toString(16)})`, err);
-    }
-    return v.readUInt32LE(0);
-  }
-
-  private async writeIoctl32(cmd: LircIoCtlCommand, value: number): Promise<void> {
-    if (!this.fd) {
-      throw new Error("device not open");
-    }
-    const v = Buffer.alloc(4);
-    v.writeUInt32LE(value, 0);
-    try {
-      if (ioctl(this.fd.fd, cmd, v) !== 0) {
-        throw new Error("failed to set receive mode");
-      }
-    } catch (err) {
-      throw NestedError(`failed to ioctl (cmd: 0x${cmd.toString(16)}, value: 0x${value.toString(16)})`, err);
-    }
   }
 
   private async read(): Promise<void> {
