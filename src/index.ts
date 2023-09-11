@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
-import { InputEventReader } from "./devices/ir/InputEventReader";
-import { findRcDeviceInputEventPath, getRcDevices } from "./devices/ir/RcDevices";
+import { LircEventReader } from "./devices/ir/LircEventReader";
+import { findRcDeviceLircDevDir, getRcDevices } from "./devices/ir/RcDevices";
 
 const app = express();
 const port = process.env.PORT || 8080;
@@ -15,16 +15,16 @@ app.listen(port, () => {
 
 async function doIt(): Promise<void> {
   const rcDevices = await getRcDevices();
-  const eventDevice = findRcDeviceInputEventPath(rcDevices, "gpio_ir_recv", 0, 0);
-  if (!eventDevice) {
+  const lircDevice = findRcDeviceLircDevDir(rcDevices, "gpio_ir_recv", 0);
+  if (!lircDevice) {
     return;
   }
 
-  const r = new InputEventReader();
+  const r = new LircEventReader();
   r.on("input", (evt) => {
     console.log(evt);
   });
-  await r.open(eventDevice);
+  await r.open(lircDevice);
 }
 doIt()
   .then(() => console.log("reading"))

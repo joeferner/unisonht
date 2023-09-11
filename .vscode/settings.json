@@ -1,5 +1,5 @@
 {
-  "cSpell.words": ["DEVNAME", "gpio", "joeferner", "keytable", "lirc", "lircd", "uevent", "unisonht"],
+  "cSpell.words": ["DEVNAME", "gpio", "joeferner", "keytable", "lirc", "lircd", "lircs", "uevent", "unisonht"],
   "remote.SSH.defaultExtensions": [
     "streetsidesoftware.code-spell-checker",
     "dbaeumer.vscode-eslint",

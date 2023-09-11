@@ -11,10 +11,16 @@ export interface RcDeviceInput {
   events: RcDeviceInputEvent[];
 }
 
+export interface RcDeviceLirc {
+  lircDir: string;
+  devName?: string;
+}
+
 export interface RcDevice {
   rcPath: string;
   driver?: string;
   inputs: RcDeviceInput[];
+  lircs: RcDeviceLirc[];
 }
 
 interface DeviceUEvent {
@@ -27,11 +33,15 @@ export async function getRcDevices(): Promise<RcDevice[]> {
   return Promise.all(
     rcDir.map(async (rc) => {
       const deviceDir = path.join(rcBaseDir, rc);
-      const deviceUEvent = await parseDeviceUEvent(deviceDir);
-      const inputs = await parseInputs(deviceDir);
+      const [deviceUEvent, inputs, lircs] = await Promise.all([
+        parseDeviceUEvent(deviceDir),
+        parseInputs(deviceDir),
+        parseLircs(deviceDir),
+      ]);
       return {
         ...deviceUEvent,
         inputs,
+        lircs,
         rcPath: deviceDir,
       };
     }),
@@ -106,17 +116,43 @@ async function parseInputEvent(eventDir: string): Promise<RcDeviceInputEvent> {
   };
 }
 
-export function findRcDeviceInputEventPath(
-  devices: RcDevice[],
-  driver: string,
-  inputIndex: number,
-  eventIndex: number,
-): string | undefined {
+async function parseLircs(deviceDir: string): Promise<RcDeviceLirc[]> {
+  const dirs = await fs.promises.readdir(deviceDir);
+  const lircs = await Promise.all(
+    dirs.map(async (d) => {
+      if (d.startsWith("lirc")) {
+        return await parseLirc(path.join(deviceDir, d));
+      } else {
+        return undefined;
+      }
+    }),
+  );
+  return lircs.filter((d): d is RcDeviceLirc => !!d);
+}
+
+async function parseLirc(lircDir: string): Promise<RcDeviceLirc> {
+  const uevent = await fs.promises.readFile(path.join(lircDir, "uevent"), "utf8");
+  const ueventLines = uevent.split("\n");
+  let devName: string | undefined;
+  for (const ueventLine of ueventLines) {
+    const parts = ueventLine.split("=", 2);
+    if (parts.length === 2) {
+      if (parts[0].trim() === "DEVNAME") {
+        devName = parts[1].trim();
+      }
+    }
+  }
+  return {
+    lircDir,
+    devName,
+  };
+}
+
+export function findRcDeviceLircDevDir(devices: RcDevice[], driver: string, lircIndex: number): string | undefined {
   return devices.flatMap((d) => {
     if (d.driver === driver) {
-      const input = d.inputs[inputIndex];
-      const event = input?.events?.[eventIndex];
-      const devName = event?.devName;
+      const lirc = d.lircs[lircIndex];
+      const devName = lirc?.devName;
       if (devName) {
         return path.join("/dev", devName);
       }
