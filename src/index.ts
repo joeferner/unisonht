@@ -1,21 +1,15 @@
-import express, { Request, Response } from "express";
-import { LircEventReader } from "./devices/ir/LircEventReader";
-import { findRcDeviceLircDevDir, getRcDevices } from "./devices/ir/RcDevices";
-import { LircEventWriter } from "./devices/ir/LircEventWriter";
-import { LircProto } from "./devices/ir/lirc";
+import { UnisonHT } from "./UnisonHT";
+import { LircRemote, LircRxModule, LircTxModule, PioneerRemote, findRcDeviceLircDevDir, getRcDevices } from "./devices/ir";
 
-const app = express();
-const port = process.env.PORT || 8080;
+const DEVICE_PIONEER = 'pioneer';
 
-app.get("/", (req: Request, res: Response) => {
-  res.send("Hello, TypeScript Express!");
-});
+async function run(): Promise<void> {
+  const port = process.env.PORT || 8080;
 
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
-});
+  const remotes: LircRemote[] = [
+    new PioneerRemote(DEVICE_PIONEER)
+  ]
 
-async function doIt(): Promise<void> {
   const rcDevices = await getRcDevices();
   const lircRxDevice = findRcDeviceLircDevDir(rcDevices, "gpio_ir_recv", 0);
   if (!lircRxDevice) {
@@ -27,20 +21,13 @@ async function doIt(): Promise<void> {
     throw new Error("could not find lirc tx device");
   }
 
-  const rx = new LircEventReader();
-  rx.on("input", (evt) => {
-    console.log(evt);
-  });
-  await rx.open(lircRxDevice);
-
-  const tx = new LircEventWriter();
-  await tx.open(lircTxDevice);
-
-  for (let i = 0; i < 2; i++) {
-    tx.send(LircProto.NEC, 43521);
-  }
-  tx.close();
+  const unisonht = new UnisonHT();
+  unisonht.use(new LircRxModule(lircRxDevice, { remotes }));
+  unisonht.use(new LircTxModule(lircTxDevice));
+  unisonht.start({ port })
+    .then(() => {
+      console.log(`Server running at http://localhost:${port}`);
+    });
 }
-doIt()
-  .then(() => console.log("reading"))
-  .catch((err) => console.error(err));
+
+run().catch((err) => console.error(err));

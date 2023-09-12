@@ -1,6 +1,9 @@
+import debug from "debug";
 import fs from "fs";
 import { writeIoctl32 } from "../../helpers/ioctlHelpers";
 import { LircIoCtlCommand, LircMode, LircProto, SCAN_CODE_SIZE } from "./lirc";
+
+const log = debug('unisonht:lirc:LircEventWriter');
 
 export class LircEventWriter {
   private fd?: fs.promises.FileHandle;
@@ -9,6 +12,7 @@ export class LircEventWriter {
     if (this.fd) {
       throw new Error("lirc device already open");
     }
+    log(`opening lirc ${path} for write`);
     this.fd = await fs.promises.open(path, "w");
     await writeIoctl32(this.fd, LircIoCtlCommand.SetSendMode, LircMode.ScanCode);
   }

@@ -1,6 +1,6 @@
 import fs from "fs";
 import ioctl from "ioctl";
-import { NestedError } from "./NestedError";
+import { newNestedError } from "./NestedError";
 
 const _IOC_NRBITS = 8;
 const _IOC_TYPEBITS = 8;
@@ -53,7 +53,7 @@ export async function readIoctl32(fd: fs.promises.FileHandle, cmd: number): Prom
       throw new Error("failed to set receive mode");
     }
   } catch (err) {
-    throw NestedError(`failed to ioctl (cmd: 0x${cmd.toString(16)})`, err);
+    throw newNestedError(`failed to ioctl (cmd: 0x${cmd.toString(16)})`, err);
   }
   return v.readUInt32LE(0);
 }
@@ -66,6 +66,6 @@ export async function writeIoctl32(fd: fs.promises.FileHandle, cmd: number, valu
       throw new Error("failed to set receive mode");
     }
   } catch (err) {
-    throw NestedError(`failed to ioctl (cmd: 0x${cmd.toString(16)}, value: 0x${value.toString(16)})`, err);
+    throw newNestedError(`failed to ioctl (cmd: 0x${cmd.toString(16)}, value: 0x${value.toString(16)})`, err);
   }
 }

@@ -1,0 +1,42 @@
+import debug from "debug";
+import { UnisonHT } from "../../UnisonHT";
+import { UnisonHTModule } from "../../UnisonHTModule";
+import { LircEventReader } from "./LircEventReader";
+import { KeyDecodeResult, LircRemote, PartialDecodeResult } from "./LircRemote";
+import { lircProtoToString } from "./lirc";
+
+const log = debug('unisonht:lirc:rx');
+
+export class LircRxModule implements UnisonHTModule {
+  private path: string;
+  private rx?: LircEventReader;
+  private remotes: LircRemote[];
+
+  public constructor(path: string, options: { remotes: LircRemote[] }) {
+    this.path = path;
+    this.remotes = options.remotes;
+  }
+
+  public async init(unisonht: UnisonHT): Promise<void> {
+    this.rx = new LircEventReader();
+    this.rx.on("input", (evt) => {
+      for (const remote of this.remotes) {
+        if (remote.decode) {
+          const result = remote.decode(evt);
+          if ((result as PartialDecodeResult | undefined)?.partial) {
+            return;
+          } else if ((result as KeyDecodeResult | undefined)?.key) {
+            const decodeResult = result as KeyDecodeResult;
+            if (decodeResult.repeat === 0) { // TODO volume?
+              unisonht.send(remote.name, decodeResult.key);
+            }
+            return;
+          }
+        }
+      }
+      console.error(`unhandled ir event ${evt.timestamp}: ${lircProtoToString(evt.rcProto)}(${evt.rcProto}) 0x${evt.scanCode.toString(16)} (flags: 0x${evt.flags.toString(16)}, keycode: 0x${evt.keycode.toString(16)})`);
+    });
+    this.rx.open(this.path);
+    log('initialized');
+  }
+}

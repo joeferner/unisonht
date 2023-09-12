@@ -2,10 +2,13 @@ import events from "events";
 import fs from "fs";
 import { writeIoctl32 } from "../../helpers/ioctlHelpers";
 import { LircEvent, LircIoCtlCommand, LircMode, SCAN_CODE_SIZE } from "./lirc";
+import debug from "debug";
+
+const log = debug('unisonht:lirc:LircEventWriter');
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export declare interface LircEventReader {
-  on(event: "input", listener: (event: InputEvent) => void): this;
+  on(event: "input", listener: (event: LircEvent) => void): this;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
@@ -16,6 +19,7 @@ export class LircEventReader extends events.EventEmitter {
     if (this.fd) {
       throw new Error("lirc device already open");
     }
+    log(`opening lirc ${path} for read`);
     this.fd = await fs.promises.open(path, "r");
     await writeIoctl32(this.fd, LircIoCtlCommand.SetReceiveMode, LircMode.ScanCode);
     setTimeout(() => {
@@ -56,7 +60,11 @@ export class LircEventReader extends events.EventEmitter {
         keycode,
         scanCode,
       };
-      this.emit("input", event);
+      try {
+        this.emit("input", event);
+      } catch (err) {
+        console.error(err);
+      }
     }
   }
 }
