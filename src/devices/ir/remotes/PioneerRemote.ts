@@ -14,13 +14,13 @@ const KEY_MAP: { [value: string]: Key } = {
   "0xaa06": Key.NUM_6,
   "0xaa07": Key.NUM_7,
   "0xaa08": Key.NUM_8,
-  "0xaa09": Key.NUM_9
+  "0xaa09": Key.NUM_9,
 };
 
 const PARTIAL_KEY = 0xaa5a;
 
 const PARTIAL_KEY_MAP: { [value: string]: Key } = {
-  "0xaf7a": Key.INPUT_1
+  "0xaf7a": Key.INPUT_1,
 };
 
 export class PioneerRemote implements LircRemote {

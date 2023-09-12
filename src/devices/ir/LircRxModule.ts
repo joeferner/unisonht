@@ -33,7 +33,8 @@ export class LircRxModule implements UnisonHTModule {
         }
       }
       console.error(
-        `unhandled ir event ${evt.timestamp}: ${lircProtoToString(evt.rcProto)}(${evt.rcProto
+        `unhandled ir event ${evt.timestamp}: ${lircProtoToString(evt.rcProto)}(${
+          evt.rcProto
         }) 0x${evt.scanCode.toString(16)} (flags: 0x${evt.flags.toString(16)}, keycode: 0x${evt.keycode.toString(16)})`,
       );
     });

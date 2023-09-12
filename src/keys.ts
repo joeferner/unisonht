@@ -10,5 +10,5 @@ export enum Key {
   NUM_8 = "NUM_8",
   NUM_9 = "NUM_9",
 
-  INPUT_1 = "INPUT_1"
+  INPUT_1 = "INPUT_1",
 }
