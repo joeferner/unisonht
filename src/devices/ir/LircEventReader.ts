@@ -4,7 +4,7 @@ import { writeIoctl32 } from "../../helpers/ioctlHelpers";
 import { LircEvent, LircIoCtlCommand, LircMode, SCAN_CODE_SIZE } from "./lirc";
 import debug from "debug";
 
-const log = debug('unisonht:lirc:LircEventWriter');
+const log = debug("unisonht:lirc:LircEventWriter");
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export declare interface LircEventReader {

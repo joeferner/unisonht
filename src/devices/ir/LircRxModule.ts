@@ -5,7 +5,7 @@ import { LircEventReader } from "./LircEventReader";
 import { KeyDecodeResult, LircRemote, PartialDecodeResult } from "./LircRemote";
 import { lircProtoToString } from "./lirc";
 
-const log = debug('unisonht:lirc:rx');
+const log = debug("unisonht:lirc:rx");
 
 export class LircRxModule implements UnisonHTModule {
   private path: string;
@@ -27,16 +27,17 @@ export class LircRxModule implements UnisonHTModule {
             return;
           } else if ((result as KeyDecodeResult | undefined)?.key) {
             const decodeResult = result as KeyDecodeResult;
-            if (decodeResult.repeat === 0) { // TODO volume?
-              unisonht.send(remote.name, decodeResult.key);
-            }
+            unisonht.send(remote.name, decodeResult.key);
             return;
           }
         }
       }
-      console.error(`unhandled ir event ${evt.timestamp}: ${lircProtoToString(evt.rcProto)}(${evt.rcProto}) 0x${evt.scanCode.toString(16)} (flags: 0x${evt.flags.toString(16)}, keycode: 0x${evt.keycode.toString(16)})`);
+      console.error(
+        `unhandled ir event ${evt.timestamp}: ${lircProtoToString(evt.rcProto)}(${evt.rcProto
+        }) 0x${evt.scanCode.toString(16)} (flags: 0x${evt.flags.toString(16)}, keycode: 0x${evt.keycode.toString(16)})`,
+      );
     });
     this.rx.open(this.path);
-    log('initialized');
+    log("initialized");
   }
 }

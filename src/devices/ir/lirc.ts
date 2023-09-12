@@ -35,35 +35,64 @@ export enum LircProto {
 
 export function lircProtoToString(proto: LircProto | number): string {
   switch (proto) {
-    case LircProto.Unknown: return "Unknown";
-    case LircProto.Other: return "Other";
-    case LircProto.RC5: return "RC5";
-    case LircProto.RC5X_20: return "RC5X_20";
-    case LircProto.RC5_SZ: return "RC5_SZ";
-    case LircProto.JVC: return "JVC";
-    case LircProto.Sony12: return "Sony12";
-    case LircProto.Sony15: return "Sony15";
-    case LircProto.Sony20: return "Sony20";
-    case LircProto.NEC: return "NEC";
-    case LircProto.NECX: return "NECX";
-    case LircProto.NEC32: return "NEC32";
-    case LircProto.SANYO: return "SANYO";
-    case LircProto.MCIR2_KBD: return "MCIR2_KBD";
-    case LircProto.MCIR2_MSE: return "MCIR2_MSE";
-    case LircProto.RC6_0: return "RC6_0";
-    case LircProto.RC6_6A_20: return "RC6_6A_20";
-    case LircProto.RC6_6A_24: return "RC6_6A_24";
-    case LircProto.RC6_6A_32: return "RC6_6A_32";
-    case LircProto.RC6_MCE: return "RC6_MCE";
-    case LircProto.SHARP: return "SHARP";
-    case LircProto.XMP: return "XMP";
-    case LircProto.CEC: return "CEC";
-    case LircProto.IMON: return "IMON";
-    case LircProto.RCMM12: return "RCMM12";
-    case LircProto.RCMM24: return "RCMM24";
-    case LircProto.RCMM32: return "RCMM32";
-    case LircProto.XBOX_DVD: return "XBOX_DVD";
-    default: return `0x${proto.toString(16)}`;
+    case LircProto.Unknown:
+      return "Unknown";
+    case LircProto.Other:
+      return "Other";
+    case LircProto.RC5:
+      return "RC5";
+    case LircProto.RC5X_20:
+      return "RC5X_20";
+    case LircProto.RC5_SZ:
+      return "RC5_SZ";
+    case LircProto.JVC:
+      return "JVC";
+    case LircProto.Sony12:
+      return "Sony12";
+    case LircProto.Sony15:
+      return "Sony15";
+    case LircProto.Sony20:
+      return "Sony20";
+    case LircProto.NEC:
+      return "NEC";
+    case LircProto.NECX:
+      return "NECX";
+    case LircProto.NEC32:
+      return "NEC32";
+    case LircProto.SANYO:
+      return "SANYO";
+    case LircProto.MCIR2_KBD:
+      return "MCIR2_KBD";
+    case LircProto.MCIR2_MSE:
+      return "MCIR2_MSE";
+    case LircProto.RC6_0:
+      return "RC6_0";
+    case LircProto.RC6_6A_20:
+      return "RC6_6A_20";
+    case LircProto.RC6_6A_24:
+      return "RC6_6A_24";
+    case LircProto.RC6_6A_32:
+      return "RC6_6A_32";
+    case LircProto.RC6_MCE:
+      return "RC6_MCE";
+    case LircProto.SHARP:
+      return "SHARP";
+    case LircProto.XMP:
+      return "XMP";
+    case LircProto.CEC:
+      return "CEC";
+    case LircProto.IMON:
+      return "IMON";
+    case LircProto.RCMM12:
+      return "RCMM12";
+    case LircProto.RCMM24:
+      return "RCMM24";
+    case LircProto.RCMM32:
+      return "RCMM32";
+    case LircProto.XBOX_DVD:
+      return "XBOX_DVD";
+    default:
+      return `0x${proto.toString(16)}`;
   }
 }
 
@@ -73,6 +102,10 @@ export interface LircEvent {
   rcProto: LircProto | number;
   keycode: number;
   scanCode: bigint;
+}
+
+export function timestampDeltaMillis(t1: bigint, t2: bigint): number {
+  return Number((t1 - t2) / BigInt(1000) / BigInt(1000));
 }
 
 export enum LircIoCtlCommand {

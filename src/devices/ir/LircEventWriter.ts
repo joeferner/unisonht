@@ -3,7 +3,7 @@ import fs from "fs";
 import { writeIoctl32 } from "../../helpers/ioctlHelpers";
 import { LircIoCtlCommand, LircMode, LircProto, SCAN_CODE_SIZE } from "./lirc";
 
-const log = debug('unisonht:lirc:LircEventWriter');
+const log = debug("unisonht:lirc:LircEventWriter");
 
 export class LircEventWriter {
   private fd?: fs.promises.FileHandle;
