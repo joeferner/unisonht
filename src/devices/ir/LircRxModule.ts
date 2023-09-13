@@ -2,7 +2,7 @@ import debug from "debug";
 import { UnisonHT } from "../../UnisonHT";
 import { UnisonHTModule } from "../../UnisonHTModule";
 import { LircEventReader } from "./LircEventReader";
-import { KeyDecodeResult, LircRemote, PartialDecodeResult } from "./LircRemote";
+import { KeyDecodeResult, LircRemote } from "./LircRemote";
 import { lircProtoToString } from "./lirc";
 
 const log = debug("unisonht:lirc:rx");
@@ -23,11 +23,11 @@ export class LircRxModule implements UnisonHTModule {
       for (const remote of this.remotes) {
         if (remote.decode) {
           const result = remote.decode(evt);
-          if ((result as PartialDecodeResult | undefined)?.partial) {
-            return;
-          } else if ((result as KeyDecodeResult | undefined)?.key) {
+          if ((result as KeyDecodeResult)?.key) {
             const decodeResult = result as KeyDecodeResult;
             unisonht.send(remote.name, decodeResult.key);
+            return;
+          } else if (result) {
             return;
           }
         }
