@@ -2,6 +2,8 @@ import fs from "fs";
 import ioctl from "ioctl";
 import { newNestedError } from "./NestedError";
 
+// see https://github.com/torvalds/linux/blob/master/include/uapi/asm-generic/ioctl.h
+
 const _IOC_NRBITS = 8;
 const _IOC_TYPEBITS = 8;
 const _IOC_SIZEBITS = 14;

@@ -1,16 +1,18 @@
-import { sleep } from "../../../helpers/sleep";
-import { isString } from "../../../helpers/typeHelpers";
 import { Key } from "../../../keys";
-import { LircEventWriter } from "../LircEventWriter";
-import { KeyDecodeResult, LircRemote } from "../LircRemote";
-import { LircEvent, LircProto, timestampDeltaMillis } from "../lirc";
+import { LircProto } from "../lirc";
+import { GenericRemoteBase, PartialKey } from "./GenericRemoteBase";
 
-const REPEAT_COUNT = 2;
-const REPEAT_GAP_MS = 130;
-const REPEAT_MAX_GAP_MS = 200;
-const PROTOCOL = LircProto.NEC;
-
-type PartialKey = { [value: string]: Key | PartialKey };
+export class PioneerRemote extends GenericRemoteBase {
+  public constructor(name: string) {
+    super(name, {
+      keyMap: KEY_MAP,
+      protocol: LircProto.NEC,
+      repeatCount: 2,
+      repeatGapMillis: 130,
+      repeatGapMapMillis: 200,
+    });
+  }
+}
 
 const KEY_MAP: { [value: string]: Key | PartialKey } = {
   aa00: Key.NUM_0,
@@ -70,96 +72,3 @@ const KEY_MAP: { [value: string]: Key | PartialKey } = {
     af70: Key.SLEEP,
   },
 };
-
-const INVERTED_KEY_MAP = invertKeyMap(KEY_MAP);
-
-export class PioneerRemote implements LircRemote {
-  private _name: string;
-  private lastEventTime?: bigint;
-  private lastKey?: Key | string;
-  private repeat = 0;
-  private partial: PartialKey | undefined;
-
-  public constructor(name: string) {
-    this._name = name;
-  }
-
-  public get name(): string {
-    return this._name;
-  }
-
-  public get keyNames(): string[] {
-    return Object.keys(INVERTED_KEY_MAP);
-  }
-
-  public decode(event: LircEvent): KeyDecodeResult | boolean {
-    if (event.rcProto !== PROTOCOL) {
-      return false;
-    }
-
-    let key: PartialKey | Key | string | undefined;
-
-    if (this.partial) {
-      key = this.partial[Number(event.scanCode).toString(16)];
-    } else {
-      this.partial = undefined;
-      key = KEY_MAP[Number(event.scanCode).toString(16)];
-    }
-
-    if (isString(key)) {
-      const dt = (): number => timestampDeltaMillis(event.timestamp, this.lastEventTime ?? BigInt(0));
-      if (key === this.lastKey && dt() < REPEAT_MAX_GAP_MS) {
-        this.repeat++;
-      } else {
-        this.repeat = 0;
-      }
-      this.partial = undefined;
-      this.lastEventTime = event.timestamp;
-      this.lastKey = key;
-      if (this.repeat % REPEAT_COUNT !== 0) {
-        return true;
-      }
-      return { key, repeat: this.repeat / REPEAT_COUNT };
-    } else if (key) {
-      this.lastEventTime = event.timestamp;
-      this.partial = key;
-      return true;
-    }
-
-    return false;
-  }
-
-  public async transmit(tx: LircEventWriter, key: string): Promise<boolean> {
-    const scanCodes = INVERTED_KEY_MAP[key]?.split(" ");
-    if (scanCodes) {
-      for (let i = 0; i < REPEAT_COUNT; i++) {
-        for (const scanCode of scanCodes) {
-          await tx.send(PROTOCOL, BigInt(`0x${scanCode}`));
-          await sleep(REPEAT_GAP_MS);
-        }
-      }
-      return true;
-    }
-    return false;
-  }
-}
-
-function invertKeyMap(keyMap: PartialKey): { [key: string | Key]: string } {
-  const invert = (keyMap: PartialKey, prefix: string): { [key: string | Key]: string } => {
-    let result: { [key: string | Key]: string } = {};
-    for (const k of Object.keys(keyMap)) {
-      const v = keyMap[k];
-      const value = prefix.length === 0 ? k : `${prefix} ${k} `;
-      if (isString(v)) {
-        result[v] = value.trim();
-      } else {
-        result = {
-          ...result,
-          ...invert(v, value),
-        };
-      }
-    }
-    return result;
-  };
-  return invert(keyMap, "");
-}
