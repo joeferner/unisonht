@@ -8,12 +8,12 @@ import {
   getRcDevices,
 } from "./devices/ir";
 
-const DEVICE_PIONEER = "pioneer";
+const REMOTE_TV = "tv";
 
 async function run(): Promise<void> {
   const port = process.env.PORT || 8080;
 
-  const remotes: LircRemote[] = [new PioneerRemote(DEVICE_PIONEER)];
+  const remotes: LircRemote[] = [new PioneerRemote(REMOTE_TV)];
 
   const rcDevices = await getRcDevices();
   const lircRxDevice = findRcDeviceLircDevDir(rcDevices, "gpio_ir_recv", 0);
@@ -28,7 +28,7 @@ async function run(): Promise<void> {
 
   const unisonht = new UnisonHT();
   unisonht.use(new LircRxModule(lircRxDevice, { remotes }));
-  unisonht.use(new LircTxModule(lircTxDevice));
+  unisonht.use(new LircTxModule(lircTxDevice, { remotes }));
   unisonht.start({ port }).then(() => {
     console.log(`Server running at http://localhost:${port}`);
   });

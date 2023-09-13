@@ -1,4 +1,5 @@
 import { Key } from "../../keys";
+import { LircEventWriter } from "./LircEventWriter";
 import { LircEvent } from "./lirc";
 
 export interface KeyDecodeResult {
@@ -10,4 +11,6 @@ export interface LircRemote {
   readonly name: string;
 
   decode?: (event: LircEvent) => boolean | KeyDecodeResult;
+
+  transmit(tx: LircEventWriter, key: string): Promise<boolean>;
 }

@@ -1,9 +1,14 @@
+import { sleep } from "../../../helpers/sleep";
 import { isString } from "../../../helpers/typeHelpers";
 import { Key } from "../../../keys";
+import { LircEventWriter } from "../LircEventWriter";
 import { KeyDecodeResult, LircRemote } from "../LircRemote";
 import { LircEvent, LircProto, timestampDeltaMillis } from "../lirc";
 
-const REPEAT_GAP_MS = 150;
+const REPEAT_COUNT = 2;
+const REPEAT_GAP_MS = 130;
+const REPEAT_MAX_GAP_MS = 200;
+const PROTOCOL = LircProto.NEC;
 
 type PartialKey = { [value: string]: Key | PartialKey };
 
@@ -66,6 +71,8 @@ const KEY_MAP: { [value: string]: Key | PartialKey } = {
   },
 };
 
+const INVERTED_KEY_MAP = invertKeyMap(KEY_MAP);
+
 export class PioneerRemote implements LircRemote {
   private _name: string;
   private lastEventTime?: bigint;
@@ -82,7 +89,7 @@ export class PioneerRemote implements LircRemote {
   }
 
   public decode(event: LircEvent): KeyDecodeResult | boolean {
-    if (event.rcProto !== LircProto.NEC) {
+    if (event.rcProto !== PROTOCOL) {
       return false;
     }
 
@@ -97,7 +104,7 @@ export class PioneerRemote implements LircRemote {
 
     if (isString(key)) {
       const dt = (): number => timestampDeltaMillis(event.timestamp, this.lastEventTime ?? BigInt(0));
-      if (key === this.lastKey && dt() < REPEAT_GAP_MS) {
+      if (key === this.lastKey && dt() < REPEAT_MAX_GAP_MS) {
         this.repeat++;
       } else {
         this.repeat = 0;
@@ -105,10 +112,10 @@ export class PioneerRemote implements LircRemote {
       this.partial = undefined;
       this.lastEventTime = event.timestamp;
       this.lastKey = key;
-      if (this.repeat % 2 == 1) {
+      if (this.repeat % REPEAT_COUNT !== 0) {
         return true;
       }
-      return { key, repeat: this.repeat / 2 };
+      return { key, repeat: this.repeat / REPEAT_COUNT };
     } else if (key) {
       this.lastEventTime = event.timestamp;
       this.partial = key;
@@ -117,4 +124,38 @@ export class PioneerRemote implements LircRemote {
 
     return false;
   }
+
+  public async transmit(tx: LircEventWriter, key: string): Promise<boolean> {
+    const scanCodes = INVERTED_KEY_MAP[key]?.split(" ");
+    if (scanCodes) {
+      for (let i = 0; i < REPEAT_COUNT; i++) {
+        for (const scanCode of scanCodes) {
+          await tx.send(PROTOCOL, BigInt(`0x${scanCode}`));
+          await sleep(REPEAT_GAP_MS);
+        }
+      }
+      return true;
+    }
+    return false;
+  }
+}
+
+function invertKeyMap(keyMap: PartialKey): { [key: string | Key]: string } {
+  const invert = (keyMap: PartialKey, prefix: string): { [key: string | Key]: string } => {
+    let result: { [key: string | Key]: string } = {};
+    for (const k of Object.keys(keyMap)) {
+      const v = keyMap[k];
+      const value = prefix.length === 0 ? k : `${prefix} ${k} `;
+      if (isString(v)) {
+        result[v] = value.trim();
+      } else {
+        result = {
+          ...result,
+          ...invert(v, value),
+        };
+      }
+    }
+    return result;
+  };
+  return invert(keyMap, "");
 }

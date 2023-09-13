@@ -36,11 +36,52 @@ export class UnisonHT {
     this.modules.push(module);
   }
 
-  public send(name: string, key: Key | string): Promise<void> {
-    throw new Error(`Method not implemented. ${name}: ${key}`);
+  public async sendButton(name: string, key: Key | string): Promise<void> {
+    const event: KeyEvent = {
+      type: EventType.Key,
+      name,
+      key,
+    };
+    await this.sendEvent(event);
+  }
+
+  public async sendEvent(event: UnisonHTEvent): Promise<void> {
+    for (const module of this.modules) {
+      try {
+        if (await module.handle(this, event)) {
+          return;
+        }
+      } catch (err) {
+        event = {
+          type: EventType.Error,
+          error: err,
+          sourceEvent: event,
+        };
+      }
+    }
+    console.error("unhandled event", event);
   }
 }
 
 export interface StartOptions {
   port?: string | number;
 }
+
+export enum EventType {
+  Key = "Key",
+  Error = "Error",
+}
+
+export interface KeyEvent {
+  type: EventType.Key;
+  name: string;
+  key: Key | string;
+}
+
+export interface ErrorEvent {
+  type: EventType.Error;
+  error: unknown;
+  sourceEvent: UnisonHTEvent;
+}
+
+export type UnisonHTEvent = KeyEvent | ErrorEvent;

@@ -1,5 +1,5 @@
 import debug from "debug";
-import { UnisonHT } from "../../UnisonHT";
+import { UnisonHT, UnisonHTEvent } from "../../UnisonHT";
 import { UnisonHTModule } from "../../UnisonHTModule";
 import { LircEventReader } from "./LircEventReader";
 import { KeyDecodeResult, LircRemote } from "./LircRemote";
@@ -25,7 +25,8 @@ export class LircRxModule implements UnisonHTModule {
           const result = remote.decode(evt);
           if ((result as KeyDecodeResult)?.key) {
             const decodeResult = result as KeyDecodeResult;
-            unisonht.send(remote.name, decodeResult.key);
+            log(`received ${decodeResult.key} (repeat: ${decodeResult.repeat})`);
+            unisonht.sendButton(remote.name, decodeResult.key);
             return;
           } else if (result) {
             return;
@@ -40,5 +41,9 @@ export class LircRxModule implements UnisonHTModule {
     });
     this.rx.open(this.path);
     log("initialized");
+  }
+
+  public async handle(_unisonht: UnisonHT, _event: UnisonHTEvent): Promise<boolean> {
+    return false;
   }
 }
