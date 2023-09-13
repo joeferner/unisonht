@@ -88,6 +88,10 @@ export class PioneerRemote implements LircRemote {
     return this._name;
   }
 
+  public get keyNames(): string[] {
+    return Object.keys(INVERTED_KEY_MAP);
+  }
+
   public decode(event: LircEvent): KeyDecodeResult | boolean {
     if (event.rcProto !== PROTOCOL) {
       return false;

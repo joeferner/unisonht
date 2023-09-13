@@ -10,6 +10,8 @@ export interface KeyDecodeResult {
 export interface LircRemote {
   readonly name: string;
 
+  readonly keyNames: string[];
+
   decode?: (event: LircEvent) => boolean | KeyDecodeResult;
 
   transmit(tx: LircEventWriter, key: string): Promise<boolean>;

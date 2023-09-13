@@ -1,8 +1,10 @@
 import debug from "debug";
+import { NextFunction, Request, Response } from "express";
 import { EventType, UnisonHT, UnisonHTEvent } from "../../UnisonHT";
 import { UnisonHTModule } from "../../UnisonHTModule";
 import { LircEventWriter } from "./LircEventWriter";
 import { LircRemote } from "./LircRemote";
+import { isString } from "../../helpers/typeHelpers";
 
 const log = debug("unisonht:lirc:tx");
 
@@ -16,7 +18,49 @@ export class LircTxModule implements UnisonHTModule {
     this.remotes = options.remotes;
   }
 
-  public async init(): Promise<void> {
+  public async init(unisonht: UnisonHT): Promise<void> {
+    for (const remote of this.remotes) {
+      unisonht.registerPostHandler(
+        `/module/lirc-tx/${remote.name}`,
+        {
+          description: "Transmits the given key via the specified remote",
+          parameters: [
+            {
+              name: "key",
+              in: "query",
+              description: "The key to transmit",
+              schema: {
+                type: "string",
+                enum: remote.keyNames,
+              },
+            },
+          ],
+        },
+        async (req: Request, res: Response, next: NextFunction): Promise<unknown> => {
+          if (!this.tx) {
+            return next(new Error("lirc writer not initialized"));
+          }
+
+          const key = req.query["key"];
+          if (!key) {
+            return res.status(400).send('"key" is required');
+          }
+          if (!isString(key)) {
+            return res.status(400).send('"key" must be a string');
+          }
+          if (!remote.keyNames.includes(key)) {
+            return res.status(404).send(`"${key}" not found on remote`);
+          }
+
+          if (await remote.transmit(this.tx, key)) {
+            return res.json({});
+          } else {
+            return next(new Error("could not transmit"));
+          }
+        },
+      );
+    }
+
     this.tx = new LircEventWriter();
     this.tx.open(this.path);
     log("initialized");

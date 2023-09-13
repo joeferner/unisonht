@@ -1,15 +1,17 @@
-import express, { Express, Request, Response } from "express";
+import express, { Express, NextFunction, Request, Response } from "express";
 import { UnisonHTModule } from "./UnisonHTModule";
 import { Key } from "./keys";
 
 export class UnisonHT {
-  private express?: Express;
+  private _express: Express;
   private modules: UnisonHTModule[] = [];
 
-  public async start(options: StartOptions): Promise<void> {
-    this.express = express();
+  public constructor() {
+    this._express = express();
+  }
 
-    this.express.get("/", (_req: Request, res: Response) => {
+  public async start(options: StartOptions): Promise<void> {
+    this._express.get("/", (_req: Request, res: Response) => {
       res.send("Hello, TypeScript Express!");
     });
 
@@ -20,7 +22,7 @@ export class UnisonHT {
     }
 
     if (options.port) {
-      await UnisonHT.listen(this.express, options.port);
+      await UnisonHT.listen(this._express, options.port);
     }
   }
 
@@ -60,6 +62,21 @@ export class UnisonHT {
       }
     }
     console.error("unhandled event", event);
+  }
+
+  public registerPostHandler(
+    path: string,
+    _openApi: unknown,
+    handler: (req: Request, res: Response, next: NextFunction) => Promise<unknown>,
+  ): void {
+    // TODO handle openApi
+    this._express.post(path, async (req, res, next) => {
+      try {
+        await handler(req, res, next);
+      } catch (err) {
+        next(err);
+      }
+    });
   }
 }
 
