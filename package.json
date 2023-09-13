@@ -34,7 +34,7 @@
     "ioctl": "^2.0.2"
   },
   "lint-staged": {
-    "**/*.{js,jsx,ts,tsx}": [
+    "**/*.{js,jsx,ts,tsx,json}": [
       "npx prettier --write",
       "npx eslint --fix"
     ]
