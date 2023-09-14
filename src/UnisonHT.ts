@@ -12,7 +12,17 @@ export class UnisonHT {
 
   public async start(options: StartOptions): Promise<void> {
     this._express.get("/", (_req: Request, res: Response) => {
-      res.send("Hello, TypeScript Express!");
+      const html = `<html>
+      <head>
+        <title>UnisonHT</title>
+      </head>
+      <body>
+        <ul>
+          ${this.modules.map((m) => `<li><a href="/module/${m.name}/">${m.name}</a></li>`).join("\n")}
+        </ul>
+      </body>
+      </html>`;
+      res.send(html);
     });
 
     for (const module of this.modules) {
@@ -62,6 +72,21 @@ export class UnisonHT {
       }
     }
     console.error("unhandled event", event);
+  }
+
+  public registerGetHandler(
+    path: string,
+    _openApi: unknown,
+    handler: (req: Request, res: Response, next: NextFunction) => Promise<unknown>,
+  ): void {
+    // TODO handle openApi
+    this._express.get(path, async (req, res, next) => {
+      try {
+        await handler(req, res, next);
+      } catch (err) {
+        next(err);
+      }
+    });
   }
 
   public registerPostHandler(

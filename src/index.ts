@@ -4,6 +4,7 @@ import {
   LircRxModule,
   LircTxModule,
   PioneerRemote,
+  enableAllProtocols,
   findRcDeviceLircDevDir,
   getRcDevices,
 } from "./devices/ir";
@@ -20,6 +21,7 @@ async function run(): Promise<void> {
   if (!lircRxDevice) {
     throw new Error("could not find lirc rx device");
   }
+  await enableAllProtocols(rcDevices, "gpio_ir_recv");
 
   const lircTxDevice = findRcDeviceLircDevDir(rcDevices, "gpio-ir-tx", 0);
   if (!lircTxDevice) {

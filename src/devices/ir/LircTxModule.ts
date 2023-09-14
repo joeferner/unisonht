@@ -18,10 +18,43 @@ export class LircTxModule implements UnisonHTModule {
     this.remotes = options.remotes;
   }
 
+  public get name(): string {
+    return "lirc-tx";
+  }
+
   public async init(unisonht: UnisonHT): Promise<void> {
     for (const remote of this.remotes) {
+      unisonht.registerGetHandler(
+        `/module/${this.name}`,
+        undefined,
+        async (_req: Request, res: Response): Promise<unknown> => {
+          const html = `
+          <script>
+            function doButton(remoteName, key) {
+              console.log(remoteName, key);
+              fetch('/module/${this.name}/' + remoteName + '?key=' + encodeURIComponent(key), {
+                method: "POST"
+              });
+            }
+          </script>
+          <ul>${this.remotes
+            .map((remote) => {
+              return `<li>${remote.name}
+              <ul>
+                ${remote.keyNames
+                  .map((key) => {
+                    return `<li><button onclick="doButton('${remote.name}', '${key}')">${key}</button></li>`;
+                  })
+                  .join("\n")}
+              </ul>
+            </li>`;
+            })
+            .join("\n")}</ul>`;
+          return res.send(html);
+        },
+      );
       unisonht.registerPostHandler(
-        `/module/lirc-tx/${remote.name}`,
+        `/module/${this.name}/${remote.name}`,
         {
           description: "Transmits the given key via the specified remote",
           parameters: [

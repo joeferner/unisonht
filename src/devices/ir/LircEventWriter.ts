@@ -26,6 +26,7 @@ export class LircEventWriter {
     if (!this.fd) {
       throw new Error("lirc device not open");
     }
+    log(`sending ${proto} 0x${scanCode.toString(16)}`);
     const buffer = Buffer.alloc(SCAN_CODE_SIZE);
     buffer.writeBigUInt64LE(BigInt(0), 0);
     buffer.writeUInt16LE(0, 8);

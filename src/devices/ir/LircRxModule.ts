@@ -17,6 +17,10 @@ export class LircRxModule implements UnisonHTModule {
     this.remotes = options.remotes;
   }
 
+  public get name(): string {
+    return "lirc-rx";
+  }
+
   public async init(unisonht: UnisonHT): Promise<void> {
     this.rx = new LircEventReader();
     this.rx.on("input", (evt) => {

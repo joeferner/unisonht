@@ -1,5 +1,8 @@
+import debug from "debug";
 import fs from "fs";
 import path from "path";
+
+const log = debug("unisonht:RcDevices");
 
 export interface RcDeviceInputEvent {
   eventDir: string;
@@ -159,4 +162,24 @@ export function findRcDeviceLircDevDir(devices: RcDevice[], driver: string, lirc
     }
     return [];
   })[0];
+}
+
+export async function enableAllProtocols(devices: RcDevice[], driver: string): Promise<void> {
+  for (const device of devices) {
+    if (device.driver === driver) {
+      await enableAllProtocolsOnDevice(device);
+    }
+  }
+}
+
+export async function enableAllProtocolsOnDevice(device: RcDevice): Promise<void> {
+  const protocolsFile = path.join(device.rcPath, "protocols");
+  const protocols = (await fs.promises.readFile(protocolsFile, "utf8")).split(" ");
+  for (const protocol of protocols) {
+    if (!protocol.startsWith("[")) {
+      log(`enabling protocol ${protocol}`);
+      await fs.promises.writeFile(protocolsFile, `+${protocol}`);
+    }
+  }
+  log(`protocols ${await fs.promises.readFile(protocolsFile, "utf8")}`);
 }
