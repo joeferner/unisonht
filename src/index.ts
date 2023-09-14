@@ -1,5 +1,6 @@
 import { UnisonHT } from "./UnisonHT";
 import {
+  DenonRemote,
   LircRemote,
   LircRxModule,
   LircTxModule,
@@ -10,11 +11,12 @@ import {
 } from "./devices/ir";
 
 const REMOTE_TV = "tv";
+const REMOTE_AV = "av";
 
 async function run(): Promise<void> {
   const port = process.env.PORT || 8080;
 
-  const remotes: LircRemote[] = [new PioneerRemote(REMOTE_TV)];
+  const remotes: LircRemote[] = [new PioneerRemote(REMOTE_TV), new DenonRemote(REMOTE_AV)];
 
   const rcDevices = await getRcDevices();
   const lircRxDevice = findRcDeviceLircDevDir(rcDevices, "gpio_ir_recv", 0);

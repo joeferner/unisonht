@@ -23,7 +23,12 @@ export class LircRxModule implements UnisonHTModule {
 
   public async init(unisonht: UnisonHT): Promise<void> {
     this.rx = new LircEventReader();
+    let lastInputEventTimeMillis = 0;
     this.rx.on("input", (evt) => {
+      const eventTimestampMillis = Number(evt.timestamp / BigInt(1000) / BigInt(1000));
+      const dt = eventTimestampMillis - lastInputEventTimeMillis;
+      lastInputEventTimeMillis = eventTimestampMillis;
+
       for (const remote of this.remotes) {
         if (remote.decode) {
           const result = remote.decode(evt);
@@ -40,7 +45,9 @@ export class LircRxModule implements UnisonHTModule {
       console.error(
         `unhandled ir event ${evt.timestamp}: ${lircProtoToString(evt.rcProto)}(${
           evt.rcProto
-        }) 0x${evt.scanCode.toString(16)} (flags: 0x${evt.flags.toString(16)}, keycode: 0x${evt.keycode.toString(16)})`,
+        }) 0x${evt.scanCode.toString(16)} (flags: 0x${evt.flags.toString(16)}, keycode: 0x${evt.keycode.toString(
+          16,
+        )}, dt: ${dt})`,
       );
     });
     this.rx.open(this.path);

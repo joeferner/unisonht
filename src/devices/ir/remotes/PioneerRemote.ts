@@ -29,6 +29,8 @@ const KEY_MAP: { [value: string]: Key | PartialKey } = {
   aa0b: Key.VOLUME_DOWN,
   aa10: Key.CHANNEL_UP,
   aa11: Key.CHANNEL_DOWN,
+  aa1a: Key.POWER_ON,
+  aa1b: Key.POWER_OFF,
   aa1c: Key.POWER_TOGGLE,
   aa24: Key.DIR_RIGHT,
   aa25: Key.DIR_LEFT,
