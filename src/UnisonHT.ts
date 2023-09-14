@@ -1,6 +1,7 @@
 import express, { Express, NextFunction, Request, Response } from "express";
 import { UnisonHTModule } from "./UnisonHTModule";
 import { Key } from "./keys";
+import { renderEjs } from "./helpers/ejsHelpers";
 
 export class UnisonHT {
   private _express: Express;
@@ -11,18 +12,8 @@ export class UnisonHT {
   }
 
   public async start(options: StartOptions): Promise<void> {
-    this._express.get("/", (_req: Request, res: Response) => {
-      const html = `<html>
-      <head>
-        <title>UnisonHT</title>
-      </head>
-      <body>
-        <ul>
-          ${this.modules.map((m) => `<li><a href="/module/${m.name}/">${m.name}</a></li>`).join("\n")}
-        </ul>
-      </body>
-      </html>`;
-      res.send(html);
+    this._express.get("/", async (_req: Request, res: Response) => {
+      res.send(await renderEjs("src/pages/index.ejs", { modules: this.modules }));
     });
 
     for (const module of this.modules) {
