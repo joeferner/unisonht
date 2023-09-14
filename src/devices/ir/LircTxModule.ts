@@ -26,7 +26,7 @@ export class LircTxModule implements UnisonHTModule {
     for (const remote of this.remotes) {
       unisonht.registerGetHandler(
         `/module/${this.name}`,
-        undefined,
+        {},
         async (_req: Request, res: Response): Promise<unknown> => {
           const html = `
           <script>

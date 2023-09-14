@@ -2,6 +2,7 @@ import express, { Express, NextFunction, Request, Response } from "express";
 import { UnisonHTModule } from "./UnisonHTModule";
 import { Key } from "./keys";
 import { renderEjs } from "./helpers/ejsHelpers";
+import { OpenAPI } from "openapi-types";
 
 export class UnisonHT {
   private _express: Express;
@@ -67,7 +68,7 @@ export class UnisonHT {
 
   public registerGetHandler(
     path: string,
-    _openApi: unknown,
+    _openApi: OpenAPI.Operation,
     handler: (req: Request, res: Response, next: NextFunction) => Promise<unknown>,
   ): void {
     // TODO handle openApi
@@ -82,7 +83,7 @@ export class UnisonHT {
 
   public registerPostHandler(
     path: string,
-    _openApi: unknown,
+    _openApi: OpenAPI.Operation,
     handler: (req: Request, res: Response, next: NextFunction) => Promise<unknown>,
   ): void {
     // TODO handle openApi
