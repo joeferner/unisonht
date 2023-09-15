@@ -1,5 +1,11 @@
 # Development
 
+## Mock IR
+
+```
+MOCK_IR=true npm start
+```
+
 ## Raspberry Pi
 
 1.  Write the latest "Raspberry Pi OS Lite" to an SD Card (enable SSH, SSH key authentication, and note the hostname)

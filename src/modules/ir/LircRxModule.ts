@@ -50,7 +50,7 @@ export class LircRxModule implements UnisonHTModule {
         )}, dt: ${dt})`,
       );
     });
-    this.rx.open(this.path);
+    await this.rx.open(this.path);
     log("initialized");
   }
 

@@ -19,6 +19,10 @@ export class LircEventReader extends events.EventEmitter {
     if (this.fd) {
       throw new Error("lirc device already open");
     }
+    if (process.env.MOCK_IR) {
+      log("using mock device");
+      return;
+    }
     log(`opening lirc ${path} for read`);
     this.fd = await fs.promises.open(path, "r");
     await writeIoctl32(this.fd, LircIoCtlCommand.SetReceiveMode, LircMode.ScanCode);
@@ -40,7 +44,9 @@ export class LircEventReader extends events.EventEmitter {
     try {
       const packet = await this.fd.read(buffer, 0, buffer.length);
       this.decodeAndEmitPacket(packet);
-      this.read();
+      setTimeout(() => {
+        this.read();
+      });
     } catch (err) {
       console.error(err);
     }

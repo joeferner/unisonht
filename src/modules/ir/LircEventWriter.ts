@@ -12,6 +12,10 @@ export class LircEventWriter {
     if (this.fd) {
       throw new Error("lirc device already open");
     }
+    if (process.env.MOCK_IR) {
+      log("using mock device");
+      return;
+    }
     log(`opening lirc ${path} for write`);
     this.fd = await fs.promises.open(path, "w");
     await writeIoctl32(this.fd, LircIoCtlCommand.SetSendMode, LircMode.ScanCode);

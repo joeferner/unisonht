@@ -3,6 +3,7 @@ import { UnisonHTModule } from "./UnisonHTModule";
 import { Key } from "./keys";
 import { OpenAPI } from "openapi-types";
 import { index } from "./pages/index";
+import { newNestedError } from "./helpers/NestedError";
 
 export class UnisonHT {
   private _express: Express;
@@ -19,7 +20,11 @@ export class UnisonHT {
 
     for (const module of this.modules) {
       if (module.init) {
-        await module.init(this);
+        try {
+          await module.init(this);
+        } catch (err) {
+          throw newNestedError(`failed to initialize: ${module.name}`, err);
+        }
       }
     }
 

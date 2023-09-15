@@ -17,6 +17,20 @@ async function run(): Promise<void> {
   const port = process.env.PORT || 8080;
 
   const remotes: LircRemote[] = [new PioneerRemote(REMOTE_TV), new DenonRemote(REMOTE_AV)];
+  const [lircRxDevice, lircTxDevice] = await findRemotes();
+
+  const unisonht = new UnisonHT();
+  unisonht.use(new LircRxModule(lircRxDevice, { remotes }));
+  unisonht.use(new LircTxModule(lircTxDevice, { remotes }));
+  unisonht.start({ port }).then(() => {
+    console.log(`Server running at http://localhost:${port}`);
+  });
+}
+
+async function findRemotes(): Promise<[string, string]> {
+  if (process.env.MOCK_IR) {
+    return ["/tmp/mock-ir-rx", "/tmp/mock-ir-tx"];
+  }
 
   const rcDevices = await getRcDevices();
   const lircRxDevice = findRcDeviceLircDevDir(rcDevices, "gpio_ir_recv", 0);
@@ -30,12 +44,7 @@ async function run(): Promise<void> {
     throw new Error("could not find lirc tx device");
   }
 
-  const unisonht = new UnisonHT();
-  unisonht.use(new LircRxModule(lircRxDevice, { remotes }));
-  unisonht.use(new LircTxModule(lircTxDevice, { remotes }));
-  unisonht.start({ port }).then(() => {
-    console.log(`Server running at http://localhost:${port}`);
-  });
+  return [lircRxDevice, lircTxDevice];
 }
 
 run().catch((err) => console.error(err));
