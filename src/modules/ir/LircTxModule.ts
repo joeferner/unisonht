@@ -5,6 +5,7 @@ import { UnisonHTModule } from "../../UnisonHTModule";
 import { LircEventWriter } from "./LircEventWriter";
 import { LircRemote } from "./LircRemote";
 import { isString } from "../../helpers/typeHelpers";
+import { lircTxIndex } from "./pages/lircTxIndex";
 
 const log = debug("unisonht:lirc:tx");
 
@@ -28,29 +29,7 @@ export class LircTxModule implements UnisonHTModule {
         `/module/${this.name}`,
         {},
         async (_req: Request, res: Response): Promise<unknown> => {
-          const html = `
-          <script>
-            function doButton(remoteName, key) {
-              console.log(remoteName, key);
-              fetch('/module/${this.name}/' + remoteName + '?key=' + encodeURIComponent(key), {
-                method: "POST"
-              });
-            }
-          </script>
-          <ul>${this.remotes
-            .map((remote) => {
-              return `<li>${remote.name}
-              <ul>
-                ${remote.keyNames
-                  .map((key) => {
-                    return `<li><button onclick="doButton('${remote.name}', '${key}')">${key}</button></li>`;
-                  })
-                  .join("\n")}
-              </ul>
-            </li>`;
-            })
-            .join("\n")}</ul>`;
-          return res.send(html);
+          return res.send(lircTxIndex({ moduleName: this.name, remotes: this.remotes }));
         },
       );
       unisonht.registerPostHandler(
@@ -85,6 +64,7 @@ export class LircTxModule implements UnisonHTModule {
             return res.status(404).send(`"${key}" not found on remote`);
           }
 
+          log(`transmit ${remote.name} ${key}`);
           if (await remote.transmit(this.tx, key)) {
             return res.json({});
           } else {

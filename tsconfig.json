@@ -9,8 +9,10 @@
     "noImplicitAny": true,
     "noImplicitOverride": true,
     "skipLibCheck": true,
-    "typeRoots": ["src/types"]
+    "typeRoots": ["src/@types"],
+    "jsx": "react",
+    "reactNamespace": "JSX"
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
   "exclude": ["node_modules"]
 }

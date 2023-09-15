@@ -8,7 +8,7 @@ import {
   enableAllProtocols,
   findRcDeviceLircDevDir,
   getRcDevices,
-} from "./devices/ir";
+} from "./modules/ir";
 
 const REMOTE_TV = "tv";
 const REMOTE_AV = "av";

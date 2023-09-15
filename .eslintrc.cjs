@@ -12,7 +12,7 @@ module.exports = {
       "warn", // or "error"
       {
         argsIgnorePattern: "^_",
-        varsIgnorePattern: "^_",
+        varsIgnorePattern: "^_|JSX",
         caughtErrorsIgnorePattern: "^_",
       },
     ],

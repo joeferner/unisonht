@@ -1,8 +1,8 @@
 import express, { Express, NextFunction, Request, Response } from "express";
 import { UnisonHTModule } from "./UnisonHTModule";
 import { Key } from "./keys";
-import { renderEjs } from "./helpers/ejsHelpers";
 import { OpenAPI } from "openapi-types";
+import { index } from "./pages/index";
 
 export class UnisonHT {
   private _express: Express;
@@ -14,7 +14,7 @@ export class UnisonHT {
 
   public async start(options: StartOptions): Promise<void> {
     this._express.get("/", async (_req: Request, res: Response) => {
-      res.send(await renderEjs("src/pages/index.ejs", { modules: this.modules }));
+      res.send(index({ modules: this.modules }));
     });
 
     for (const module of this.modules) {
