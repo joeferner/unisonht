@@ -27,6 +27,10 @@ export class LircEventWriter {
   }
 
   public async send(proto: LircProto, scanCode: number | bigint): Promise<void> {
+    if (process.env.MOCK_IR) {
+      log(`mock send ${proto} ${scanCode}`);
+      return;
+    }
     if (!this.fd) {
       throw new Error("lirc device not open");
     }
