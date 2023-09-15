@@ -22,7 +22,7 @@ export abstract class GenericRemoteBase implements LircRemote {
   private readonly invertedKeyMap: { [key: string]: string };
   private readonly repeatCount: number;
   private readonly repeatGapMillis: number;
-  private readonly repeatGapMapMillis: number;
+  private readonly repeatGapMaxMillis: number;
   private lastEventTime?: bigint;
   private lastKey?: Key | string;
   private repeat = 0;
@@ -35,7 +35,7 @@ export abstract class GenericRemoteBase implements LircRemote {
     this.invertedKeyMap = invertKeyMap(options.keyMap);
     this.repeatCount = options.repeatCount;
     this.repeatGapMillis = options.repeatGapMillis;
-    this.repeatGapMapMillis = options.repeatGapMapMillis;
+    this.repeatGapMaxMillis = options.repeatGapMapMillis;
   }
 
   public get name(): string {
@@ -62,7 +62,7 @@ export abstract class GenericRemoteBase implements LircRemote {
 
     if (isString(key)) {
       const dt = (): number => timestampDeltaMillis(event.timestamp, this.lastEventTime ?? BigInt(0));
-      if (key === this.lastKey && dt() < this.repeatGapMapMillis) {
+      if (key === this.lastKey && dt() < this.repeatGapMaxMillis) {
         this.repeat++;
       } else {
         this.repeat = 0;
@@ -92,6 +92,7 @@ export abstract class GenericRemoteBase implements LircRemote {
           await sleep(this.repeatGapMillis);
         }
       }
+      await sleep(this.repeatGapMaxMillis);
       return true;
     }
     return false;

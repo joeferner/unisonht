@@ -1,10 +1,11 @@
+import { Mutex, withTimeout } from "async-mutex";
 import debug from "debug";
 import { NextFunction, Request, Response } from "express";
 import { EventType, UnisonHT, UnisonHTEvent } from "../../UnisonHT";
 import { UnisonHTModule } from "../../UnisonHTModule";
+import { isString } from "../../helpers/typeHelpers";
 import { LircEventWriter } from "./LircEventWriter";
 import { LircRemote } from "./LircRemote";
-import { isString } from "../../helpers/typeHelpers";
 import { lircTxIndex } from "./pages/lircTxIndex";
 
 const log = debug("unisonht:lirc:tx");
@@ -13,6 +14,7 @@ export class LircTxModule implements UnisonHTModule {
   private path: string;
   private tx?: LircEventWriter;
   private remotes: LircRemote[];
+  private mutex = withTimeout(new Mutex(), 5000);
 
   public constructor(path: string, options: { remotes: LircRemote[] }) {
     this.path = path;
@@ -81,10 +83,13 @@ export class LircTxModule implements UnisonHTModule {
 
   public async handle(_unisonht: UnisonHT, event: UnisonHTEvent): Promise<boolean> {
     if (this.tx && event.type === EventType.Key) {
+      const tx = this.tx;
       const remote = this.remotes.filter((r) => r.name === event.name)[0];
       if (remote) {
-        log(`transmitting ${event.key} via remote ${remote.name}`);
-        return await remote.transmit(this.tx, event.key);
+        return await this.mutex.runExclusive(async () => {
+          log(`transmitting ${event.key} via remote ${remote.name}`);
+          return await remote.transmit(tx, event.key);
+        });
       }
     }
     return false;
