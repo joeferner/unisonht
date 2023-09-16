@@ -1,6 +1,6 @@
 import debug from "debug";
 import { UnisonHT, UnisonHTEvent } from "../../UnisonHT";
-import { UnisonHTModule } from "../../UnisonHTModule";
+import { GetHtmlParams, UnisonHTModule } from "../../UnisonHTModule";
 import { LircEventReader } from "./LircEventReader";
 import { KeyDecodeResult, LircRemote } from "./LircRemote";
 import { lircProtoToString } from "./lirc";
@@ -56,5 +56,9 @@ export class LircRxModule implements UnisonHTModule {
 
   public async handle(_unisonht: UnisonHT, _event: UnisonHTEvent): Promise<boolean> {
     return false;
+  }
+
+  public async getHtml(_unisonht: UnisonHT, _params: GetHtmlParams): Promise<string> {
+    return "No actions";
   }
 }

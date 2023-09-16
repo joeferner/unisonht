@@ -2,11 +2,13 @@ import { Mutex, withTimeout } from "async-mutex";
 import debug from "debug";
 import { NextFunction, Request, Response } from "express";
 import { EventType, UnisonHT, UnisonHTEvent } from "../../UnisonHT";
-import { UnisonHTModule } from "../../UnisonHTModule";
+import { GetHtmlParams, UnisonHTModule } from "../../UnisonHTModule";
 import { isString } from "../../helpers/typeHelpers";
 import { LircEventWriter } from "./LircEventWriter";
 import { LircRemote } from "./LircRemote";
 import { lircTxIndex } from "./pages/lircTxIndex";
+import root from "app-root-path";
+import path from "path";
 
 const log = debug("unisonht:lirc:tx");
 
@@ -26,14 +28,8 @@ export class LircTxModule implements UnisonHTModule {
   }
 
   public async init(unisonht: UnisonHT): Promise<void> {
+    await unisonht.registerJavascriptPath(path.join(root.path, "build/modules/ir/pages/lirc.js"));
     for (const remote of this.remotes) {
-      unisonht.registerGetHandler(
-        `/module/${this.name}`,
-        {},
-        async (_req: Request, res: Response): Promise<unknown> => {
-          return res.send(lircTxIndex({ moduleName: this.name, remotes: this.remotes }));
-        },
-      );
       unisonht.registerPostHandler(
         `/module/${this.name}/${remote.name}`,
         {
@@ -93,5 +89,9 @@ export class LircTxModule implements UnisonHTModule {
       }
     }
     return false;
+  }
+
+  public async getHtml(_unisonht: UnisonHT, _params: GetHtmlParams): Promise<string> {
+    return lircTxIndex({ moduleName: this.name, remotes: this.remotes });
   }
 }
