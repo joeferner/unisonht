@@ -1,8 +1,8 @@
-import events from "events";
+import debug from "debug";
 import fs from "fs";
+import { EventEmitter } from "../../helpers/EventEmitter";
 import { writeIoctl32 } from "../../helpers/ioctlHelpers";
 import { LircEvent, LircIoCtlCommand, LircMode, SCAN_CODE_SIZE } from "./lirc";
-import debug from "debug";
 
 const log = debug("unisonht:lirc:LircEventWriter");
 
@@ -12,7 +12,7 @@ export declare interface LircEventReader {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
-export class LircEventReader extends events.EventEmitter {
+export class LircEventReader extends EventEmitter<"input"> {
   private fd?: fs.promises.FileHandle;
 
   public async open(path: string): Promise<void> {

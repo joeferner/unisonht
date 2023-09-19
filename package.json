@@ -4,7 +4,7 @@
   "description": "UnisonHT home theatre control",
   "main": "index.js",
   "scripts": {
-    "start": "export DEBUG=unisonht:*; nodemon --watch 'src/**' --ext 'ts,tsx,json' --ignore 'src/**/*.spec.ts' --exec 'ts-node src/index.ts'",
+    "start": "export DEBUG=unisonht:*; nodemon --watch 'src/**' --ext 'ts,tsx,json,scss' --ignore 'src/**/*.spec.ts' --exec 'ts-node src/index.ts'",
     "build": "tsc",
     "build:watch": "tsc --watch",
     "serve": "node dist/index.js",

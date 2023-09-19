@@ -1,14 +1,15 @@
+import root from "app-root-path";
 import { Mutex, withTimeout } from "async-mutex";
 import debug from "debug";
-import { NextFunction, Request, Response } from "express";
+import { Request, Response } from "express";
+import { OpenAPI } from "openapi-types";
+import path from "path";
 import { EventType, UnisonHT, UnisonHTEvent } from "../../UnisonHT";
 import { GetHtmlParams, UnisonHTModule } from "../../UnisonHTModule";
 import { isString } from "../../helpers/typeHelpers";
 import { LircEventWriter } from "./LircEventWriter";
 import { LircRemote } from "./LircRemote";
 import { lircTxIndex } from "./pages/lircTxIndex";
-import root from "app-root-path";
-import path from "path";
 
 const log = debug("unisonht:lirc:tx");
 
@@ -32,42 +33,9 @@ export class LircTxModule implements UnisonHTModule {
     for (const remote of this.remotes) {
       unisonht.registerPostHandler(
         `/module/${this.name}/${remote.name}`,
-        {
-          description: "Transmits the given key via the specified remote",
-          parameters: [
-            {
-              name: "key",
-              in: "query",
-              description: "The key to transmit",
-              schema: {
-                type: "string",
-                enum: remote.keyNames,
-              },
-            },
-          ],
-        },
-        async (req: Request, res: Response, next: NextFunction): Promise<unknown> => {
-          if (!this.tx) {
-            return next(new Error("lirc writer not initialized"));
-          }
-
-          const key = req.query["key"];
-          if (!key) {
-            return res.status(400).send('"key" is required');
-          }
-          if (!isString(key)) {
-            return res.status(400).send('"key" must be a string');
-          }
-          if (!remote.keyNames.includes(key)) {
-            return res.status(404).send(`"${key}" not found on remote`);
-          }
-
-          log(`transmit ${remote.name} ${key}`);
-          if (await remote.transmit(this.tx, key)) {
-            return res.json({});
-          } else {
-            return next(new Error("could not transmit"));
-          }
+        createTransmitKeyOpenApi(remote),
+        async (req: Request, res: Response): Promise<unknown> => {
+          return this.handleTransmitKeyPost(unisonht, remote, req, res);
         },
       );
     }
@@ -80,7 +48,7 @@ export class LircTxModule implements UnisonHTModule {
   public async handle(_unisonht: UnisonHT, event: UnisonHTEvent): Promise<boolean> {
     if (this.tx && event.type === EventType.Key) {
       const tx = this.tx;
-      const remote = this.remotes.filter((r) => r.name === event.name)[0];
+      const remote = this.remotes.filter((r) => r.name === event.remoteName)[0];
       if (remote) {
         return await this.mutex.runExclusive(async () => {
           log(`transmitting ${event.key} via remote ${remote.name}`);
@@ -94,4 +62,47 @@ export class LircTxModule implements UnisonHTModule {
   public async getHtml(_unisonht: UnisonHT, _params: GetHtmlParams): Promise<string> {
     return lircTxIndex({ moduleName: this.name, remotes: this.remotes });
   }
+
+  private async handleTransmitKeyPost(
+    unisonht: UnisonHT,
+    remote: LircRemote,
+    req: Request,
+    res: Response,
+  ): Promise<unknown> {
+    if (!this.tx) {
+      throw new Error("lirc writer not initialized");
+    }
+
+    const key = req.query["key"];
+    if (!key) {
+      return res.status(400).send('"key" is required');
+    }
+    if (!isString(key)) {
+      return res.status(400).send('"key" must be a string');
+    }
+    if (!remote.keyNames.includes(key)) {
+      return res.status(404).send(`"${key}" not found on remote`);
+    }
+
+    log(`transmit (remote: "${remote.name}", key: "${key}")`);
+    await unisonht.sendButton(remote.name, key);
+    return res.json({});
+  }
+}
+
+function createTransmitKeyOpenApi(remote: LircRemote): OpenAPI.Operation {
+  return {
+    description: "Transmits the given key via the specified remote",
+    parameters: [
+      {
+        name: "key",
+        in: "query",
+        description: "The key to transmit",
+        schema: {
+          type: "string",
+          enum: remote.keyNames,
+        },
+      },
+    ],
+  };
 }

@@ -79,10 +79,10 @@ export class UnisonHT {
     this.modules.push(module);
   }
 
-  public async sendButton(name: string, key: Key | string): Promise<void> {
+  public async sendButton(remoteName: string, key: Key | string): Promise<void> {
     const event: KeyEvent = {
       type: EventType.Key,
-      name,
+      remoteName,
       key,
     };
     await this.sendEvent(event);
@@ -91,7 +91,7 @@ export class UnisonHT {
   public async sendEvent(event: UnisonHTEvent): Promise<void> {
     for (const module of this.modules) {
       try {
-        if (await module.handle(this, event)) {
+        if (module.handle && (await module.handle(this, event))) {
           return;
         }
       } catch (err) {
@@ -146,6 +146,10 @@ export class UnisonHT {
       }
     });
   }
+
+  public getModule(name: string): UnisonHTModule | undefined {
+    return this.modules.filter((m) => m.name === name)[0];
+  }
 }
 
 export interface StartOptions {
@@ -159,7 +163,7 @@ export enum EventType {
 
 export interface KeyEvent {
   type: EventType.Key;
-  name: string;
+  remoteName: string;
   key: Key | string;
 }
 

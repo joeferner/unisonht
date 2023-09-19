@@ -22,6 +22,10 @@
   }
 }
 
+.display-none {
+  display: none !important;
+}
+
 @media (max-width: 768px) {
   .page-wrapper {
     .sidebar-wrapper {

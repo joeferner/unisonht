@@ -6,7 +6,7 @@ export interface UnisonHTModule {
 
   init?: (unisonht: UnisonHT) => Promise<void>;
 
-  handle(unisonht: UnisonHT, event: UnisonHTEvent): Promise<boolean>;
+  handle?: (unisonht: UnisonHT, event: UnisonHTEvent) => Promise<boolean>;
 
   getHtml(unisonht: UnisonHT, params: GetHtmlParams): Promise<string>;
 }
