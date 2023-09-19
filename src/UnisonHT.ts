@@ -1,14 +1,14 @@
-import express, { Express, NextFunction, Request, Response } from "express";
-import { UnisonHTModule } from "./UnisonHTModule";
-import { Key } from "./keys";
-import { OpenAPI } from "openapi-types";
-import { index } from "./pages/index";
-import { newNestedError } from "./helpers/NestedError";
-import fs from "fs";
 import root from "app-root-path";
+import express, { Express, NextFunction, Request, Response } from "express";
+import fs from "fs";
+import { OpenAPI } from "openapi-types";
 import path from "path";
-import { staticFile } from "./helpers/expressHelpers";
 import sass from "sass";
+import { UnisonHTModule } from "./UnisonHTModule";
+import { newNestedError } from "./helpers/NestedError";
+import { staticFile } from "./helpers/expressHelpers";
+import { Key } from "./keys";
+import { index } from "./pages/index";
 
 export class UnisonHT {
   private _express: Express;
@@ -113,7 +113,7 @@ export class UnisonHT {
 
   public async registerScssPath(path: string): Promise<void> {
     if (!this.css[path]) {
-      this.css[path] = sass.compileString(await fs.promises.readFile(path, "utf8")).css;
+      this.css[path] = (await sass.compileAsync(path)).css;
     }
   }
 

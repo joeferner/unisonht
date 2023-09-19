@@ -1,8 +1,21 @@
+[data-bs-theme="dark"] {
+  --bs-link-color: #{rgb(172, 95, 95)};
+  --bs-link-color-rgb: #{172, 95, 95};
+
+  .navbar {
+    --bs-navbar-color: #{rgb(102, 0, 0)};
+  }
+}
+
 .navbar {
-  background-color: rgb(175, 173, 255);
+  background-color: var(--bs-navbar-color);
   box-shadow:
     0 0.5rem 1rem rgba(0, 0, 0, 0.15),
     inset 0 -1px 0 rgba(255, 255, 255, 0.15);
+
+  a {
+    color: var(--bs-navbar-active-color);
+  }
 }
 
 .page-wrapper {
