@@ -19,4 +19,5 @@ const KEY_MAP: { [value: string]: Key | PartialKey } = {
   "111": Key.POWER_TOGGLE,
   "222": Key.VOLUME_UP,
   "333": Key.VOLUME_DOWN,
+  "444": Key.MUTE,
 };

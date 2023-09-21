@@ -10,6 +10,7 @@ import { isString } from "../../helpers/typeHelpers";
 import { LircEventWriter } from "./LircEventWriter";
 import { LircRemote } from "./LircRemote";
 import { lircTxIndex } from "./pages/lircTxIndex";
+import { renderJSXElement } from "../../helpers/jsx";
 
 const log = debug("unisonht:lirc:tx");
 
@@ -38,6 +39,7 @@ export class LircTxModule implements UnisonHTModule {
 
   public async init(unisonht: UnisonHT): Promise<void> {
     await unisonht.registerJavascriptPath(path.join(root.path, "build/modules/ir/pages/lirc.js"));
+    await unisonht.registerScssPath(path.join(root.path, "src/modules/ir/pages/lircTx.scss"));
     for (const remote of this.remotes) {
       unisonht.registerPostHandler(
         `/module/${this.name}/${remote.name}`,
@@ -68,7 +70,7 @@ export class LircTxModule implements UnisonHTModule {
   }
 
   public async getHtml(_unisonht: UnisonHT, _params: GetHtmlParams): Promise<string> {
-    return lircTxIndex({ moduleName: this.name, remotes: this.remotes });
+    return renderJSXElement(lircTxIndex({ moduleName: this.name, remotes: this.remotes }));
   }
 
   private async handleTransmitKeyPost(

@@ -13,6 +13,7 @@ import {
   findRcDeviceLircDevDir,
   getRcDevices,
 } from "./modules/ir";
+import { ButtonLayout } from "./modules/ir/LircRemote";
 import { ModeModule } from "./modules/mode";
 
 const log = debug("unisonht:home");
@@ -30,7 +31,7 @@ async function run(): Promise<void> {
   const remotes: LircRemote[] = [
     new PioneerRemote(REMOTE_TV, "TV"),
     new DenonRemote(REMOTE_AV, "Receiver"),
-    new RcaRemote(REMOTE_HOME, "Roku Remote"),
+    new RokuRemote(REMOTE_HOME, "Roku Remote"),
   ];
   const [lircRxDevice, lircTxDevice] = await findRemotes();
 
@@ -137,5 +138,52 @@ class HomeModule implements UnisonHTModule {
     return "Home Module";
   }
 }
+
+class RokuRemote extends RcaRemote {
+  public constructor(name: string, displayName?: string) {
+    super(name, displayName);
+  }
+
+  public get buttonLayout(): ButtonLayout {
+    return ROKU_BUTTON_LAYOUT;
+  }
+}
+
+const ROKU_BUTTON_LAYOUT: ButtonLayout = {
+  buttons: [
+    {
+      key: Key.POWER_TOGGLE,
+      displayName: "POWER",
+      left: 0,
+      top: 0,
+      height: 0.2,
+      width: 1,
+    },
+    {
+      key: Key.VOLUME_UP,
+      displayName: "VOL UP",
+      left: 0.8,
+      top: 0.2,
+      height: 0.2,
+      width: 0.2,
+    },
+    {
+      key: Key.VOLUME_DOWN,
+      displayName: "VOL DOWN",
+      left: 0.8,
+      top: 0.4,
+      height: 0.2,
+      width: 0.2,
+    },
+    {
+      key: Key.MUTE,
+      displayName: "MUTE",
+      left: 0.8,
+      top: 0.6,
+      height: 0.2,
+      width: 0.2,
+    },
+  ],
+};
 
 run().catch((err) => console.error(err));

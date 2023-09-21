@@ -1,4 +1,4 @@
-import JSX from "../../../helpers/jsx";
+import JSX, { JSXElement } from "../../../helpers/jsx";
 
 export interface ModePageParams {
   moduleName: string;
@@ -6,7 +6,7 @@ export interface ModePageParams {
   currentMode: string;
 }
 
-export function modePage(params: ModePageParams): string {
+export function modePage(params: ModePageParams): JSXElement {
   return (
     <div>
       <div id="error-mode" class="alert alert-danger display-none" role="alert">

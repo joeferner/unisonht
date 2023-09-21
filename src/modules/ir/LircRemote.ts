@@ -7,12 +7,27 @@ export interface KeyDecodeResult {
   repeat: number;
 }
 
+export interface ButtonLayout {
+  buttons: ButtonLayoutButton[];
+}
+
+export interface ButtonLayoutButton {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+  key: Key | string;
+  displayName: string;
+}
+
 export interface LircRemote {
   readonly name: string;
 
   readonly displayName: string;
 
   readonly keyNames: string[];
+
+  readonly buttonLayout?: ButtonLayout;
 
   decode?: (event: LircEvent) => boolean | KeyDecodeResult;
 

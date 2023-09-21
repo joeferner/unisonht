@@ -8,6 +8,7 @@ import { GetHtmlParams, UnisonHTModule } from "../../UnisonHTModule";
 import { EventEmitter } from "../../helpers/EventEmitter";
 import { isString } from "../../helpers/typeHelpers";
 import { modePage } from "./pages/modePage";
+import { renderJSXElement } from "../../helpers/jsx";
 
 const log = debug("unisonht:ModeModule");
 
@@ -61,11 +62,13 @@ export class ModeModule extends EventEmitter<"modeSwitch"> implements UnisonHTMo
   }
 
   public async getHtml(_unisonht: UnisonHT, _params: GetHtmlParams): Promise<string> {
-    return modePage({
-      moduleName: this.name,
-      currentMode: this.currentMode,
-      modes: this.modes,
-    });
+    return renderJSXElement(
+      modePage({
+        moduleName: this.name,
+        currentMode: this.currentMode,
+        modes: this.modes,
+      }),
+    );
   }
 
   private async handleSwitchModeRequest(req: Request, res: Response): Promise<unknown> {
