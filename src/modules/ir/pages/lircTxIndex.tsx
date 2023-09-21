@@ -8,25 +8,41 @@ export interface LircTxIndexParams {
 
 export function lircTxIndex(params: LircTxIndexParams): string {
   return (
-    <ul>
-      {params.remotes.map((remote) => (
-        <li>
-          <div>{remote.name}</div>
-          <ul>
-            {remote.keyNames.map((key) => (
-              <li>
-                <button
-                  type="button"
-                  class="btn btn-primary"
-                  onclick={`lircButtonPress('${params.moduleName}', '${remote.name}', '${key}')"`}
-                >
-                  {key}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </li>
-      ))}
-    </ul>
+    <div>
+      <nav>
+        <div class="tabs" role="tablist">
+          {params.remotes.map((remote, index) => (
+            <button
+              class={index === 0 ? "active" : ""}
+              data-tab={`tab_${remote.name}`}
+              onclick="tabClick(event)"
+              type="button"
+              role="tab"
+            >
+              {remote.name}
+            </button>
+          ))}
+        </div>
+      </nav>
+      <div class="tab-content" id="nav-tabContent">
+        {params.remotes.map((remote, index) => (
+          <div class={index === 0 ? "active" : ""} id={`tab_${remote.name}`} role="tabpanel">
+            <ul>
+              {remote.keyNames.map((key) => (
+                <li>
+                  <button
+                    type="button"
+                    class="btn btn-primary"
+                    onclick={`lircButtonPress('${params.moduleName}', '${remote.name}', '${key}')"`}
+                  >
+                    {key}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

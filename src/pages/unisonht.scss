@@ -129,6 +129,7 @@ button {
     .sidebar-wrapper {
       min-width: var(--sidebar-width);
       max-width: var(--sidebar-width);
+      height: calc(100vh - var(--navbar-height));
       max-height: calc(100vh - var(--navbar-height));
       transition: all 0.3s;
       background-color: var(--sidebar-bg-color);
@@ -166,6 +167,29 @@ button {
   display: none !important;
 }
 
+.tabs {
+  button {
+    color: var(--color);
+    border: 0;
+    background-color: transparent;
+    border-radius: 0;
+
+    &.active {
+      border-bottom: 2px solid var(--primary);
+    }
+  }
+}
+
+.tab-content {
+  & > div {
+    display: none;
+
+    &.active {
+      display: flex;
+    }
+  }
+}
+
 @media (max-width: 768px) {
   .navbar {
     button.toggle-sidebar-button {
@@ -179,6 +203,7 @@ button {
         width: 0;
         min-width: 0;
         max-width: 0;
+        position: absolute;
       }
     }
   }
