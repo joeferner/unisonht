@@ -3,13 +3,14 @@ import { LircProto } from "../lirc";
 import { GenericRemoteBase, PartialKey } from "./GenericRemoteBase";
 
 export class DenonRemote extends GenericRemoteBase {
-  public constructor(name: string) {
+  public constructor(name: string, displayName?: string) {
     super(name, {
       keyMap: KEY_MAP,
       protocol: LircProto.SHARP,
       repeatCount: 3,
       repeatGapMillis: 130,
       repeatGapMapMillis: 200,
+      displayName,
     });
   }
 }

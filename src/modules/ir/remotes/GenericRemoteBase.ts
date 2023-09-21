@@ -13,10 +13,12 @@ export interface GenericRemoteBaseOptions {
   repeatCount: number;
   repeatGapMillis: number;
   repeatGapMapMillis: number;
+  displayName?: string;
 }
 
 export abstract class GenericRemoteBase implements LircRemote {
   private readonly _name: string;
+  private readonly _displayName: string;
   private readonly protocol: LircProto;
   private readonly keyMap: { [value: string]: Key | PartialKey };
   private readonly invertedKeyMap: { [key: string]: string };
@@ -30,6 +32,7 @@ export abstract class GenericRemoteBase implements LircRemote {
 
   public constructor(name: string, options: GenericRemoteBaseOptions) {
     this._name = name;
+    this._displayName = options.displayName ?? name;
     this.protocol = options.protocol;
     this.keyMap = options.keyMap;
     this.invertedKeyMap = invertKeyMap(options.keyMap);
@@ -40,6 +43,10 @@ export abstract class GenericRemoteBase implements LircRemote {
 
   public get name(): string {
     return this._name;
+  }
+
+  public get displayName(): string {
+    return this._displayName;
   }
 
   public get keyNames(): string[] {

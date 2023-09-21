@@ -19,7 +19,7 @@ export function lircTxIndex(params: LircTxIndexParams): string {
               type="button"
               role="tab"
             >
-              {remote.name}
+              {remote.displayName}
             </button>
           ))}
         </div>

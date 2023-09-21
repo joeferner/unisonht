@@ -2,14 +2,15 @@ import { Key } from "../../../keys";
 import { LircProto } from "../lirc";
 import { GenericRemoteBase, PartialKey } from "./GenericRemoteBase";
 
-export class OtherRemote extends GenericRemoteBase {
-  public constructor(name: string) {
+export class RcaRemote extends GenericRemoteBase {
+  public constructor(name: string, displayName?: string) {
     super(name, {
       keyMap: KEY_MAP,
       protocol: LircProto.SHARP,
       repeatCount: 3,
       repeatGapMillis: 130,
       repeatGapMapMillis: 200,
+      displayName,
     });
   }
 }

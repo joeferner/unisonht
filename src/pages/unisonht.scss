@@ -1,5 +1,6 @@
 [data-theme="dark"] {
   --primary: #{rgb(187, 133, 252)};
+  --secondary: #{rgb(29, 223, 205)};
 
   --color: #{rgb(252, 252, 252)};
   --color-focus: var(--primary);
@@ -149,6 +150,10 @@ button {
 
         & > div {
           margin-left: 5px;
+        }
+
+        .current {
+          color: var(--primary);
         }
 
         a {

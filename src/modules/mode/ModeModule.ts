@@ -21,18 +21,24 @@ export class ModeModule extends EventEmitter<"modeSwitch"> implements UnisonHTMo
   public static readonly DEFAULT_NAME = "mode";
 
   private readonly _name: string;
+  private readonly _displayName: string;
   private readonly _modes: string[];
   private _currentMode: string;
 
   public constructor(options: ModeModuleOptions) {
     super();
     this._name = options.name ?? ModeModule.DEFAULT_NAME;
+    this._displayName = options.displayName ?? options.name ?? "Mode";
     this._currentMode = options.currentMode;
     this._modes = options.modes;
   }
 
   public get name(): string {
     return this._name;
+  }
+
+  public get displayName(): string {
+    return this._displayName;
   }
 
   public get currentMode(): string {
@@ -91,6 +97,7 @@ export class ModeModule extends EventEmitter<"modeSwitch"> implements UnisonHTMo
 
 export interface ModeModuleOptions {
   name?: string;
+  displayName?: string;
   currentMode: string;
   modes: string[];
 }

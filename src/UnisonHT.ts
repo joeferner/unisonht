@@ -37,7 +37,7 @@ export class UnisonHT {
       res.send(Object.values(this.css).join("\n\n"));
     });
     this._express.get("/", async (_req: Request, res: Response) => {
-      res.send(index({ modules: this.modules, content: "Select a module from the menu" }));
+      res.send(index({ currentModule: undefined, modules: this.modules, content: "Select a module from the menu" }));
     });
 
     for (const module of this.modules) {
@@ -53,7 +53,7 @@ export class UnisonHT {
         {},
         async (request: Request, res: Response): Promise<unknown> => {
           const content = await module.getHtml(this, { request });
-          return res.send(index({ modules: this.modules, content }));
+          return res.send(index({ currentModule: module, modules: this.modules, content }));
         },
       );
     }

@@ -14,18 +14,26 @@ import { lircTxIndex } from "./pages/lircTxIndex";
 const log = debug("unisonht:lirc:tx");
 
 export class LircTxModule implements UnisonHTModule {
-  private path: string;
+  private readonly _name: string;
+  private readonly _displayName: string;
+  private readonly path: string;
   private tx?: LircEventWriter;
   private remotes: LircRemote[];
   private mutex = withTimeout(new Mutex(), 5000);
 
-  public constructor(path: string, options: { remotes: LircRemote[] }) {
+  public constructor(path: string, options: LircTxModuleOptions) {
     this.path = path;
+    this._name = options.name ?? "lirc-tx";
+    this._displayName = options.displayName ?? options.name ?? "LIRC: Tx";
     this.remotes = options.remotes;
   }
 
   public get name(): string {
-    return "lirc-tx";
+    return this._name;
+  }
+
+  public get displayName(): string {
+    return this._displayName;
   }
 
   public async init(unisonht: UnisonHT): Promise<void> {
@@ -105,4 +113,10 @@ function createTransmitKeyOpenApi(remote: LircRemote): OpenAPI.Operation {
       },
     ],
   };
+}
+
+export interface LircTxModuleOptions {
+  remotes: LircRemote[];
+  name?: string;
+  displayName?: string;
 }

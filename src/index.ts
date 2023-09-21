@@ -8,12 +8,12 @@ import {
   LircRxModule,
   LircTxModule,
   PioneerRemote,
+  RcaRemote,
   enableAllProtocols,
   findRcDeviceLircDevDir,
   getRcDevices,
 } from "./modules/ir";
-import { OtherRemote } from "./modules/ir/remotes/OtherRemote";
-import { ModeModule } from "./modules/mode/ModeModule";
+import { ModeModule } from "./modules/mode";
 
 const log = debug("unisonht:home");
 
@@ -28,9 +28,9 @@ async function run(): Promise<void> {
   const port = process.env.PORT || 8080;
 
   const remotes: LircRemote[] = [
-    new PioneerRemote(REMOTE_TV),
-    new DenonRemote(REMOTE_AV),
-    new OtherRemote(REMOTE_HOME),
+    new PioneerRemote(REMOTE_TV, "TV"),
+    new DenonRemote(REMOTE_AV, "Receiver"),
+    new RcaRemote(REMOTE_HOME, "Roku Remote"),
   ];
   const [lircRxDevice, lircTxDevice] = await findRemotes();
 
@@ -69,6 +69,10 @@ class HomeModule implements UnisonHTModule {
 
   public get name(): string {
     return "home";
+  }
+
+  public get displayName(): string {
+    return "Home";
   }
 
   public async init(unisonht: UnisonHT): Promise<void> {

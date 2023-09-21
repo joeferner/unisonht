@@ -2,6 +2,7 @@ import JSX from "../helpers/jsx";
 import { UnisonHTModule } from "../UnisonHTModule";
 
 export interface IndexParams {
+  currentModule: UnisonHTModule | undefined;
   modules: UnisonHTModule[];
   content: string;
 }
@@ -43,7 +44,11 @@ export function index(params: IndexParams): string {
                   <div class="sidebar-title">Modules</div>
                   {params.modules.map((module) => (
                     <div>
-                      <a href={`/module/${encodeURIComponent(module.name)}/`}>{module.name}</a>
+                      {params.currentModule === module ? (
+                        <div class="current">{module.displayName}</div>
+                      ) : (
+                        <a href={`/module/${encodeURIComponent(module.name)}/`}>{module.displayName}</a>
+                      )}
                     </div>
                   ))}
                 </div>

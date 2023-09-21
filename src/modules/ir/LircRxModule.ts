@@ -8,17 +8,25 @@ import { lircProtoToString } from "./lirc";
 const log = debug("unisonht:lirc:rx");
 
 export class LircRxModule implements UnisonHTModule {
-  private path: string;
+  private readonly _name: string;
+  private readonly _displayName: string;
+  private readonly path: string;
   private rx?: LircEventReader;
   private remotes: LircRemote[];
 
-  public constructor(path: string, options: { remotes: LircRemote[] }) {
+  public constructor(path: string, options: LircRxModuleOptions) {
     this.path = path;
+    this._name = options.name ?? "lirc-rx";
+    this._displayName = options.displayName ?? options.name ?? "LIRC: Rx";
     this.remotes = options.remotes;
   }
 
   public get name(): string {
-    return "lirc-rx";
+    return this._name;
+  }
+
+  public get displayName(): string {
+    return this._displayName;
   }
 
   public async init(unisonht: UnisonHT): Promise<void> {
@@ -61,4 +69,10 @@ export class LircRxModule implements UnisonHTModule {
   public async getHtml(_unisonht: UnisonHT, _params: GetHtmlParams): Promise<string> {
     return "No actions";
   }
+}
+
+export interface LircRxModuleOptions {
+  remotes: LircRemote[];
+  name?: string;
+  displayName?: string;
 }

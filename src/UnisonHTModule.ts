@@ -4,6 +4,8 @@ import { UnisonHT, UnisonHTEvent } from "./UnisonHT";
 export interface UnisonHTModule {
   readonly name: string;
 
+  readonly displayName: string;
+
   init?: (unisonht: UnisonHT) => Promise<void>;
 
   handle?: (unisonht: UnisonHT, event: UnisonHTEvent) => Promise<boolean>;
