@@ -1,36 +1,163 @@
-[data-bs-theme="dark"] {
-  --bs-link-color: #{rgb(172, 95, 95)};
-  --bs-link-color-rgb: #{172, 95, 95};
+[data-theme="dark"] {
+  --primary: #{rgb(187, 133, 252)};
 
-  .navbar {
-    --bs-navbar-color: #{rgb(102, 0, 0)};
+  --color: #{rgb(252, 252, 252)};
+  --color-focus: var(--primary);
+  --bg-color: #{rgb(32, 32, 32)};
+  --secondary-bg-color: #{rgb(47, 47, 47)};
+
+  --navbar-bg-color: var(--secondary-bg-color);
+  --navbar-color: #{rgb(252, 252, 252)};
+  --navbar-height: #{35px};
+
+  --sidebar-bg-color: var(--secondary-bg-color);
+  --sidebar-width: #{250px};
+
+  --button-bg-color: var(--primary);
+  --button-color: var(--bg-color);
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  color: var(--color);
+  background-color: var(--bg-color);
+  font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+}
+
+body {
+  min-height: 100vh;
+}
+
+a {
+  color: var(--color);
+
+  &:visited {
+    color: var(--color);
   }
+
+  &:focus,
+  &:hover {
+    color: var(--color-focus);
+  }
+}
+
+button {
+  border: 0;
+  background-color: var(--button-bg-color);
+  color: var(--button-color);
+  cursor: pointer;
+  padding: 6px;
+  margin: 5px;
+  border-radius: 3px;
+  font-weight: bold;
+
+  &:hover,
+  &:focus {
+    background-color: color-mix(in srgb, var(--button-bg-color), white 35%);
+  }
+}
+
+.sticky-top {
+  position: sticky;
+  top: 0;
+}
+
+.page-width {
+  max-width: 1000px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
 }
 
 .navbar {
-  background-color: var(--bs-navbar-color);
-  box-shadow:
-    0 0.5rem 1rem rgba(0, 0, 0, 0.15),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.15);
+  display: flex;
+  flex-direction: row;
+  height: var(--navbar-height);
+  min-height: var(--navbar-height);
+  max-height: var(--navbar-height);
+  background-color: var(--navbar-bg-color);
+  box-shadow: color-mix(in srgb, var(--bg-color), transparent 40%) 0 0 30px 0;
+  z-index: 1;
 
-  a {
-    color: var(--bs-navbar-active-color);
+  & > div {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+
+    .navbar-brand {
+      font-size: 16pt;
+      margin-left: 10px;
+    }
+
+    a {
+      color: var(--navbar-color);
+      text-decoration: none;
+    }
+  }
+
+  button.toggle-sidebar-button {
+    cursor: pointer;
+    border: 1px solid transparent;
+    background-color: transparent;
+    color: var(--color);
+    padding: 2px 4px;
+    border-radius: 2px;
+    display: none;
+    margin-left: 10px;
+
+    &:hover {
+      border-color: var(--color);
+    }
   }
 }
 
-.page-wrapper {
+.page-wrapper-wrapper {
+  flex-grow: 1;
   display: flex;
-  width: 100%;
-  align-items: stretch;
 
-  .sidebar-wrapper {
-    min-width: 250px;
-    max-width: 250px;
-    transition: all 0.3s;
+  .page-wrapper {
+    display: flex;
+    width: 100%;
+    align-items: stretch;
 
-    .sidebar {
-      min-width: 250px;
-      max-width: 250px;
+    .sidebar-wrapper {
+      min-width: var(--sidebar-width);
+      max-width: var(--sidebar-width);
+      max-height: calc(100vh - var(--navbar-height));
+      transition: all 0.3s;
+      background-color: var(--sidebar-bg-color);
+      overflow: hidden;
+      position: sticky;
+      top: var(--navbar-height);
+
+      .sidebar {
+        min-width: var(--sidebar-width);
+        max-width: var(--sidebar-width);
+        margin: 10px;
+
+        .sidebar-title {
+          font-size: 14pt;
+          margin-left: 0px;
+        }
+
+        & > div {
+          margin-left: 5px;
+        }
+
+        a {
+          text-decoration: none;
+        }
+      }
+    }
+
+    .main-content {
+      margin: 10px;
     }
   }
 }
@@ -40,12 +167,19 @@
 }
 
 @media (max-width: 768px) {
-  .page-wrapper {
-    .sidebar-wrapper {
-      overflow: hidden;
-      width: 0;
-      min-width: 0;
-      max-width: 0;
+  .navbar {
+    button.toggle-sidebar-button {
+      display: block;
+    }
+  }
+
+  .page-wrapper-wrapper {
+    .page-wrapper {
+      .sidebar-wrapper {
+        width: 0;
+        min-width: 0;
+        max-width: 0;
+      }
     }
   }
 }

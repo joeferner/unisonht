@@ -10,29 +10,37 @@ export function index(params: IndexParams): string {
   return (
     "<!doctype html>\n" +
     (
-      <html lang="en" data-bs-theme="dark">
+      <html lang="en" data-theme="dark">
         <head>
           <meta charset="utf-8"></meta>
           <meta name="viewport" content="width=device-width, initial-scale=1"></meta>
           <title>UnisonHT</title>
-          <link href="/bootstrap/bootstrap.min.css" rel="stylesheet"></link>
+          <link href="/@fontsource/roboto/300.css" rel="stylesheet"></link>
+          <link href="/@fontsource/roboto/400.css" rel="stylesheet"></link>
+          <link href="/@fontsource/roboto/500.css" rel="stylesheet"></link>
+          <link href="/@fontsource/roboto/700.css" rel="stylesheet"></link>
+          <link href="/@fontawesome/css/fontawesome.css" rel="stylesheet"></link>
+          <link href="/@fontawesome/css/brands.css" rel="stylesheet"></link>
+          <link href="/@fontawesome/css/solid.css" rel="stylesheet"></link>
           <link href="/unisonht.css" rel="stylesheet"></link>
         </head>
         <body>
-          <header class="navbar navbar-expand-lg sticky-top">
-            <nav class="container-xxl bd-gutter flex-wrap flex-lg-nowrap" aria-label="Main navigation">
-              <div class="container-fluid">
-                <a class="navbar-brand" href="/">
-                  UnisonHT
-                </a>
-              </div>
-            </nav>
+          <header class="navbar sticky-top">
+            <div class="page-width">
+              <button onclick="toggleSidebar()" class="toggle-sidebar-button">
+                <i class="fa-solid fa-bars"></i>
+              </button>
+              <a class="navbar-brand" href="/">
+                UnisonHT
+              </a>
+            </div>
           </header>
 
-          <div class="container-xxl bd-gutter mt-3 bd-layout">
+          <div class="page-width page-wrapper-wrapper">
             <div class="page-wrapper">
               <aside class="sidebar-wrapper">
                 <div class="sidebar">
+                  <div class="sidebar-title">Modules</div>
                   {params.modules.map((module) => (
                     <div>
                       <a href={`/module/${encodeURIComponent(module.name)}/`}>{module.name}</a>
@@ -40,12 +48,11 @@ export function index(params: IndexParams): string {
                   ))}
                 </div>
               </aside>
-              <main class="bd-main order-1">{params.content}</main>
+              <main class="main-content">{params.content}</main>
             </div>
           </div>
 
           <script src="/unisonht.js"></script>
-          <script src="/bootstrap/bootstrap.bundle.min.js"></script>
         </body>
       </html>
     )

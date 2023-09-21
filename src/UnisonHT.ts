@@ -6,7 +6,6 @@ import path from "path";
 import sass from "sass";
 import { UnisonHTModule } from "./UnisonHTModule";
 import { newNestedError } from "./helpers/NestedError";
-import { staticFile } from "./helpers/expressHelpers";
 import { Key } from "./keys";
 import { index } from "./pages/index";
 
@@ -24,13 +23,10 @@ export class UnisonHT {
     await this.registerJavascriptPath(path.join(root.path, "build/pages/unisonht.js"));
     await this.registerScssPath(path.join(root.path, "src/pages/unisonht.scss"));
 
-    this._express.get(
-      "/bootstrap/bootstrap.min.css",
-      staticFile(path.join(root.path, "node_modules/bootstrap/dist/css/bootstrap.min.css")),
-    );
-    this._express.get(
-      "/bootstrap/bootstrap.bundle.min.js",
-      staticFile(path.join(root.path, "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js")),
+    this._express.use("/@fontsource/roboto/", express.static(path.join(root.path, "node_modules/@fontsource/roboto")));
+    this._express.use(
+      "/@fontawesome/",
+      express.static(path.join(root.path, "node_modules/@fortawesome/fontawesome-free")),
     );
     this._express.get("/unisonht.js", (_req: Request, res: Response) => {
       res.setHeader("content-type", "application/javascript; charset=UTF-8");
