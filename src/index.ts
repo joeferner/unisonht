@@ -29,9 +29,9 @@ async function run(): Promise<void> {
   const port = process.env.PORT || 8080;
 
   const remotes: LircRemote[] = [
+    new RokuRemote(REMOTE_HOME, "Roku Remote"),
     new PioneerRemote(REMOTE_TV, "TV"),
     new DenonRemote(REMOTE_AV, "Receiver"),
-    new RokuRemote(REMOTE_HOME, "Roku Remote"),
   ];
   const [lircRxDevice, lircTxDevice] = await findRemotes();
 
