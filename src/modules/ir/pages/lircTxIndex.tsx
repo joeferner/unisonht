@@ -41,6 +41,20 @@ interface RemoteParams {
   remote: LircRemote;
 }
 
+function keyToHtml(key: Key | string): JSXElement {
+  switch (key) {
+    case Key.DIR_UP:
+      return <i class="fa-solid fa-caret-up"></i>;
+    case Key.DIR_LEFT:
+      return <i class="fa-solid fa-caret-left"></i>;
+    case Key.DIR_RIGHT:
+      return <i class="fa-solid fa-caret-right"></i>;
+    case Key.DIR_DOWN:
+      return <i class="fa-solid fa-caret-down"></i>;
+  }
+  return keyToShortDisplayName(key);
+}
+
 function Remote(params: RemoteParams): JSXElement {
   let otherKeys: string[];
   let buttonLayoutElem: JSXElement | undefined;
@@ -84,7 +98,7 @@ function Remote(params: RemoteParams): JSXElement {
               key: keys[i],
               width: itemWidth,
               height: 0,
-              displayName: keyToShortDisplayName(keys[i]),
+              displayName: "???",
             });
             left += itemWidth;
           }
@@ -133,7 +147,7 @@ function Remote(params: RemoteParams): JSXElement {
               class="btn btn-primary"
               onclick={`lircButtonPress('${params.moduleName}', '${params.remote.name}', '${button.key}')"`}
             >
-              {button.displayName}
+              {button.displayName === "???" ? keyToHtml(button.key) : button.displayName}
             </button>
           </div>
         ))}
@@ -161,7 +175,7 @@ function Remote(params: RemoteParams): JSXElement {
                   class="btn btn-primary"
                   onclick={`lircButtonPress('${params.moduleName}', '${params.remote.name}', '${key}')"`}
                 >
-                  {keyToShortDisplayName(key)}
+                  {keyToHtml(key)}
                 </button>
               ))}
             </div>
