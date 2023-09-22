@@ -15,6 +15,7 @@ export function index(params: IndexParams): string {
         <head>
           <meta charset="utf-8"></meta>
           <meta name="viewport" content="width=device-width, initial-scale=1"></meta>
+          <link rel="icon" href="/favicon.svg" type="image/svg+xml"></link>
           <title>UnisonHT</title>
           <link href="/@fontsource/roboto/300.css" rel="stylesheet"></link>
           <link href="/@fontsource/roboto/400.css" rel="stylesheet"></link>

@@ -150,6 +150,8 @@ class RokuRemote extends RcaRemote {
 }
 
 const ROKU_BUTTON_LAYOUT: ButtonLayout = {
+  width: 300,
+  height: 300,
   buttons: [
     {
       key: Key.POWER_TOGGLE,

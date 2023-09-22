@@ -8,6 +8,8 @@ export interface KeyDecodeResult {
 }
 
 export interface ButtonLayout {
+  width: number;
+  height: number;
   buttons: ButtonLayoutButton[];
 }
 

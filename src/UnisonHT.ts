@@ -8,6 +8,7 @@ import { UnisonHTModule } from "./UnisonHTModule";
 import { newNestedError } from "./helpers/NestedError";
 import { Key } from "./keys";
 import { index } from "./pages/index";
+import { staticFile } from "./helpers/expressHelpers";
 
 export class UnisonHT {
   private _express: Express;
@@ -23,6 +24,7 @@ export class UnisonHT {
     await this.registerJavascriptPath(path.join(root.path, "build/pages/unisonht.js"));
     await this.registerScssPath(path.join(root.path, "src/pages/unisonht.scss"));
 
+    this._express.use("/favicon.svg", staticFile(path.join(root.path, "src/pages/favicon.svg")));
     this._express.use("/@fontsource/roboto/", express.static(path.join(root.path, "node_modules/@fontsource/roboto")));
     this._express.use(
       "/@fontawesome/",

@@ -100,3 +100,43 @@ export enum Key {
   VIDEO_OFF = "VIDEO_OFF",
   VIDEO_SELECT = "VIDEO_SELECT",
 }
+
+export function keyToShortDisplayName(key: Key | string): string {
+  switch (key) {
+    case Key.NUM_0:
+      return "0";
+    case Key.NUM_1:
+      return "1";
+    case Key.NUM_2:
+      return "2";
+    case Key.NUM_3:
+      return "3";
+    case Key.NUM_4:
+      return "4";
+    case Key.NUM_5:
+      return "5";
+    case Key.NUM_6:
+      return "6";
+    case Key.NUM_7:
+      return "7";
+    case Key.NUM_8:
+      return "8";
+    case Key.NUM_9:
+      return "9";
+    case Key.VOLUME_UP:
+      return "VOL UP";
+    case Key.VOLUME_DOWN:
+      return "VOL DOWN";
+    case Key.CHANNEL_UP:
+      return "CH UP";
+    case Key.CHANNEL_DOWN:
+      return "CH DOWN";
+    case Key.POWER_OFF:
+      return "PWR OFF";
+    case Key.POWER_ON:
+      return "PWR ON";
+    case Key.POWER_TOGGLE:
+      return "PWR TGL";
+  }
+  return key.replace("_", " ");
+}
