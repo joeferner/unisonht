@@ -1,5 +1,7 @@
 import spi, { SpiDevice, SpiMessage, SpiOptions } from "spi-device";
 
+// https://docs.openenergymonitor.org/electricity-monitoring/ct-sensors/interface-with-arduino.html
+
 const COM_SPEED_HZ = 20000;
 
 export class Mcp3204 {
