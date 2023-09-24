@@ -35,6 +35,9 @@ dependencies:
   sass:
     specifier: ^1.67.0
     version: 1.67.0
+  spi-device:
+    specifier: ^3.1.2
+    version: 3.1.2
 
 devDependencies:
   '@types/debug':
@@ -1819,6 +1822,15 @@ packages:
   /source-map-js@1.0.2:
     resolution: {integrity: sha512-R0XvVJ9WusLiqTCEiGCmICCMplcCkIwwR11mOSD9CR5u+IXYdiseeEuXCVAjS54zqwkLcPNnmU4OeJ6tUrWhDw==}
     engines: {node: '>=0.10.0'}
+    dev: false
+
+  /spi-device@3.1.2:
+    resolution: {integrity: sha512-5ubnDcpFjMAiO32j7Jrg/EMSmnInoh9LFzh/abVSJxTjCbmUQdRDVgNG5mRlOpMZc+SCHNSzqKVHGe8n0mVKwA==}
+    engines: {node: '>=10.0.0'}
+    requiresBuild: true
+    dependencies:
+      bindings: 1.5.0
+      nan: 2.18.0
     dev: false
 
   /statuses@2.0.1:

@@ -1,6 +1,7 @@
 import debug from "debug";
 import { EventType, UnisonHT, UnisonHTEvent } from "./UnisonHT";
 import { GetHtmlParams, UnisonHTModule } from "./UnisonHTModule";
+import { PowerMonitor } from "./helpers/PowerMonitor";
 import { Key } from "./keys";
 import {
   DenonRemote,
@@ -27,6 +28,15 @@ const REMOTE_HOME = "home";
 
 async function run(): Promise<void> {
   const port = process.env.PORT || 8080;
+
+  const powerMonitor = new PowerMonitor({
+    updateInterval: 5000,
+    channels: [0],
+  });
+  await powerMonitor.open();
+  setInterval(async () => {
+    console.log("ch", await powerMonitor.read(0));
+  }, 5000);
 
   const remotes: LircRemote[] = [
     new RokuRemote(REMOTE_HOME, "Roku Remote"),

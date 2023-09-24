@@ -3,7 +3,7 @@
 ## Mock IR
 
 ```
-MOCK_IR=true npm start
+MOCK_SPI=true MOCK_IR=true npm start
 ```
 
 ## Raspberry Pi
@@ -40,4 +40,13 @@ sudo ./scripts/raspberry-pi-ir-setup.sh
 sudo reboot
 ir-keytable # find gpio_ir_recv and note the rcX and use it in the next command
 ir-keytable -s rc1 -t -c -p all
+```
+
+# Power Sense
+
+## Setup
+
+```
+sudo ./scripts/raspberry-pi-adc-setup.sh
+sudo reboot
 ```
