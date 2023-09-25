@@ -41,6 +41,6 @@ export class LircEventWriter {
     buffer.writeUInt16LE(proto, 10);
     buffer.writeUInt32LE(0, 12);
     buffer.writeBigUInt64LE(BigInt(scanCode), 16);
-    this.fd.write(buffer);
+    await this.fd.write(buffer);
   }
 }

@@ -8,8 +8,9 @@ export class RcaRemote extends GenericRemoteBase {
       keyMap: KEY_MAP,
       protocol: LircProto.Sony12,
       repeatCount: 3,
-      repeatGapMillis: 65,
-      repeatGapMapMillis: 200,
+      txRepeatGap: 0,
+      txScanCodeGap: 0,
+      rxRepeatGapMapMillis: 200,
       displayName,
     });
   }

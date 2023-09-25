@@ -10,9 +10,19 @@ export type PartialKey = { [value: string]: Key | PartialKey };
 export interface GenericRemoteBaseOptions {
   protocol: LircProto;
   keyMap: { [value: string]: Key | PartialKey };
+  /**
+   * Time between multi-scan code tx, for example pioneer will send two differnet scan codes for the input buttons
+   */
+  txScanCodeGap: number;
+  /**
+   * Time between each tx
+   */
+  txRepeatGap: number;
+  /**
+   * max time between signals to consider it a continuous signal
+   */
+  rxRepeatGapMapMillis: number;
   repeatCount: number;
-  repeatGapMillis: number;
-  repeatGapMapMillis: number;
   displayName?: string;
 }
 
@@ -23,8 +33,9 @@ export abstract class GenericRemoteBase implements LircRemote {
   private readonly keyMap: { [value: string]: Key | PartialKey };
   private readonly invertedKeyMap: { [key: string]: string };
   private readonly repeatCount: number;
-  private readonly repeatGapMillis: number;
-  private readonly repeatGapMaxMillis: number;
+  private readonly rxRepeatGapMaxMillis: number;
+  private readonly txScanCodeGap: number;
+  private readonly txRepeatGap: number;
   private lastEventTime?: bigint;
   private lastKey?: Key | string;
   private repeat = 0;
@@ -37,8 +48,9 @@ export abstract class GenericRemoteBase implements LircRemote {
     this.keyMap = options.keyMap;
     this.invertedKeyMap = invertKeyMap(options.keyMap);
     this.repeatCount = options.repeatCount;
-    this.repeatGapMillis = options.repeatGapMillis;
-    this.repeatGapMaxMillis = options.repeatGapMapMillis;
+    this.rxRepeatGapMaxMillis = options.rxRepeatGapMapMillis;
+    this.txScanCodeGap = options.txScanCodeGap;
+    this.txRepeatGap = options.txRepeatGap;
   }
 
   public get name(): string {
@@ -69,7 +81,7 @@ export abstract class GenericRemoteBase implements LircRemote {
 
     if (isString(key)) {
       const dt = (): number => timestampDeltaMillis(event.timestamp, this.lastEventTime ?? BigInt(0));
-      if (key === this.lastKey && dt() < this.repeatGapMaxMillis) {
+      if (key === this.lastKey && dt() < this.rxRepeatGapMaxMillis) {
         this.repeat++;
       } else {
         this.repeat = 0;
@@ -94,12 +106,15 @@ export abstract class GenericRemoteBase implements LircRemote {
     const scanCodes = this.invertedKeyMap[key]?.split(" ");
     if (scanCodes) {
       for (let i = 0; i < this.repeatCount; i++) {
-        for (const scanCode of scanCodes) {
+        for (let scanCodeIndex = 0; scanCodeIndex < scanCodes.length; scanCodeIndex++) {
+          if (scanCodeIndex > 0) {
+            await sleep(this.txScanCodeGap);
+          }
+          const scanCode = scanCodes[scanCodeIndex];
           await tx.send(this.protocol, BigInt(`0x${scanCode}`));
-          await sleep(this.repeatGapMillis);
         }
+        await sleep(this.txRepeatGap);
       }
-      await sleep(this.repeatGapMaxMillis);
       return true;
     }
     return false;

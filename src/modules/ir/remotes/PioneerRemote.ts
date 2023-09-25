@@ -8,8 +8,9 @@ export class PioneerRemote extends GenericRemoteBase {
       keyMap: KEY_MAP,
       protocol: LircProto.NEC,
       repeatCount: 2,
-      repeatGapMillis: 130,
-      repeatGapMapMillis: 200,
+      txScanCodeGap: 25,
+      txRepeatGap: 25,
+      rxRepeatGapMapMillis: 200,
       displayName,
     });
   }

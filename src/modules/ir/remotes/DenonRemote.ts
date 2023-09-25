@@ -8,8 +8,9 @@ export class DenonRemote extends GenericRemoteBase {
       keyMap: KEY_MAP,
       protocol: LircProto.SHARP,
       repeatCount: 3,
-      repeatGapMillis: 130,
-      repeatGapMapMillis: 200,
+      txRepeatGap: 0,
+      txScanCodeGap: 200,
+      rxRepeatGapMapMillis: 200,
       displayName,
     });
   }
