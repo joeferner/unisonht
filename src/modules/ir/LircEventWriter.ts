@@ -36,11 +36,22 @@ export class LircEventWriter {
     }
     log(`sending ${proto} 0x${scanCode.toString(16)}`);
     const buffer = Buffer.alloc(SCAN_CODE_SIZE);
-    buffer.writeBigUInt64LE(BigInt(0), 0);
-    buffer.writeUInt16LE(0, 8);
-    buffer.writeUInt16LE(proto, 10);
-    buffer.writeUInt32LE(0, 12);
-    buffer.writeBigUInt64LE(BigInt(scanCode), 16);
+    buffer.writeBigUInt64LE(BigInt(0), 0); // timestamp
+    buffer.writeUInt16LE(0, 8); // flags
+    buffer.writeUInt16LE(proto, 10); // proto
+    buffer.writeUInt32LE(0, 12); // keycode
+    buffer.writeBigUInt64LE(BigInt(scanCode), 16); // scan code
+    await this.fd.write(buffer);
+  }
+
+  public async sendRaw(raw: Buffer): Promise<void> {
+    if (process.env.MOCK_IR) {
+      log(`mock send raw ${raw}`);
+      return;
+    }
+    if (!this.fd) {
+      throw new Error("lirc device not open");
+    }
     await this.fd.write(buffer);
   }
 }

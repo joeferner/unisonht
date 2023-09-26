@@ -35,7 +35,11 @@ async function run(): Promise<void> {
   });
   await powerMonitor.open();
   setInterval(async () => {
-    console.log("ch", await powerMonitor.read(0));
+    try {
+      console.log("ch", await powerMonitor.read(0));
+    } catch (err) {
+      console.error("fail", err);
+    }
   }, 5000);
 
   const remotes: LircRemote[] = [

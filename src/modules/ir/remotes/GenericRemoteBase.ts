@@ -111,13 +111,17 @@ export abstract class GenericRemoteBase implements LircRemote {
             await sleep(this.txScanCodeGap);
           }
           const scanCode = scanCodes[scanCodeIndex];
-          await tx.send(this.protocol, BigInt(`0x${scanCode}`));
+          this.sendToLircEventWriter(tx, this.protocol, BigInt(`0x${scanCode}`));
         }
         await sleep(this.txRepeatGap);
       }
       return true;
     }
     return false;
+  }
+
+  protected async sendToLircEventWriter(tx: LircEventWriter, protocol: LircProto, scanCode: bigint): Promise<void> {
+    return await tx.send(protocol, scanCode);
   }
 }
 

@@ -1,15 +1,16 @@
 import { Key } from "../../../keys";
 import { LircProto } from "../lirc";
-import { GenericRemoteBase, PartialKey } from "./GenericRemoteBase";
+import { PartialKey } from "./GenericRemoteBase";
+import { SharpRemoteBase } from "./SharpRemoteBase";
 
-export class DenonRemote extends GenericRemoteBase {
+export class DenonRemote extends SharpRemoteBase {
   public constructor(name: string, displayName?: string) {
     super(name, {
       keyMap: KEY_MAP,
       protocol: LircProto.SHARP,
       repeatCount: 3,
       txRepeatGap: 0,
-      txScanCodeGap: 200,
+      txScanCodeGap: 0,
       rxRepeatGapMapMillis: 200,
       displayName,
     });
