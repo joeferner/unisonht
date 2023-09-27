@@ -35,6 +35,7 @@ export class LircEventWriter {
       throw new Error("lirc device not open");
     }
     log(`sending ${proto} 0x${scanCode.toString(16)}`);
+    await writeIoctl32(this.fd, LircIoCtlCommand.SetSendMode, LircMode.ScanCode);
     const buffer = Buffer.alloc(SCAN_CODE_SIZE);
     buffer.writeBigUInt64LE(BigInt(0), 0); // timestamp
     buffer.writeUInt16LE(0, 8); // flags
@@ -44,13 +45,18 @@ export class LircEventWriter {
     await this.fd.write(buffer);
   }
 
-  public async sendRaw(raw: Buffer): Promise<void> {
+  public async sendRaw(pulseWidths: number[]): Promise<void> {
     if (process.env.MOCK_IR) {
-      log(`mock send raw ${raw}`);
+      log(`mock send raw ${pulseWidths}`);
       return;
     }
     if (!this.fd) {
       throw new Error("lirc device not open");
+    }
+    await writeIoctl32(this.fd, LircIoCtlCommand.SetSendMode, LircMode.Pulse);
+    const buffer = Buffer.alloc(pulseWidths.length * 4);
+    for (let rawIndex = 0; rawIndex < pulseWidths.length; rawIndex++) {
+      buffer.writeUInt32LE(pulseWidths[rawIndex], rawIndex * 4);
     }
     await this.fd.write(buffer);
   }
