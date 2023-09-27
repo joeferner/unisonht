@@ -39,12 +39,13 @@ export class SharpRemoteBase extends GenericRemoteBase {
 
     addBits(address, ADDRESS_BIT_COUNT);
     addBits(command, COMMAND_BIT_COUNT);
-    addBits(1, 2);
+    // according to the sharp spec this should be 1 but according to a Denon remote as https://github.com/Arduino-IRremote/Arduino-IRremote/blob/master/src/ir_Denon.hpp#L78-L83 it should be 0,0
+    addBits(0, 2);
     pulseWidths.push(SHARP_UNIT * 8); // 320us - trailing pulse
     pulseWidths.push(SHARP_UNIT * 1000); // 40ms - space
     addBits(address, ADDRESS_BIT_COUNT);
     addBits(~command, COMMAND_BIT_COUNT);
-    addBits(~1, 2);
+    addBits(0b11, 2);
     pulseWidths.push(SHARP_UNIT * 8); // 320us - trailing pulse
     await tx.sendRaw(pulseWidths);
     await sleep(40);
