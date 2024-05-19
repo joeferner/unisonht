@@ -18,8 +18,6 @@
   ],
   "remote.SSH.defaultExtensions": [
     "streetsidesoftware.code-spell-checker",
-    "dbaeumer.vscode-eslint",
-    "esbenp.prettier-vscode",
     "timonwong.shellcheck"
   ]
 }
