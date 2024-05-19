@@ -11,6 +11,38 @@ use num_derive::FromPrimitive;
 pub mod lirc_reader;
 pub mod lirc_writer;
 
+#[derive(FromPrimitive, Copy, Clone)]
+pub enum LircProtocol {
+    Unknown = 0,
+    Other = 1,
+    Rc5 = 2,
+    Rc5x20 = 3,
+    Rc5Sz = 4,
+    Jvc = 5,
+    Sony12 = 6,
+    Sony15 = 7,
+    Sony20 = 8,
+    Nec = 9,
+    Necx = 10,
+    Nec32 = 11,
+    Sanyo = 12,
+    Mcir2Kbd = 13,
+    Mcir2Mse = 14,
+    Rc60 = 15,
+    Rc66a20 = 16,
+    Rc66a24 = 17,
+    Rc66a32 = 18,
+    Rc6Mce = 19,
+    Sharp = 20,
+    Xmp = 21,
+    Cec = 22,
+    Imon = 23,
+    Rcmm12 = 24,
+    Rcmm24 = 25,
+    Rcmm32 = 26,
+    XboxDvd = 27,
+}
+
 pub const SCAN_CODE_SIZE: usize = (64 + 16 + 16 + 32 + 64) / 8;
 
 #[derive(Debug, Clone)]
