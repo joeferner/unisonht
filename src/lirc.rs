@@ -16,6 +16,15 @@ use std::os::unix::io::RawFd;
 
 const SCAN_CODE_SIZE: usize = (64 + 16 + 16 + 32 + 64) / 8;
 
+#[derive(Debug, Clone)]
+pub struct LircEvent {
+    pub timestamp: u64,
+    pub flags: u16,
+    pub rc_protocol: u16,
+    pub keycode: u32,
+    pub scan_code: u64,
+}
+
 #[derive(FromPrimitive)]
 enum LircIoCtlCommand {
     GetFeatures = ioc!(READ, 'i', 0x00000000, 4) as isize,
@@ -70,9 +79,20 @@ impl LircReader {
         return Result::Ok(LircReader { fd });
     }
 
-    pub fn read(&mut self) -> Result<Vec<u8>> {
+    pub fn read(&mut self) -> Result<Vec<LircEvent>> {
         let mut buf: [u8; SCAN_CODE_SIZE * 64] = [0; SCAN_CODE_SIZE * 64];
         let ret = unistd::read(self.fd, &mut buf)?;
-        return Result::Ok(buf[0..ret].to_vec());
+        let mut events = vec![];
+        for offset in (0..ret).step_by(SCAN_CODE_SIZE) {
+            let event = LircEvent {
+                timestamp: u64::from_le_bytes(buf[offset..(offset + 8)].try_into()?),
+                flags: u16::from_le_bytes(buf[(offset + 8)..(offset + 10)].try_into()?),
+                rc_protocol: u16::from_le_bytes(buf[(offset + 10)..(offset + 12)].try_into()?),
+                keycode: u32::from_le_bytes(buf[(offset + 12)..(offset + 16)].try_into()?),
+                scan_code: u64::from_le_bytes(buf[(offset + 16)..(offset + 24)].try_into()?),
+            };
+            events.push(event);
+        }
+        return Result::Ok(events);
     }
 }

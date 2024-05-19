@@ -5,6 +5,7 @@ pub enum MyError {
     SpiError(rppal::spi::Error),
     StdIoError(std::io::Error),
     NixErrnoError(nix::errno::Errno),
+    TryFromSliceError(std::array::TryFromSliceError),
     GenericError(String),
 }
 
@@ -29,5 +30,11 @@ impl From<std::io::Error> for MyError {
 impl From<nix::errno::Errno> for MyError {
     fn from(err: nix::errno::Errno) -> Self {
         return MyError::NixErrnoError(err);
+    }
+}
+
+impl From<std::array::TryFromSliceError> for MyError {
+    fn from(err: std::array::TryFromSliceError) -> Self {
+        return MyError::TryFromSliceError(err);
     }
 }
