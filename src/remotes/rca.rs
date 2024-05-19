@@ -2,14 +2,6 @@ use crate::lirc::{LircEvent, LircProtocol};
 
 use super::{DecodeResult, Key, Remote};
 
-fn create_rca_result(key: Key) -> Option<DecodeResult> {
-    return Option::Some(DecodeResult {
-        time: 0,
-        key,
-        repeat: 0,
-    });
-}
-
 pub struct RcaRemote {}
 
 impl RcaRemote {
@@ -39,13 +31,17 @@ impl Remote for RcaRemote {
         return 200;
     }
 
+    fn get_display_name(&self) -> &str {
+        return "rca";
+    }
+
     fn decode(&self, events: &Vec<LircEvent>) -> Option<DecodeResult> {
         if let Option::Some(first_event) = events.get(0) {
             match first_event.scan_code {
-                0x10015 => return create_rca_result(Key::PowerToggle),
-                0x10012 => return create_rca_result(Key::VolumeUp),
-                0x10013 => return create_rca_result(Key::VolumeDown),
-                0x10014 => return create_rca_result(Key::Mute),
+                0x10015 => return DecodeResult::new(self, Key::PowerToggle),
+                0x10012 => return DecodeResult::new(self, Key::VolumeUp),
+                0x10013 => return DecodeResult::new(self, Key::VolumeDown),
+                0x10014 => return DecodeResult::new(self, Key::Mute),
                 _ => return Option::None,
             }
         }

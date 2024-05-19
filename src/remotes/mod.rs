@@ -109,14 +109,27 @@ pub struct DecodeResult {
     pub time: u32,
     pub key: Key,
     pub repeat: u8,
+    pub source: String,
 }
 
-trait Remote {
+impl DecodeResult {
+    pub fn new(remote: &dyn Remote, key: Key) -> Option<Self> {
+        return Option::Some(DecodeResult {
+            time: 0,
+            key,
+            repeat: 0,
+            source: remote.get_display_name().to_string(),
+        });
+    }
+}
+
+pub trait Remote {
     fn get_protocol(&self) -> LircProtocol;
     fn get_repeat_count(&self) -> u32;
     fn get_tx_scan_code_gap(&self) -> u32;
     fn get_tx_repeat_gap(&self) -> u32;
     fn get_rx_repeat_gap_max(&self) -> u32;
+    fn get_display_name(&self) -> &str;
 
     fn decode(&self, events: &Vec<LircEvent>) -> Option<DecodeResult>;
 }
