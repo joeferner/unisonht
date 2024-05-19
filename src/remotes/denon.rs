@@ -1,6 +1,6 @@
 use crate::lirc::{LircEvent, LircProtocol};
 
-use super::{DecodeResult, Key, Remote, RemoteInfo};
+use super::{DecodeResult, Key, Remote};
 
 fn create_denon_result(key: Key) -> Option<DecodeResult> {
     return Option::Some(DecodeResult {
@@ -19,14 +19,24 @@ impl DenonRemote {
 }
 
 impl Remote for DenonRemote {
-    fn get_remote_info(&self) -> RemoteInfo {
-        return RemoteInfo {
-            protocol: LircProtocol::Sharp,
-            repeat_count: 3,
-            tx_scan_code_gap: 0,
-            tx_repeat_gap: 0,
-            rx_repeat_gap_max: 200,
-        };
+    fn get_protocol(&self) -> LircProtocol {
+        return LircProtocol::Sharp;
+    }
+
+    fn get_repeat_count(&self) -> u32 {
+        return 3;
+    }
+
+    fn get_tx_scan_code_gap(&self) -> u32 {
+        return 0;
+    }
+
+    fn get_tx_repeat_gap(&self) -> u32 {
+        return 0;
+    }
+
+    fn get_rx_repeat_gap_max(&self) -> u32 {
+        return 200;
     }
 
     fn decode(&self, events: &Vec<LircEvent>) -> Option<DecodeResult> {

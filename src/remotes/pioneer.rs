@@ -1,6 +1,6 @@
 use crate::lirc::{LircEvent, LircProtocol};
 
-use super::{DecodeResult, Key, Remote, RemoteInfo};
+use super::{DecodeResult, Key, Remote};
 
 fn create_pioneer_result(key: Key) -> Option<DecodeResult> {
     return Option::Some(DecodeResult {
@@ -19,14 +19,24 @@ impl PioneerRemote {
 }
 
 impl Remote for PioneerRemote {
-    fn get_remote_info(&self) -> RemoteInfo {
-        return RemoteInfo {
-            protocol: LircProtocol::Nec,
-            repeat_count: 2,
-            tx_scan_code_gap: 25,
-            tx_repeat_gap: 25,
-            rx_repeat_gap_max: 200,
-        };
+    fn get_protocol(&self) -> LircProtocol {
+        return LircProtocol::Nec;
+    }
+
+    fn get_repeat_count(&self) -> u32 {
+        return 2;
+    }
+
+    fn get_tx_scan_code_gap(&self) -> u32 {
+        return 25;
+    }
+
+    fn get_tx_repeat_gap(&self) -> u32 {
+        return 25;
+    }
+
+    fn get_rx_repeat_gap_max(&self) -> u32 {
+        return 200;
     }
 
     fn decode(&self, events: &Vec<LircEvent>) -> Option<DecodeResult> {

@@ -1,18 +1,12 @@
-use crate::lirc::{LircEvent, LircProtocol};
-
 use self::denon::DenonRemote;
 use self::pioneer::PioneerRemote;
+use self::rca::RcaRemote;
+use crate::lirc::{LircEvent, LircProtocol};
+use log;
 
 mod denon;
 mod pioneer;
-
-pub struct RemoteInfo {
-    pub protocol: LircProtocol,
-    pub repeat_count: u32,
-    pub tx_scan_code_gap: u32,
-    pub tx_repeat_gap: u32,
-    pub rx_repeat_gap_max: u32,
-}
+mod rca;
 
 #[derive(Debug, Clone)]
 pub enum Key {
@@ -118,7 +112,11 @@ pub struct DecodeResult {
 }
 
 trait Remote {
-    fn get_remote_info(&self) -> RemoteInfo;
+    fn get_protocol(&self) -> LircProtocol;
+    fn get_repeat_count(&self) -> u32;
+    fn get_tx_scan_code_gap(&self) -> u32;
+    fn get_tx_repeat_gap(&self) -> u32;
+    fn get_rx_repeat_gap_max(&self) -> u32;
 
     fn decode(&self, events: &Vec<LircEvent>) -> Option<DecodeResult>;
 }
@@ -134,7 +132,11 @@ impl RemoteDecoder {
         return RemoteDecoder {
             events: vec![],
             last_decode_result: Option::None,
-            remotes: vec![Box::new(PioneerRemote::new()), Box::new(DenonRemote::new())],
+            remotes: vec![
+                Box::new(PioneerRemote::new()),
+                Box::new(DenonRemote::new()),
+                Box::new(RcaRemote::new()),
+            ],
         };
     }
 
@@ -142,7 +144,7 @@ impl RemoteDecoder {
         if let Option::Some(last_event) = self.events.last() {
             let delta_t = event.timestamp - last_event.timestamp;
             if delta_t > 500 * 1_000_000 {
-                println!("clear");
+                log::debug!("clearing {:?}", self.events);
                 self.events.clear();
             }
         }
@@ -150,18 +152,16 @@ impl RemoteDecoder {
         self.events.push(event);
 
         for remote in &self.remotes {
-            let info = remote.get_remote_info();
-
             if self
                 .events
                 .iter()
-                .all(|e| e.rc_protocol == info.protocol as u16)
+                .all(|e| e.rc_protocol == remote.get_protocol() as u16)
             {
                 if let Option::Some(mut result) = remote.decode(&self.events) {
                     result.time = (self.events.last().unwrap().timestamp / 1_000_000) as u32;
                     if let Option::Some(last_result) = &self.last_decode_result {
                         let delta_t = result.time - last_result.time;
-                        if delta_t < info.rx_repeat_gap_max {
+                        if delta_t < remote.get_rx_repeat_gap_max() {
                             result.repeat = last_result.repeat + 1;
                         }
                     }
