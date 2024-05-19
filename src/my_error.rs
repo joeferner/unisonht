@@ -4,6 +4,7 @@ pub type Result<T> = std::result::Result<T, MyError>;
 pub enum MyError {
     SpiError(rppal::spi::Error),
     StdIoError(std::io::Error),
+    NixErrnoError(nix::errno::Errno),
     GenericError(String),
 }
 
@@ -22,5 +23,11 @@ impl From<rppal::spi::Error> for MyError {
 impl From<std::io::Error> for MyError {
     fn from(err: std::io::Error) -> Self {
         return MyError::StdIoError(err);
+    }
+}
+
+impl From<nix::errno::Errno> for MyError {
+    fn from(err: nix::errno::Errno) -> Self {
+        return MyError::NixErrnoError(err);
     }
 }

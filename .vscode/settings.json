@@ -2,20 +2,25 @@
   "cSpell.words": [
     "Denon",
     "DEVNAME",
+    "Errno",
+    "fcntl",
     "fontawesome",
     "fontsource",
     "fortawesome",
     "gpio",
     "joeferner",
     "keytable",
+    "libc",
     "lirc",
     "lircd",
     "lircs",
     "Millis",
+    "RDONLY",
     "roboto",
     "rppal",
     "uevent",
-    "unisonht"
+    "unisonht",
+    "unistd"
   ],
   "remote.SSH.defaultExtensions": [
     "streetsidesoftware.code-spell-checker",
