@@ -13,11 +13,16 @@
     "lircs",
     "Millis",
     "roboto",
+    "rppal",
     "uevent",
     "unisonht"
   ],
   "remote.SSH.defaultExtensions": [
     "streetsidesoftware.code-spell-checker",
-    "timonwong.shellcheck"
+    "timonwong.shellcheck",
+    "rust-lang.rust-analyzer",
+    "serayuzgur.crates",
+    "njpwerner.autodocstring",
+    "smulyono.reveal"
   ]
 }
