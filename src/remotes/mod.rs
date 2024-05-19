@@ -1,7 +1,11 @@
+use std::thread::sleep;
+use std::time::Duration;
+
 use self::denon::DenonRemote;
 use self::pioneer::PioneerRemote;
 use self::rca::RcaRemote;
-use crate::lirc::{LircEvent, LircProtocol};
+use crate::lirc::{lirc_writer::LircWriter, LircEvent, LircProtocol};
+use crate::my_error::{MyError, Result};
 use log;
 
 mod denon;
@@ -106,7 +110,7 @@ pub enum Key {
 
 #[derive(Debug, Clone)]
 pub struct DecodeResult {
-    pub time: u32,
+    pub time: u64,
     pub key: Key,
     pub repeat: u8,
     pub source: String,
@@ -126,23 +130,24 @@ impl DecodeResult {
 pub trait Remote {
     fn get_protocol(&self) -> LircProtocol;
     fn get_repeat_count(&self) -> u32;
-    fn get_tx_scan_code_gap(&self) -> u32;
-    fn get_tx_repeat_gap(&self) -> u32;
-    fn get_rx_repeat_gap_max(&self) -> u32;
+    fn get_tx_scan_code_gap(&self) -> Duration;
+    fn get_tx_repeat_gap(&self) -> Duration;
+    fn get_rx_repeat_gap_max(&self) -> Duration;
     fn get_display_name(&self) -> &str;
 
     fn decode(&self, events: &Vec<LircEvent>) -> Option<DecodeResult>;
+    fn send(&self, writer: &mut LircWriter, key: Key) -> Result<()>;
 }
 
-pub struct RemoteDecoder {
+pub struct Remotes {
     events: Vec<LircEvent>,
     last_decode_result: Option<DecodeResult>,
     remotes: Vec<Box<dyn Remote>>,
 }
 
-impl RemoteDecoder {
+impl Remotes {
     pub fn new() -> Self {
-        return RemoteDecoder {
+        return Remotes {
             events: vec![],
             last_decode_result: Option::None,
             remotes: vec![
@@ -151,6 +156,18 @@ impl RemoteDecoder {
                 Box::new(RcaRemote::new()),
             ],
         };
+    }
+
+    pub fn send(&self, writer: &mut LircWriter, remote_name: &str, key: Key) -> Result<()> {
+        for remote in &self.remotes {
+            if remote.get_display_name() == remote_name {
+                return remote.send(writer, key);
+            }
+        }
+        return Result::Err(MyError::new(format!(
+            "could not find remote {}",
+            remote_name
+        )));
     }
 
     pub fn decode(&mut self, event: LircEvent) -> Option<DecodeResult> {
@@ -171,9 +188,9 @@ impl RemoteDecoder {
                 .all(|e| e.rc_protocol == remote.get_protocol() as u16)
             {
                 if let Option::Some(mut result) = remote.decode(&self.events) {
-                    result.time = (self.events.last().unwrap().timestamp / 1_000_000) as u32;
+                    result.time = (self.events.last().unwrap().timestamp / 1_000_000) as u64;
                     if let Option::Some(last_result) = &self.last_decode_result {
-                        let delta_t = result.time - last_result.time;
+                        let delta_t = Duration::from_millis(result.time - last_result.time);
                         if delta_t < remote.get_rx_repeat_gap_max() {
                             result.repeat = last_result.repeat + 1;
                         }
@@ -187,4 +204,21 @@ impl RemoteDecoder {
 
         return Option::None;
     }
+}
+
+pub fn send_scan_codes(
+    writer: &mut LircWriter,
+    remote: &dyn Remote,
+    scan_codes: Vec<u64>,
+) -> Result<()> {
+    for _repeat_index in 0..remote.get_repeat_count() {
+        for (scan_code_index, scan_code) in scan_codes.iter().enumerate() {
+            if scan_code_index > 0 {
+                sleep(remote.get_tx_scan_code_gap());
+            }
+            writer.write(remote.get_protocol() as u16, *scan_code)?;
+        }
+        sleep(remote.get_tx_repeat_gap());
+    }
+    return Result::Ok(());
 }

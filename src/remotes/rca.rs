@@ -1,7 +1,9 @@
-use crate::lirc::{LircEvent, LircProtocol};
+use std::time::Duration;
+
+use crate::lirc::{lirc_writer::LircWriter, LircEvent, LircProtocol};
 
 use super::{DecodeResult, Key, Remote};
-
+use crate::my_error::Result;
 pub struct RcaRemote {}
 
 impl RcaRemote {
@@ -19,20 +21,24 @@ impl Remote for RcaRemote {
         return 3;
     }
 
-    fn get_tx_scan_code_gap(&self) -> u32 {
-        return 0;
+    fn get_tx_scan_code_gap(&self) -> Duration {
+        return Duration::from_millis(0);
     }
 
-    fn get_tx_repeat_gap(&self) -> u32 {
-        return 0;
+    fn get_tx_repeat_gap(&self) -> Duration {
+        return Duration::from_millis(0);
     }
 
-    fn get_rx_repeat_gap_max(&self) -> u32 {
-        return 200;
+    fn get_rx_repeat_gap_max(&self) -> Duration {
+        return Duration::from_millis(200);
     }
 
     fn get_display_name(&self) -> &str {
         return "rca";
+    }
+
+    fn send(&self, _writer: &mut LircWriter, _key: Key) -> Result<()> {
+        todo!()
     }
 
     fn decode(&self, events: &Vec<LircEvent>) -> Option<DecodeResult> {

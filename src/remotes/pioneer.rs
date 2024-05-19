@@ -1,6 +1,12 @@
-use crate::lirc::{LircEvent, LircProtocol};
+use std::time::Duration;
 
-use super::{DecodeResult, Key, Remote};
+use crate::{
+    lirc::{lirc_writer::LircWriter, LircEvent, LircProtocol},
+    my_error::MyError,
+};
+
+use super::{send_scan_codes, DecodeResult, Key, Remote};
+use crate::my_error::Result;
 
 pub struct PioneerRemote {}
 
@@ -19,20 +25,31 @@ impl Remote for PioneerRemote {
         return 2;
     }
 
-    fn get_tx_scan_code_gap(&self) -> u32 {
-        return 25;
+    fn get_tx_scan_code_gap(&self) -> Duration {
+        return Duration::from_millis(25);
     }
 
-    fn get_tx_repeat_gap(&self) -> u32 {
-        return 25;
+    fn get_tx_repeat_gap(&self) -> Duration {
+        return Duration::from_millis(100);
     }
 
-    fn get_rx_repeat_gap_max(&self) -> u32 {
-        return 200;
+    fn get_rx_repeat_gap_max(&self) -> Duration {
+        return Duration::from_millis(200);
     }
 
     fn get_display_name(&self) -> &str {
         return "pioneer";
+    }
+
+    fn send(&self, writer: &mut LircWriter, key: Key) -> Result<()> {
+        let scan_codes = match key {
+            Key::PowerOn => vec![0xaa1a],
+            Key::PowerOff => vec![0xaa1b],
+            _ => {
+                return Result::Err(MyError::new(format!("unhandled key {:?}", key)));
+            }
+        };
+        return send_scan_codes(writer, self, scan_codes);
     }
 
     fn decode(&self, events: &Vec<LircEvent>) -> Option<DecodeResult> {

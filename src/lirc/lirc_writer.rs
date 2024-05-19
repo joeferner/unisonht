@@ -19,6 +19,7 @@ impl LircWriter {
     }
 
     pub fn write(&mut self, protocol: u16, scan_code: u64) -> Result<()> {
+        log::debug!("writing (protocol: {}, scan_code: 0x{:#x})", protocol, scan_code);
         ioctl::write_u32(
             self.file.as_raw_fd(),
             LircIoCtlCommand::SetSendMode as u32,
