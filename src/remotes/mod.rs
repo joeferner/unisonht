@@ -1,7 +1,9 @@
 use crate::lirc::{LircEvent, LircProtocol};
 
-use self::pioneer::{pioneer_decode, pioneer_info};
+use self::denon::DenonRemote;
+use self::pioneer::PioneerRemote;
 
+mod denon;
 mod pioneer;
 
 pub struct RemoteInfo {
@@ -66,6 +68,46 @@ pub enum Key {
     Size,
     AvSelection,
     Sleep,
+    Dimmer,
+    InputCd,
+    InputDbs,
+    InputDvd,
+    InputMode,
+    InputModeAnalog,
+    InputModeExtIn,
+    InputPhono,
+    InputTape,
+    InputTuner,
+    InputTv,
+    InputVAux,
+    InputVcr1,
+    InputVcr2,
+    InputVdp,
+    Mode5ch7ch,
+    ModeCinema,
+    ModeDspSimu,
+    ModeGame,
+    ModeMusic,
+    ModePureDirect,
+    ModeStandard,
+    ModeStereo,
+    ModeSurroundBack,
+    OnScreen,
+    PowerOffMain,
+    PowerOnMain,
+    PresetNext,
+    PresetPrevious,
+    RoomEq,
+    Speaker,
+    SurroundParameter,
+    SystemSetup,
+    TestTone,
+    TunerBand,
+    TunerMemory,
+    TunerMode,
+    TunerShift,
+    VideoOff,
+    VideoSelect,
 }
 
 #[derive(Debug, Clone)]
@@ -75,10 +117,16 @@ pub struct DecodeResult {
     pub repeat: u8,
 }
 
+trait Remote {
+    fn get_remote_info(&self) -> RemoteInfo;
+
+    fn decode(&self, events: &Vec<LircEvent>) -> Option<DecodeResult>;
+}
+
 pub struct RemoteDecoder {
     events: Vec<LircEvent>,
     last_decode_result: Option<DecodeResult>,
-    pioneer_info: RemoteInfo,
+    remotes: Vec<Box<dyn Remote>>,
 }
 
 impl RemoteDecoder {
@@ -86,7 +134,7 @@ impl RemoteDecoder {
         return RemoteDecoder {
             events: vec![],
             last_decode_result: Option::None,
-            pioneer_info: pioneer_info(),
+            remotes: vec![Box::new(PioneerRemote::new()), Box::new(DenonRemote::new())],
         };
     }
 
@@ -101,22 +149,26 @@ impl RemoteDecoder {
 
         self.events.push(event);
 
-        if self
-            .events
-            .iter()
-            .all(|e| e.rc_protocol == self.pioneer_info.protocol as u16)
-        {
-            if let Option::Some(mut result) = pioneer_decode(&self.events) {
-                result.time = (self.events.last().unwrap().timestamp / 1_000_000) as u32;
-                if let Option::Some(last_result) = &self.last_decode_result {
-                    let delta_t = result.time - last_result.time;
-                    if delta_t < self.pioneer_info.rx_repeat_gap_max {
-                        result.repeat = last_result.repeat + 1;
+        for remote in &self.remotes {
+            let info = remote.get_remote_info();
+
+            if self
+                .events
+                .iter()
+                .all(|e| e.rc_protocol == info.protocol as u16)
+            {
+                if let Option::Some(mut result) = remote.decode(&self.events) {
+                    result.time = (self.events.last().unwrap().timestamp / 1_000_000) as u32;
+                    if let Option::Some(last_result) = &self.last_decode_result {
+                        let delta_t = result.time - last_result.time;
+                        if delta_t < info.rx_repeat_gap_max {
+                            result.repeat = last_result.repeat + 1;
+                        }
                     }
+                    self.events.clear();
+                    self.last_decode_result = Option::Some(result.clone());
+                    return Option::Some(result);
                 }
-                self.events.clear();
-                self.last_decode_result = Option::Some(result.clone());
-                return Option::Some(result);
             }
         }
 

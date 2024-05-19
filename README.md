@@ -16,7 +16,7 @@ MOCK_SPI=true MOCK_IR=true npm start
 
         sudo apt -y install git
         # copy id_rsa from host computer
-        ssh-keygen -p -f ~/.ssh/id_rsa
+        ssh-keygen -p -f ~/.ssh/id_rsa # remove password
         chmod 400 ~/.ssh/id_rsa
         git clone git@github.com:joeferner/unisonht.git
         ./unisonht/scripts/raspberry-pi-setup.sh
