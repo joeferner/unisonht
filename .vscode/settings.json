@@ -20,7 +20,8 @@
     "rppal",
     "uevent",
     "unisonht",
-    "unistd"
+    "unistd",
+    "WRONLY"
   ],
   "remote.SSH.defaultExtensions": [
     "streetsidesoftware.code-spell-checker",
