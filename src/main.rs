@@ -38,16 +38,33 @@ fn run() -> Result<()> {
                 log::debug!("decode_results {:?}", decode_result);
                 if decode_result.source == "rca" && decode_result.repeat == 0 {
                     match mode {
-                        Mode::Off => {
-                            remotes.send(&mut writer, "denon", Key::PowerOn)?;
-                            remotes.send(&mut writer, "pioneer", Key::PowerOn)?;
-                            mode = Mode::On;
-                        }
-                        Mode::On => {
-                            remotes.send(&mut writer, "denon", Key::PowerOff)?;
-                            remotes.send(&mut writer, "pioneer", Key::PowerOff)?;
-                            mode = Mode::On;
-                        }
+                        Mode::Off => match decode_result.key {
+                            Key::PowerToggle => {
+                                remotes.send(&mut writer, "denon", Key::PowerOn)?;
+                                remotes.send(&mut writer, "pioneer", Key::PowerOn)?;
+                                mode = Mode::On;
+                                log::debug!("mode is now on");
+                            }
+                            _ => {}
+                        },
+                        Mode::On => match decode_result.key {
+                            Key::PowerToggle => {
+                                remotes.send(&mut writer, "denon", Key::PowerOff)?;
+                                remotes.send(&mut writer, "pioneer", Key::PowerOff)?;
+                                mode = Mode::Off;
+                                log::debug!("mode is now off");
+                            }
+                            Key::VolumeUp => {
+                                remotes.send(&mut writer, "denon", Key::VolumeUp)?;
+                            }
+                            Key::VolumeDown => {
+                                remotes.send(&mut writer, "denon", Key::VolumeDown)?;
+                            }
+                            Key::Mute => {
+                                remotes.send(&mut writer, "denon", Key::Mute)?;
+                            }
+                            _ => {}
+                        },
                     }
                 }
             }

@@ -26,7 +26,7 @@ impl Remote for RcaRemote {
     }
 
     fn get_tx_repeat_gap(&self) -> Duration {
-        return Duration::from_millis(0);
+        return Duration::from_millis(50);
     }
 
     fn get_rx_repeat_gap_max(&self) -> Duration {

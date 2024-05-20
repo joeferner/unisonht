@@ -26,7 +26,7 @@ impl Remote for DenonRemote {
     }
 
     fn get_tx_repeat_gap(&self) -> Duration {
-        return Duration::from_millis(100);
+        return Duration::from_millis(50);
     }
 
     fn get_rx_repeat_gap_max(&self) -> Duration {
@@ -41,6 +41,9 @@ impl Remote for DenonRemote {
         let scan_codes = match key {
             Key::PowerOn => vec![0x02e1],
             Key::PowerOff => vec![0x02e2],
+            Key::VolumeUp => vec![0x02f1],
+            Key::VolumeDown => vec![0x02f2],
+            Key::Mute => vec![0x02f0],
             _ => {
                 return Result::Err(MyError::new(format!("unhandled key {:?}", key)));
             }
