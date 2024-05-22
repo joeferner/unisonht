@@ -8826,7 +8826,7 @@
 				(hide yes)
 			)
 		)
-		(property "Value" "~"
+		(property "Value" "GND"
 			(at 66.04 83.82 0)
 			(effects
 				(font
