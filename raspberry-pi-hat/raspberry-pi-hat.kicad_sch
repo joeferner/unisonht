@@ -3706,6 +3706,18 @@
 		(uuid "49dae026-bdb9-468e-9abf-fb2c85461e58")
 	)
 	(junction
+		(at 182.88 54.61)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "4b52a04e-e957-42c4-9d2d-fb7ac981a43a")
+	)
+	(junction
+		(at 172.72 59.69)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "67c02381-a2b2-4bc7-b605-31d234c707b8")
+	)
+	(junction
 		(at 237.49 114.3)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -3722,6 +3734,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "74b6410d-0e96-4053-9f9f-98846af5b7f1")
+	)
+	(junction
+		(at 242.57 119.38)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "7fdde765-54fa-4c59-9156-4436a526aaf6")
 	)
 	(junction
 		(at 201.93 171.45)
@@ -3971,6 +3989,16 @@
 	)
 	(wire
 		(pts
+			(xy 242.57 129.54) (xy 242.57 132.08)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "0fdd3aec-86a7-49bc-b5ef-e2e9054372a5")
+	)
+	(wire
+		(pts
 			(xy 175.26 179.07) (xy 186.69 179.07)
 		)
 		(stroke
@@ -4171,7 +4199,7 @@
 	)
 	(wire
 		(pts
-			(xy 172.72 59.69) (xy 185.42 59.69)
+			(xy 158.75 59.69) (xy 172.72 59.69)
 		)
 		(stroke
 			(width 0)
@@ -4311,7 +4339,7 @@
 	)
 	(wire
 		(pts
-			(xy 233.68 119.38) (xy 245.11 119.38)
+			(xy 229.87 119.38) (xy 242.57 119.38)
 		)
 		(stroke
 			(width 0)
@@ -4321,7 +4349,7 @@
 	)
 	(wire
 		(pts
-			(xy 172.72 54.61) (xy 185.42 54.61)
+			(xy 158.75 54.61) (xy 182.88 54.61)
 		)
 		(stroke
 			(width 0)
@@ -4511,6 +4539,26 @@
 	)
 	(wire
 		(pts
+			(xy 242.57 119.38) (xy 242.57 121.92)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "705b3bcd-21ee-486f-a8fc-5f21bdf46999")
+	)
+	(wire
+		(pts
+			(xy 182.88 54.61) (xy 182.88 62.23)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "70ae7c8b-9283-4ea1-8f79-ebc41eaac410")
+	)
+	(wire
+		(pts
 			(xy 66.04 68.58) (xy 66.04 78.74)
 		)
 		(stroke
@@ -4671,6 +4719,16 @@
 	)
 	(wire
 		(pts
+			(xy 242.57 119.38) (xy 245.11 119.38)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "93e54644-e866-46c9-845b-fded0a84190f")
+	)
+	(wire
+		(pts
 			(xy 66.04 63.5) (xy 66.04 68.58)
 		)
 		(stroke
@@ -4718,6 +4776,16 @@
 			(type default)
 		)
 		(uuid "a0e4432f-b849-4ff7-8580-e45f28665a04")
+	)
+	(wire
+		(pts
+			(xy 182.88 54.61) (xy 185.42 54.61)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a1cd748f-c553-4b48-8681-1a1463ae49f8")
 	)
 	(wire
 		(pts
@@ -4828,6 +4896,16 @@
 			(type default)
 		)
 		(uuid "b032abef-e34c-476f-be99-39e99b5d9414")
+	)
+	(wire
+		(pts
+			(xy 172.72 59.69) (xy 185.42 59.69)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b06bfd97-72b3-45d5-84f7-573a53020f42")
 	)
 	(wire
 		(pts
@@ -4948,6 +5026,16 @@
 			(type default)
 		)
 		(uuid "c4ddbba6-c515-473a-a6c6-05d15e2299db")
+	)
+	(wire
+		(pts
+			(xy 172.72 59.69) (xy 172.72 62.23)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c75aac7d-3860-4e60-bff7-20e97a693337")
 	)
 	(wire
 		(pts
@@ -5141,6 +5229,16 @@
 	)
 	(wire
 		(pts
+			(xy 172.72 69.85) (xy 172.72 72.39)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f323a76e-10aa-4544-b037-1daa2cc0ede6")
+	)
+	(wire
+		(pts
 			(xy 233.68 62.23) (xy 233.68 66.04)
 		)
 		(stroke
@@ -5188,6 +5286,16 @@
 			(type default)
 		)
 		(uuid "fa30e1ce-b179-43a4-8a78-953ebfad1236")
+	)
+	(wire
+		(pts
+			(xy 182.88 69.85) (xy 182.88 72.39)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "faaa6f92-f099-4486-8a5c-b994a6f9cbf5")
 	)
 	(wire
 		(pts
@@ -5350,7 +5458,7 @@
 		(uuid "7297a7e8-ddf5-43ff-9c1e-e74b56ec0622")
 	)
 	(label "IR_IN_POL"
-		(at 233.68 119.38 0)
+		(at 229.87 119.38 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -5361,7 +5469,7 @@
 		(uuid "8f69f61d-e3f2-49f1-83cd-19121a1056d4")
 	)
 	(label "IR_OUT"
-		(at 172.72 54.61 0)
+		(at 158.75 54.61 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -5427,7 +5535,7 @@
 		(uuid "c929b3c0-c16b-40f3-bd71-e7a6e3ecec3b")
 	)
 	(label "IR_OUT_POL"
-		(at 172.72 59.69 0)
+		(at 158.75 59.69 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -7613,6 +7721,76 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:R")
+		(at 182.88 66.04 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "6c639039-a8e3-4511-b3d9-b40e224cfaf1")
+		(property "Reference" "R12"
+			(at 185.42 64.7699 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Value" "100K"
+			(at 185.42 67.3099 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder"
+			(at 184.658 66.04 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 182.88 66.04 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 182.88 66.04 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "442f7833-e99a-48b1-bc59-e61919cf3d0b")
+		)
+		(pin "1"
+			(uuid "b8a4478b-c6a7-48ae-a357-3871ab262c3e")
+		)
+		(instances
+			(project "raspberry-pi-hat"
+				(path "/e16892c3-8eeb-4e89-aef7-4b2de47b5e8e"
+					(reference "R12")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:+3.3V")
 		(at 31.75 25.4 0)
 		(unit 1)
@@ -7740,6 +7918,73 @@
 			(project "raspberry-pi-hat"
 				(path "/e16892c3-8eeb-4e89-aef7-4b2de47b5e8e"
 					(reference "#PWR07")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 182.88 72.39 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "76e66494-3a55-4c53-b45b-0dfa01bc1698")
+		(property "Reference" "#PWR032"
+			(at 182.88 78.74 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "~"
+			(at 185.42 73.66 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 182.88 72.39 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 182.88 72.39 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 182.88 72.39 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "5524abdc-b999-476e-a107-a60220e121e5")
+		)
+		(instances
+			(project "raspberry-pi-hat"
+				(path "/e16892c3-8eeb-4e89-aef7-4b2de47b5e8e"
+					(reference "#PWR032")
 					(unit 1)
 				)
 			)
@@ -8354,6 +8599,76 @@
 	)
 	(symbol
 		(lib_id "Device:R")
+		(at 242.57 125.73 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "a5e3dd66-2027-4495-832a-9dbf28309d64")
+		(property "Reference" "R14"
+			(at 245.11 124.4599 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Value" "100K"
+			(at 245.11 126.9999 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder"
+			(at 244.348 125.73 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 242.57 125.73 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 242.57 125.73 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "e3dbdf18-e8d2-4a91-a36e-0272acf5ad5d")
+		)
+		(pin "1"
+			(uuid "b302c4d0-a8ac-4732-89b4-601417a4ff81")
+		)
+		(instances
+			(project "raspberry-pi-hat"
+				(path "/e16892c3-8eeb-4e89-aef7-4b2de47b5e8e"
+					(reference "R14")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
 		(at 264.16 127 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -8629,6 +8944,76 @@
 			(project "raspberry-pi-hat"
 				(path "/e16892c3-8eeb-4e89-aef7-4b2de47b5e8e"
 					(reference "J2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 172.72 66.04 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "b48ce743-ae3e-4f66-b118-04a5ed9e925d")
+		(property "Reference" "R13"
+			(at 175.26 64.7699 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Value" "100K"
+			(at 175.26 67.3099 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder"
+			(at 174.498 66.04 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 172.72 66.04 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 172.72 66.04 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "115edb84-44c2-4ea9-a718-3feaff269f10")
+		)
+		(pin "1"
+			(uuid "573c68b2-e209-4696-8437-fa00baf9bfda")
+		)
+		(instances
+			(project "raspberry-pi-hat"
+				(path "/e16892c3-8eeb-4e89-aef7-4b2de47b5e8e"
+					(reference "R13")
 					(unit 1)
 				)
 			)
@@ -9627,6 +10012,73 @@
 		)
 	)
 	(symbol
+		(lib_id "power:GND")
+		(at 172.72 72.39 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "dffab210-d88c-48c1-9b02-8d995ec74778")
+		(property "Reference" "#PWR031"
+			(at 172.72 78.74 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "~"
+			(at 175.26 73.66 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 172.72 72.39 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 172.72 72.39 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 172.72 72.39 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "6510fb97-11cd-402a-a348-50e7a280abe4")
+		)
+		(instances
+			(project "raspberry-pi-hat"
+				(path "/e16892c3-8eeb-4e89-aef7-4b2de47b5e8e"
+					(reference "#PWR031")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "74xx:74LS86")
 		(at 193.04 57.15 0)
 		(unit 2)
@@ -10055,6 +10507,73 @@
 			(project "raspberry-pi-hat"
 				(path "/e16892c3-8eeb-4e89-aef7-4b2de47b5e8e"
 					(reference "#PWR024")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 242.57 132.08 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "f9ba1679-f1d2-4a8c-8da0-966f8897ab74")
+		(property "Reference" "#PWR033"
+			(at 242.57 138.43 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "~"
+			(at 245.11 133.35 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 242.57 132.08 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 242.57 132.08 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 242.57 132.08 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "7a6cee04-e6d0-49a6-b3cd-ebfd7a225f28")
+		)
+		(instances
+			(project "raspberry-pi-hat"
+				(path "/e16892c3-8eeb-4e89-aef7-4b2de47b5e8e"
+					(reference "#PWR033")
 					(unit 1)
 				)
 			)
