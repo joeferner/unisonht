@@ -1,3 +1,6 @@
+use std::thread;
+use std::time::Duration;
+
 use crate::lirc::find_remotes;
 use crate::lirc::lirc_reader::LircReader;
 use crate::lirc::lirc_writer::LircWriter;
@@ -5,6 +8,7 @@ use crate::mcp3204::Mcp3204;
 use crate::my_error::Result;
 use crate::remotes::{Key, Remotes};
 use env_logger;
+use rppal::gpio::Gpio;
 
 mod ioctl;
 mod lirc;
@@ -26,6 +30,20 @@ fn run() -> Result<()> {
 
     let mcp3204 = Mcp3204::new()?;
     log::debug!("mcp3204.read_single {}", mcp3204.read_single(0)?);
+
+    let gpio = Gpio::new()?;
+    let mut pin_ir_out_pol = gpio.get(23)?.into_output();
+    let mut pin_ir_in_pol = gpio.get(25)?.into_output();
+
+    for _i in 0..1 {
+        pin_ir_out_pol.set_high();
+        pin_ir_in_pol.set_high();
+        thread::sleep(Duration::from_millis(1));
+        pin_ir_out_pol.set_low();
+        pin_ir_in_pol.set_low();
+        thread::sleep(Duration::from_millis(1));
+    }
+
     let remotes = find_remotes()?;
     log::debug!("remotes {:#?}", remotes);
     let mut reader = LircReader::new(remotes.lirc_rx_device)?;
