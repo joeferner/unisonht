@@ -29,20 +29,18 @@ fn run() -> Result<()> {
     let mut mode = Mode::Off;
 
     let mcp3204 = Mcp3204::new()?;
-    log::debug!("mcp3204.read_single {}", mcp3204.read_single(0)?);
-
     let gpio = Gpio::new()?;
+
+    for _i in 0..100 {
+        let v = i32::try_from(mcp3204.read_single(0)?)? - 2048;
+        log::debug!("mcp3204.read_single {}", v);
+        thread::sleep(Duration::from_millis(100));
+    }
+
     let mut pin_ir_out_pol = gpio.get(23)?.into_output();
     let mut pin_ir_in_pol = gpio.get(25)?.into_output();
-
-    for _i in 0..1 {
-        pin_ir_out_pol.set_high();
-        pin_ir_in_pol.set_high();
-        thread::sleep(Duration::from_millis(1));
-        pin_ir_out_pol.set_low();
-        pin_ir_in_pol.set_low();
-        thread::sleep(Duration::from_millis(1));
-    }
+    pin_ir_out_pol.set_low();
+    pin_ir_in_pol.set_low();
 
     let remotes = find_remotes()?;
     log::debug!("remotes {:#?}", remotes);

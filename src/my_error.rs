@@ -1,47 +1,26 @@
 pub type Result<T> = std::result::Result<T, MyError>;
+use thiserror::Error;
 
-#[derive(Debug)]
+#[derive(Error, Debug)]
 pub enum MyError {
-    SpiError(rppal::spi::Error),
-    StdIoError(std::io::Error),
-    NixErrnoError(nix::errno::Errno),
-    TryFromSliceError(std::array::TryFromSliceError),
-    GpioError(rppal::gpio::Error),
+    #[error("spi error: {0}")]
+    SpiError(#[from] rppal::spi::Error),
+    #[error("std io error: {0}")]
+    StdIoError(#[from] std::io::Error),
+    #[error("nix error: {0}")]
+    NixErrnoError(#[from] nix::errno::Errno),
+    #[error("try from slice error: {0}")]
+    TryFromSliceError(#[from] std::array::TryFromSliceError),
+    #[error("gpio error: {0}")]
+    GpioError(#[from] rppal::gpio::Error),
+    #[error("try from int error: {0}")]
+    TryFromIntError(#[from] std::num::TryFromIntError),
+    #[error("generic error: {0}")]
     GenericError(String),
 }
 
 impl MyError {
     pub fn new<S: Into<String>>(message: S) -> Self {
         return MyError::GenericError(message.into());
-    }
-}
-
-impl From<rppal::spi::Error> for MyError {
-    fn from(err: rppal::spi::Error) -> Self {
-        return MyError::SpiError(err);
-    }
-}
-
-impl From<std::io::Error> for MyError {
-    fn from(err: std::io::Error) -> Self {
-        return MyError::StdIoError(err);
-    }
-}
-
-impl From<nix::errno::Errno> for MyError {
-    fn from(err: nix::errno::Errno) -> Self {
-        return MyError::NixErrnoError(err);
-    }
-}
-
-impl From<std::array::TryFromSliceError> for MyError {
-    fn from(err: std::array::TryFromSliceError) -> Self {
-        return MyError::TryFromSliceError(err);
-    }
-}
-
-impl From<rppal::gpio::Error> for MyError {
-    fn from(err: rppal::gpio::Error) -> Self {
-        return MyError::GpioError(err);
     }
 }

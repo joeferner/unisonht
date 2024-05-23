@@ -10,3 +10,4 @@ nix = {version = "0.28.0", features = ["ioctl", "fs"]}
 num-derive = "0.4.2"
 num-traits = "0.2.19"
 rppal = "0.18.0"
+thiserror = "1.0.61"
