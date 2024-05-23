@@ -15,6 +15,8 @@ pub enum MyError {
     GpioError(#[from] rppal::gpio::Error),
     #[error("try from int error: {0}")]
     TryFromIntError(#[from] std::num::TryFromIntError),
+    #[error("receive error: {0}")]
+    RecvError(#[from] std::sync::mpsc::RecvError),
     #[error("generic error: {0}")]
     GenericError(String),
 }

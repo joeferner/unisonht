@@ -6,6 +6,7 @@ use crate::lirc::lirc_reader::LircReader;
 use crate::lirc::lirc_writer::LircWriter;
 use crate::mcp3204::Mcp3204;
 use crate::my_error::Result;
+use crate::power::Power;
 use crate::remotes::{Key, Remotes};
 use env_logger;
 use rppal::gpio::Gpio;
@@ -14,8 +15,10 @@ mod ioctl;
 mod lirc;
 mod mcp3204;
 mod my_error;
+mod power;
 mod rc_devices;
 mod remotes;
+mod utils;
 
 enum Mode {
     Off,
@@ -29,11 +32,13 @@ fn run() -> Result<()> {
     let mut mode = Mode::Off;
 
     let mcp3204 = Mcp3204::new()?;
+    let power = Power::start(mcp3204);
+
     let gpio = Gpio::new()?;
 
-    for _i in 0..100 {
-        let v = i32::try_from(mcp3204.read_single(0)?)? - 2048;
-        log::debug!("mcp3204.read_single {}", v);
+    for _i in 0..1000 {
+        let v = power.rx.recv()?;
+        log::debug!("mcp3204.read_single {} {}", v.ch0, v.ch1);
         thread::sleep(Duration::from_millis(100));
     }
 
@@ -86,6 +91,8 @@ fn run() -> Result<()> {
             }
         }
     }
+
+    power.stop()?;
 }
 
 fn main() {
