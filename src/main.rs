@@ -6,7 +6,7 @@ use crate::lirc::lirc_reader::LircReader;
 use crate::lirc::lirc_writer::LircWriter;
 use crate::mcp3204::Mcp3204;
 use crate::my_error::Result;
-use crate::power::{Power, PowerOptions};
+use crate::power::{Power, PowerOptions, State};
 use crate::remotes::{Key, Remotes};
 use env_logger;
 use lirc::LircEvent;
@@ -24,6 +24,7 @@ mod rc_devices;
 mod remotes;
 mod utils;
 
+#[derive(Debug, Eq, PartialEq, Clone, Copy)]
 enum Mode {
     Off,
     On,
@@ -97,8 +98,19 @@ impl Main {
         return Result::Ok(());
     }
 
+    fn set_mode(&mut self, new_mode: Mode) -> Result<()> {
+        self.mode = new_mode;
+        log::info!("new mode: {:?}", self.mode);
+        return Result::Ok(());
+    }
+
     fn handle_power_data(&mut self, power_data: PowerData) -> Result<()> {
         log::debug!("power data {:?}", power_data);
+        if power_data.ch0_state == State::On {
+            self.set_mode(Mode::On)?;
+        } else {
+            self.set_mode(Mode::Off)?;
+        }
         return Result::Ok(());
     }
 
@@ -121,7 +133,7 @@ impl Main {
                 self.remotes.send(&mut self.writer, "denon", Key::PowerOn)?;
                 self.remotes
                     .send(&mut self.writer, "pioneer", Key::PowerOn)?;
-                self.mode = Mode::On;
+                self.set_mode(Mode::On)?;
                 log::debug!("mode is now on");
             }
             _ => {}
@@ -136,7 +148,7 @@ impl Main {
                     .send(&mut self.writer, "denon", Key::PowerOff)?;
                 self.remotes
                     .send(&mut self.writer, "pioneer", Key::PowerOff)?;
-                self.mode = Mode::Off;
+                self.set_mode(Mode::Off)?;
                 log::debug!("mode is now off");
             }
             Key::VolumeUp => {

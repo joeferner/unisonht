@@ -9,12 +9,25 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 const RUNNING_MAX_WINDOW: usize = 100;
 
+#[derive(Debug, Eq, PartialEq, Clone, Copy)]
+pub enum State {
+    On,
+    Off,
+}
+
+fn state_changed(prev: &Option<State>, new_state: &State) -> bool {
+    return match prev {
+        Option::None => true,
+        Option::Some(prev_state) => prev_state != new_state,
+    };
+}
+
 #[derive(Debug)]
 pub struct PowerData {
     pub ch0: f64,
-    pub ch0_state: bool,
+    pub ch0_state: State,
     pub ch1: f64,
-    pub ch1_state: bool,
+    pub ch1_state: State,
 }
 
 pub struct PowerOptions {
@@ -31,8 +44,8 @@ pub struct PowerReceiver {
 pub struct Power {
     mcp3204: Mcp3204,
     tx: mpsc::Sender<Message>,
-    ch0_prev_state: Option<bool>,
-    ch1_prev_state: Option<bool>,
+    ch0_prev_state: Option<State>,
+    ch1_prev_state: Option<State>,
     ch0: StatsList<RUNNING_MAX_WINDOW>,
     ch1: StatsList<RUNNING_MAX_WINDOW>,
     next_log: u128,
@@ -68,20 +81,32 @@ impl Power {
         return result;
     }
 
-    fn calculate_new_state(
-        &self,
-        prev_state: Option<bool>,
-        stddev: f64,
-        on: f64,
-        off: f64,
-    ) -> bool {
-        if prev_state.is_none() {
-            return stddev > on;
-        }
-        if prev_state.unwrap_or(true) {
-            return stddev > off;
-        }
-        return stddev > on;
+    fn calculate_new_state(&self, prev: Option<State>, stddev: f64, on: f64, off: f64) -> State {
+        match prev {
+            Option::None => {
+                if stddev > on {
+                    return State::On;
+                } else {
+                    return State::Off;
+                }
+            }
+            Option::Some(prev_state) => match prev_state {
+                State::Off => {
+                    if stddev > on {
+                        return State::On;
+                    } else {
+                        return State::Off;
+                    }
+                }
+                State::On => {
+                    if stddev < off {
+                        return State::Off;
+                    } else {
+                        return State::On;
+                    }
+                }
+            },
+        };
     }
 
     fn tick(&mut self, options: &PowerOptions) -> Result<()> {
@@ -112,9 +137,8 @@ impl Power {
             self.next_log = time + 5000;
         }
 
-        if (self.ch0_prev_state.is_none() || new_ch0_state != self.ch0_prev_state.unwrap_or(false))
-            || (self.ch1_prev_state.is_none()
-                || new_ch1_state != self.ch1_prev_state.unwrap_or(false))
+        if state_changed(&self.ch0_prev_state, &new_ch0_state)
+            || state_changed(&self.ch1_prev_state, &new_ch1_state)
         {
             let power_data = PowerData {
                 ch0: ch0_stddev,
