@@ -6,7 +6,7 @@ use crate::lirc::lirc_reader::LircReader;
 use crate::lirc::lirc_writer::LircWriter;
 use crate::mcp3204::Mcp3204;
 use crate::my_error::Result;
-use crate::power::Power;
+use crate::power::{Power, PowerOptions};
 use crate::remotes::{Key, Remotes};
 use env_logger;
 use rppal::gpio::Gpio;
@@ -32,14 +32,21 @@ fn run() -> Result<()> {
     let mut mode = Mode::Off;
 
     let mcp3204 = Mcp3204::new()?;
-    let power = Power::start(mcp3204);
+    let power = Power::start(
+        mcp3204,
+        PowerOptions {
+            ch0_off: 5.0,
+            ch0_on: 15.0,
+            ch1_off: 1.0,
+            ch1_on: 2.0,
+        },
+    );
 
     let gpio = Gpio::new()?;
 
     for _i in 0..1000 {
         let v = power.rx.recv()?;
-        log::debug!("mcp3204.read_single {} {}", v.ch0, v.ch1);
-        thread::sleep(Duration::from_millis(100));
+        log::debug!("recv {} {}", v.ch0_state, v.ch0);
     }
 
     let mut pin_ir_out_pol = gpio.get(23)?.into_output();

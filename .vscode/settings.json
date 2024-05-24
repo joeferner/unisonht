@@ -18,6 +18,8 @@
     "RDONLY",
     "roboto",
     "rppal",
+    "stddev",
+    "thiserror",
     "uevent",
     "unisonht",
     "unistd",

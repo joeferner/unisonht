@@ -1,1 +1,1 @@
-pub mod running_max;
+pub mod stats_list;
