@@ -1,7 +1,8 @@
 use crate::mcp3204::Mcp3204;
 use crate::my_error::{MyError, Result};
 use crate::utils::stats_list::StatsList;
-use std::sync::mpsc;
+use crate::Message;
+use std::sync::mpsc::{self};
 use std::thread::{self, JoinHandle};
 use std::time::Duration;
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -24,13 +25,12 @@ pub struct PowerOptions {
 }
 
 pub struct PowerReceiver {
-    pub rx: mpsc::Receiver<PowerData>,
     thread: JoinHandle<()>,
 }
 
 pub struct Power {
     mcp3204: Mcp3204,
-    tx: mpsc::Sender<PowerData>,
+    tx: mpsc::Sender<Message>,
     ch0_prev_state: Option<bool>,
     ch1_prev_state: Option<bool>,
     ch0: StatsList<RUNNING_MAX_WINDOW>,
@@ -39,8 +39,11 @@ pub struct Power {
 }
 
 impl Power {
-    pub fn start(mcp3204: Mcp3204, options: PowerOptions) -> PowerReceiver {
-        let (tx, rx) = mpsc::channel();
+    pub fn start(
+        tx: mpsc::Sender<Message>,
+        mcp3204: Mcp3204,
+        options: PowerOptions,
+    ) -> PowerReceiver {
         let mut power = Power {
             mcp3204,
             tx,
@@ -61,7 +64,7 @@ impl Power {
             }
         });
 
-        let result = PowerReceiver { rx, thread };
+        let result = PowerReceiver { thread };
         return result;
     }
 
@@ -123,8 +126,8 @@ impl Power {
             self.ch1_prev_state = Option::Some(new_ch1_state);
 
             self.tx
-                .send(power_data)
-                .map_err(|err| MyError::new(format!("send error: {}", err)))?;
+                .send(Message::PowerData(power_data))
+                .map_err(|err| MyError::new(format!("power send error: {}", err)))?;
         }
 
         return Result::Ok(());
