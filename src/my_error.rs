@@ -17,6 +17,8 @@ pub enum MyError {
     TryFromIntError(#[from] std::num::TryFromIntError),
     #[error("receive error: {0}")]
     RecvError(#[from] std::sync::mpsc::RecvError),
+    #[error("system time error: {0}")]
+    SystemTimeError(#[from] std::time::SystemTimeError),
     #[error("generic error: {0}")]
     GenericError(String),
 }

@@ -1,6 +1,3 @@
-use std::thread;
-use std::time::Duration;
-
 use crate::lirc::find_remotes;
 use crate::lirc::lirc_reader::LircReader;
 use crate::lirc::lirc_writer::LircWriter;

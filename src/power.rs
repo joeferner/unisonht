@@ -4,6 +4,7 @@ use crate::utils::stats_list::StatsList;
 use std::sync::mpsc;
 use std::thread::{self, JoinHandle};
 use std::time::Duration;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 const RUNNING_MAX_WINDOW: usize = 100;
 
@@ -34,6 +35,7 @@ pub struct Power {
     ch1_prev_state: Option<bool>,
     ch0: StatsList<RUNNING_MAX_WINDOW>,
     ch1: StatsList<RUNNING_MAX_WINDOW>,
+    next_log: u128,
 }
 
 impl Power {
@@ -46,6 +48,7 @@ impl Power {
             ch1_prev_state: Option::None,
             ch0: StatsList::new(),
             ch1: StatsList::new(),
+            next_log: 0,
         };
 
         let thread = thread::spawn(move || loop {
@@ -99,6 +102,12 @@ impl Power {
             options.ch1_on,
             options.ch1_off,
         );
+
+        let time = SystemTime::now().duration_since(UNIX_EPOCH)?.as_millis();
+        if time > self.next_log {
+            log::debug!("power: ch0: {:.2}, ch1: {:.2}", ch0_stddev, ch1_stddev);
+            self.next_log = time + 5000;
+        }
 
         if (self.ch0_prev_state.is_none() || new_ch0_state != self.ch0_prev_state.unwrap_or(false))
             || (self.ch1_prev_state.is_none()
