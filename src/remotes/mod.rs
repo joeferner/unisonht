@@ -127,7 +127,7 @@ impl DecodeResult {
     }
 }
 
-pub trait Remote {
+pub trait Remote: Send {
     fn get_protocol(&self) -> LircProtocol;
     fn get_repeat_count(&self) -> u32;
     fn get_tx_scan_code_gap(&self) -> Duration;

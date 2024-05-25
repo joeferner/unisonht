@@ -3,6 +3,7 @@ use std::thread;
 use std::time::Duration;
 
 use crate::ir_in::IrIn;
+use crate::ir_out::{IrOut, IrOutMessage};
 use crate::lirc::find_remotes;
 use crate::lirc::lirc_reader::LircReader;
 use crate::lirc::lirc_writer::LircWriter;
@@ -12,12 +13,14 @@ use crate::power::{Power, PowerOptions, State};
 use crate::remotes::{Key, Remotes};
 use env_logger;
 use lirc::LircEvent;
+use my_error::MyError;
 use power::PowerData;
 use remotes::DecodeResult;
 use rppal::gpio::Gpio;
 
 mod ioctl;
 mod ir_in;
+mod ir_out;
 mod lirc;
 mod mcp3204;
 mod my_error;
@@ -40,8 +43,8 @@ pub enum Message {
 
 struct Main {
     mode: Mode,
+    tx_ir: mpsc::Sender<IrOutMessage>,
     remotes: Remotes,
-    writer: LircWriter,
 }
 
 impl Main {
@@ -50,6 +53,7 @@ impl Main {
         env_logger::init_from_env(env);
 
         let (tx, rx) = mpsc::channel::<Message>();
+        let (tx_ir, rx_ir) = mpsc::channel::<IrOutMessage>();
 
         let mcp3204 = Mcp3204::new()?;
         let power = Power::start(
@@ -59,7 +63,7 @@ impl Main {
                 ch0_off: 5.0,
                 ch0_on: 15.0,
                 ch1_off: 1.0,
-                ch1_on: 2.0,
+                ch1_on: 20.0,
             },
         );
 
@@ -75,12 +79,12 @@ impl Main {
         let reader = LircReader::new(remotes.lirc_rx_device)?;
         let ir_in = IrIn::start(tx, reader);
         let writer = LircWriter::new(remotes.lirc_tx_device)?;
-        let remotes = Remotes::new();
+        let ir_out = IrOut::start(rx_ir, writer, Remotes::new());
 
         let mut main = Main {
-            remotes,
+            tx_ir,
             mode: Mode::Off,
-            writer,
+            remotes: Remotes::new(),
         };
 
         loop {
@@ -96,6 +100,7 @@ impl Main {
 
         power.stop()?;
         ir_in.stop()?;
+        ir_out.stop()?;
 
         return Result::Ok(());
     }
@@ -103,6 +108,16 @@ impl Main {
     fn set_mode(&mut self, new_mode: Mode) -> Result<()> {
         self.mode = new_mode;
         log::info!("new mode: {:?}", self.mode);
+        return Result::Ok(());
+    }
+
+    fn send(&self, remote_name: &str, key: Key) -> Result<()> {
+        self.tx_ir
+            .send(IrOutMessage {
+                remote_name: remote_name.to_string(),
+                key,
+            })
+            .map_err(|err| MyError::new(format!("ir out send error: {}", err)))?;
         return Result::Ok(());
     }
 
@@ -119,7 +134,7 @@ impl Main {
     fn handle_lirc_event(&mut self, lirc_event: LircEvent) -> Result<()> {
         if let Option::Some(decode_result) = self.remotes.decode(lirc_event) {
             log::debug!("decode_results {:?}", decode_result);
-            if decode_result.source == "rca" && decode_result.repeat == 0 {
+            if decode_result.source == "rca" {
                 match self.mode {
                     Mode::Off => self.handle_lirc_event_mode_off(decode_result)?,
                     Mode::On => self.handle_lirc_event_mode_on(decode_result)?,
@@ -132,18 +147,18 @@ impl Main {
     fn handle_lirc_event_mode_off(&mut self, decode_result: DecodeResult) -> Result<()> {
         match decode_result.key {
             Key::PowerToggle => {
-                self.remotes.send(&mut self.writer, "denon", Key::PowerOn)?;
-                self.remotes
-                    .send(&mut self.writer, "pioneer", Key::PowerOn)?;
+                if decode_result.repeat == 0 {
+                    self.send("denon", Key::PowerOn)?;
+                    self.send("pioneer", Key::PowerOn)?;
 
-                thread::sleep(Duration::from_secs(3));
+                    thread::sleep(Duration::from_secs(3));
 
-                self.remotes.send(&mut self.writer, "denon", Key::InputTv)?;
-                self.remotes
-                    .send(&mut self.writer, "pioneer", Key::Input5)?;
+                    self.send("denon", Key::InputTv)?;
+                    self.send("pioneer", Key::Input5)?;
 
-                self.set_mode(Mode::On)?;
-                log::debug!("mode is now on");
+                    self.set_mode(Mode::On)?;
+                    log::debug!("mode is now on");
+                }
             }
             _ => {}
         }
@@ -153,23 +168,27 @@ impl Main {
     fn handle_lirc_event_mode_on(&mut self, decode_result: DecodeResult) -> Result<()> {
         match decode_result.key {
             Key::PowerToggle => {
-                self.remotes
-                    .send(&mut self.writer, "denon", Key::PowerOff)?;
-                self.remotes
-                    .send(&mut self.writer, "pioneer", Key::PowerOff)?;
-                self.set_mode(Mode::Off)?;
-                log::debug!("mode is now off");
+                if decode_result.repeat == 0 {
+                    self.send("denon", Key::PowerOff)?;
+                    self.send("pioneer", Key::PowerOff)?;
+                    self.set_mode(Mode::Off)?;
+                    log::debug!("mode is now off");
+                }
             }
             Key::VolumeUp => {
-                self.remotes
-                    .send(&mut self.writer, "denon", Key::VolumeUp)?;
+                if decode_result.repeat % 4 == 0 {
+                    self.send("denon", Key::VolumeUp)?;
+                }
             }
             Key::VolumeDown => {
-                self.remotes
-                    .send(&mut self.writer, "denon", Key::VolumeDown)?;
+                if decode_result.repeat % 4 == 0 {
+                    self.send("denon", Key::VolumeDown)?;
+                }
             }
             Key::Mute => {
-                self.remotes.send(&mut self.writer, "denon", Key::Mute)?;
+                if decode_result.repeat == 0 {
+                    self.send("denon", Key::Mute)?;
+                }
             }
             _ => {}
         }
