@@ -1,0 +1,36 @@
+{
+  "cSpell.words": [
+    "Denon",
+    "DEVNAME",
+    "Errno",
+    "fcntl",
+    "fontawesome",
+    "fontsource",
+    "fortawesome",
+    "gpio",
+    "joeferner",
+    "keytable",
+    "libc",
+    "lirc",
+    "lircd",
+    "lircs",
+    "Millis",
+    "RDONLY",
+    "roboto",
+    "rppal",
+    "stddev",
+    "thiserror",
+    "uevent",
+    "unisonht",
+    "unistd",
+    "WRONLY"
+  ],
+  "remote.SSH.defaultExtensions": [
+    "streetsidesoftware.code-spell-checker",
+    "timonwong.shellcheck",
+    "rust-lang.rust-analyzer",
+    "serayuzgur.crates",
+    "njpwerner.autodocstring",
+    "smulyono.reveal"
+  ]
+}
