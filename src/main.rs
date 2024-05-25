@@ -1,4 +1,6 @@
 use std::sync::mpsc;
+use std::thread;
+use std::time::Duration;
 
 use crate::ir_in::IrIn;
 use crate::lirc::find_remotes;
@@ -133,6 +135,13 @@ impl Main {
                 self.remotes.send(&mut self.writer, "denon", Key::PowerOn)?;
                 self.remotes
                     .send(&mut self.writer, "pioneer", Key::PowerOn)?;
+
+                thread::sleep(Duration::from_secs(3));
+
+                self.remotes.send(&mut self.writer, "denon", Key::InputTv)?;
+                self.remotes
+                    .send(&mut self.writer, "pioneer", Key::Input5)?;
+
                 self.set_mode(Mode::On)?;
                 log::debug!("mode is now on");
             }
