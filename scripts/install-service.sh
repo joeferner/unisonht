@@ -14,6 +14,7 @@ sudo useradd -M app || echo "user exists"
 sudo usermod -L app
 sudo adduser app spi
 sudo adduser app gpio
+sudo adduser app video # lirc
 
 echo "create service..."
 cat <<EOF | sudo tee /etc/systemd/system/unisonht.service
@@ -27,6 +28,8 @@ Type=simple
 Restart=always
 RestartSec=1
 User=app
+Environment="RUST_BACKTRACE=1"
+Environment="RUST_LOG=debug"
 ExecStart=/opt/unisonht/unisonht
 
 [Install]

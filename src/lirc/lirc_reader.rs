@@ -13,6 +13,7 @@ pub struct LircReader {
 
 impl LircReader {
     pub fn new(lirc_device: String) -> Result<Self> {
+        log::debug!("opening: {}", lirc_device);
         let fd = fcntl::open(lirc_device.as_str(), OFlag::O_RDONLY, Mode::empty())?;
         ioctl::write_u32(
             fd,
