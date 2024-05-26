@@ -1,4 +1,5 @@
 use crate::remotes::{Key, Remotes};
+use crate::utils::time::get_time_millis;
 use crate::{
     lirc::lirc_writer::LircWriter,
     my_error::{MyError, Result},
@@ -9,9 +10,27 @@ use std::{
     time::Duration,
 };
 
+const IR_OUT_MESSAGE_TIMEOUT_MILLIS: u128 = 250;
+
 pub struct IrOutMessage {
+    pub time: Option<u128>,
     pub remote_name: String,
     pub key: Key,
+}
+
+impl IrOutMessage {
+    pub fn new(remote_name: &str, key: Key, can_timeout: bool) -> Result<Self> {
+        let time = if can_timeout {
+            Option::Some(get_time_millis()?)
+        } else {
+            Option::None
+        };
+        return Result::Ok(IrOutMessage {
+            time,
+            remote_name: remote_name.to_string(),
+            key,
+        });
+    }
 }
 
 pub struct IrOut {
@@ -45,6 +64,20 @@ impl IrOut {
         remotes: &mut Remotes,
     ) -> Result<()> {
         let message = rx.recv()?;
+
+        // check message timeout
+        if let Option::Some(time) = message.time {
+            let dt = get_time_millis()? - time;
+            if dt > IR_OUT_MESSAGE_TIMEOUT_MILLIS {
+                log::debug!(
+                    "ir out message received too late, expected less than {} found {}",
+                    IR_OUT_MESSAGE_TIMEOUT_MILLIS,
+                    dt
+                );
+                return Result::Ok(());
+            }
+        }
+
         remotes.send(writer, message.remote_name.as_str(), message.key)?;
         return Result::Ok(());
     }

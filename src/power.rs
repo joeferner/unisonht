@@ -1,11 +1,11 @@
 use crate::mcp3204::Mcp3204;
 use crate::my_error::{MyError, Result};
 use crate::utils::stats_list::StatsList;
+use crate::utils::time::get_time_millis;
 use crate::Message;
 use std::sync::mpsc::{self};
 use std::thread::{self, JoinHandle};
 use std::time::Duration;
-use std::time::{SystemTime, UNIX_EPOCH};
 
 const RUNNING_MAX_WINDOW: usize = 100;
 
@@ -131,7 +131,7 @@ impl Power {
             options.ch1_off,
         );
 
-        let time = SystemTime::now().duration_since(UNIX_EPOCH)?.as_millis();
+        let time = get_time_millis()?;
         if time > self.next_log {
             log::debug!("power: ch0: {:.2}, ch1: {:.2}", ch0_stddev, ch1_stddev);
             self.next_log = time + 5000;

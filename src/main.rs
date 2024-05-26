@@ -111,12 +111,9 @@ impl Main {
         return Result::Ok(());
     }
 
-    fn send(&self, remote_name: &str, key: Key) -> Result<()> {
+    fn send(&self, remote_name: &str, key: Key, can_timeout: bool) -> Result<()> {
         self.tx_ir
-            .send(IrOutMessage {
-                remote_name: remote_name.to_string(),
-                key,
-            })
+            .send(IrOutMessage::new(remote_name, key, can_timeout)?)
             .map_err(|err| MyError::new(format!("ir out send error: {}", err)))?;
         return Result::Ok(());
     }
@@ -148,13 +145,14 @@ impl Main {
         match decode_result.key {
             Key::PowerToggle => {
                 if decode_result.repeat == 0 {
-                    self.send("denon", Key::PowerOn)?;
-                    self.send("pioneer", Key::PowerOn)?;
+                    log::info!("powering on");
+                    self.send("denon", Key::PowerOn, false)?;
+                    self.send("pioneer", Key::PowerOn, false)?;
 
                     thread::sleep(Duration::from_secs(3));
 
-                    self.send("denon", Key::InputTv)?;
-                    self.send("pioneer", Key::Input5)?;
+                    self.send("denon", Key::InputTv, false)?;
+                    self.send("pioneer", Key::Input5, false)?;
 
                     self.set_mode(Mode::On)?;
                     log::debug!("mode is now on");
@@ -169,25 +167,29 @@ impl Main {
         match decode_result.key {
             Key::PowerToggle => {
                 if decode_result.repeat == 0 {
-                    self.send("denon", Key::PowerOff)?;
-                    self.send("pioneer", Key::PowerOff)?;
+                    log::info!("powering off");
+                    self.send("denon", Key::PowerOff, false)?;
+                    self.send("pioneer", Key::PowerOff, false)?;
                     self.set_mode(Mode::Off)?;
                     log::debug!("mode is now off");
                 }
             }
             Key::VolumeUp => {
                 if decode_result.repeat % 4 == 0 {
-                    self.send("denon", Key::VolumeUp)?;
+                    log::info!("volume up");
+                    self.send("denon", Key::VolumeUp, true)?;
                 }
             }
             Key::VolumeDown => {
                 if decode_result.repeat % 4 == 0 {
-                    self.send("denon", Key::VolumeDown)?;
+                    log::info!("volume down");
+                    self.send("denon", Key::VolumeDown, true)?;
                 }
             }
             Key::Mute => {
                 if decode_result.repeat == 0 {
-                    self.send("denon", Key::Mute)?;
+                    log::info!("mute");
+                    self.send("denon", Key::Mute, false)?;
                 }
             }
             _ => {}
