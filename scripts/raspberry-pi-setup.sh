@@ -1,6 +1,7 @@
 #!/bin/bash
-set -e
-set -u
+set -eou pipefail
+DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+cd "${DIR}/.."
 
 IR_IN_PIN=${IR_IN_PIN:-17}
 IR_OUT_PIN=${IR_OUT_PIN:-18}
@@ -83,7 +84,7 @@ EOF
   echo "update /boot/firmware/config.txt"
   if grep 'gpio-ir,' /boot/firmware/config.txt; then
     sudo sed -i 's|.*gpio-ir,.*|dtoverlay=gpio-ir,gpio_pin='"${IR_IN_PIN}"'|' /boot/firmware/config.txt
-    if ! grep '^dtoverlay=gpio-ir,gpio_pin='\'"${IR_IN_PIN}"\''' /boot/firmware/config.txt; then
+    if ! grep '^dtoverlay=gpio-ir,gpio_pin='"${IR_IN_PIN}"'' /boot/firmware/config.txt; then
       echo "failed to update gpio-ir in"
       exit 1
     fi
@@ -93,7 +94,7 @@ EOF
 
   if grep 'gpio-ir-tx,' /boot/firmware/config.txt; then
     sudo sed -i 's|.*gpio-ir-tx,.*|dtoverlay=gpio-ir-tx,gpio_pin='"${IR_OUT_PIN}"'|' /boot/firmware/config.txt
-    if ! grep '^dtoverlay=gpio-ir-tx,gpio_pin='\'"${IR_OUT_PIN}"\''' /boot/firmware/config.txt; then
+    if ! grep '^dtoverlay=gpio-ir-tx,gpio_pin='"${IR_OUT_PIN}"'' /boot/firmware/config.txt; then
       echo "failed to update gpio-ir out"
       exit 1
     fi
