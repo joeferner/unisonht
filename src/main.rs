@@ -11,12 +11,13 @@ use crate::mcp3204::Mcp3204;
 use crate::my_error::Result;
 use crate::power::{Power, PowerOptions, State};
 use crate::remotes::{Key, Remotes};
-use env_logger;
+use crate::web_server::WebServer;
 use lirc::LircEvent;
 use my_error::MyError;
 use power::PowerData;
 use remotes::DecodeResult;
 use rppal::gpio::Gpio;
+use tracing::Level;
 
 mod ioctl;
 mod ir_in;
@@ -28,6 +29,7 @@ mod power;
 mod rc_devices;
 mod remotes;
 mod utils;
+mod web_server;
 
 #[derive(Debug, Eq, PartialEq, Clone, Copy)]
 enum Mode {
@@ -48,10 +50,7 @@ struct Main {
 }
 
 impl Main {
-    pub fn run() -> Result<()> {
-        let env = env_logger::Env::default();
-        env_logger::init_from_env(env);
-
+    pub async fn run() -> Result<()> {
         let (tx, rx) = mpsc::channel::<Message>();
         let (tx_ir, rx_ir) = mpsc::channel::<IrOutMessage>();
 
@@ -87,6 +86,8 @@ impl Main {
             remotes: Remotes::new(),
         };
 
+        let web_server = WebServer::start()?;
+
         loop {
             let m = rx.recv()?;
             match m {
@@ -101,6 +102,7 @@ impl Main {
         power.stop()?;
         ir_in.stop()?;
         ir_out.stop()?;
+        web_server.stop()?;
 
         return Result::Ok(());
     }
@@ -198,6 +200,9 @@ impl Main {
     }
 }
 
-fn main() {
-    Main::run().unwrap();
+#[tokio::main]
+async fn main() {
+    tracing_subscriber::fmt().with_max_level(Level::DEBUG).init();
+
+    Main::run().await.unwrap();
 }
