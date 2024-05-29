@@ -19,6 +19,13 @@ function dev_setup {
   git config --global alias.ci commit
   git config --global alias.st status
 
+  if ! grep EDITOR ~/.bashrc; then
+    echo "export EDITOR=/usr/bin/vi" >> ~/.bashrc
+  fi
+  if ! grep VISUAL ~/.bashrc; then
+    echo "export VISUAL=/usr/bin/vi" >> ~/.bashrc
+  fi
+
   sudo adduser "${USER}" spi || echo "already a user"
 
   echo "dev setup complete"
