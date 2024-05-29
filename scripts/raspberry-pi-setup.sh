@@ -27,7 +27,7 @@ function dev_setup {
 function rust_setup {
   echo "setup rust..."
   if [ ! -f ~/.cargo/bin/rustup ]; then
-    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
   fi
   echo "rust setup complete"
 }
@@ -121,4 +121,6 @@ echo ""
 echo "Setup complete"
 echo ""
 echo "You may need to reboot to finish setup"
+echo ""
+echo "To disable readonly filesystem run: sudo raspi-config nonint disable_overlayfs"
 echo ""
