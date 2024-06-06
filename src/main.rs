@@ -12,12 +12,12 @@ use crate::my_error::Result;
 use crate::power::{Power, PowerOptions, State};
 use crate::remotes::{Key, Remotes};
 use crate::web_server::WebServer;
+use env_logger;
 use lirc::LircEvent;
 use my_error::MyError;
 use power::PowerData;
 use remotes::DecodeResult;
 use rppal::gpio::Gpio;
-use tracing::Level;
 
 mod ioctl;
 mod ir_in;
@@ -50,7 +50,10 @@ struct Main {
 }
 
 impl Main {
-    pub async fn run() -> Result<()> {
+    pub fn run() -> Result<()> {
+        let env = env_logger::Env::default();
+        env_logger::init_from_env(env);
+
         let (tx, rx) = mpsc::channel::<Message>();
         let (tx_ir, rx_ir) = mpsc::channel::<IrOutMessage>();
 
@@ -200,9 +203,6 @@ impl Main {
     }
 }
 
-#[tokio::main]
-async fn main() {
-    tracing_subscriber::fmt().with_max_level(Level::DEBUG).init();
-
-    Main::run().await.unwrap();
+fn main() {
+    Main::run().unwrap();
 }
