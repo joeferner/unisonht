@@ -23,6 +23,12 @@ fn state_changed(prev: &Option<State>, new_state: &State) -> bool {
 }
 
 #[derive(Debug)]
+pub struct RawPowerData {
+    pub ch0: f64,
+    pub ch1: f64,
+}
+
+#[derive(Debug)]
 pub struct PowerData {
     pub ch0: f64,
     pub ch0_state: State,
@@ -136,6 +142,14 @@ impl Power {
             log::debug!("power: ch0: {:.2}, ch1: {:.2}", ch0_stddev, ch1_stddev);
             self.next_log = time + 5000;
         }
+
+        let raw_power_data = RawPowerData {
+            ch0: ch0_stddev,
+            ch1: ch1_stddev,
+        };
+        self.tx
+            .send(Message::RawPowerData(raw_power_data))
+            .map_err(|err| MyError::new(format!("raw power send error: {}", err)))?;
 
         if state_changed(&self.ch0_prev_state, &new_ch0_state)
             || state_changed(&self.ch1_prev_state, &new_ch1_state)

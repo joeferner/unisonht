@@ -652,6 +652,7 @@ dependencies = [
  "num-derive",
  "num-traits",
  "rppal",
+ "serde_json",
  "server_nano",
  "thiserror",
 ]

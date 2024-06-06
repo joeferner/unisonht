@@ -1,4 +1,4 @@
-use std::sync::mpsc;
+use std::sync::{mpsc, Arc, Mutex};
 use std::thread;
 use std::time::Duration;
 
@@ -12,12 +12,14 @@ use crate::my_error::Result;
 use crate::power::{Power, PowerOptions, State};
 use crate::remotes::{Key, Remotes};
 use crate::web_server::WebServer;
+use circular_buffer::CircularBuffer;
 use env_logger;
 use lirc::LircEvent;
 use my_error::MyError;
-use power::PowerData;
+use power::{PowerData, RawPowerData};
 use remotes::DecodeResult;
 use rppal::gpio::Gpio;
+use serde::Serialize;
 
 mod ioctl;
 mod ir_in;
@@ -38,15 +40,22 @@ enum Mode {
 }
 
 pub enum Message {
+    RawPowerData(RawPowerData),
     PowerData(PowerData),
     LircEvent(LircEvent),
     Stop,
 }
 
-struct Main {
+#[derive(Serialize)]
+pub struct AppState {
     mode: Mode,
+    raw_power_data: CircularBuffer<20, RawPowerData>,
+}
+
+struct Main {
     tx_ir: mpsc::Sender<IrOutMessage>,
     remotes: Remotes,
+    state: Arc<Mutex<AppState>>,
 }
 
 impl Main {
@@ -83,13 +92,17 @@ impl Main {
         let writer = LircWriter::new(remotes.lirc_tx_device)?;
         let ir_out = IrOut::start(rx_ir, writer, Remotes::new());
 
+        let state = Arc::new(Mutex::new(AppState {
+            mode: Mode::Off,
+            raw_power_data: CircularBuffer::new(),
+        }));
         let mut main = Main {
             tx_ir,
-            mode: Mode::Off,
             remotes: Remotes::new(),
+            state: state.clone(),
         };
 
-        let web_server = WebServer::start()?;
+        let web_server = WebServer::start(state)?;
 
         loop {
             let m = rx.recv()?;
@@ -99,6 +112,9 @@ impl Main {
                     main.handle_lirc_event(lirc_event)?;
                 }
                 Message::PowerData(power_data) => main.handle_power_data(power_data)?,
+                Message::RawPowerData(raw_power_data) => {
+                    main.handle_raw_power_data(raw_power_data)?
+                }
             }
         }
 
@@ -111,8 +127,9 @@ impl Main {
     }
 
     fn set_mode(&mut self, new_mode: Mode) -> Result<()> {
-        self.mode = new_mode;
-        log::info!("new mode: {:?}", self.mode);
+        let mut state = self.state.lock().unwrap();
+        state.mode = new_mode;
+        log::info!("new mode: {:?}", state.mode);
         return Result::Ok(());
     }
 
@@ -133,11 +150,18 @@ impl Main {
         return Result::Ok(());
     }
 
+    fn handle_raw_power_data(&mut self, raw_power_data: RawPowerData) -> Result<()> {
+        let mut state = self.state.lock().unwrap();
+        state.raw_power_data.push_back(raw_power_data);
+        return Result::Ok(());
+    }
+
     fn handle_lirc_event(&mut self, lirc_event: LircEvent) -> Result<()> {
         if let Option::Some(decode_result) = self.remotes.decode(lirc_event) {
             log::debug!("decode_results {:?}", decode_result);
             if decode_result.source == "rca" {
-                match self.mode {
+                let mode = { self.state.lock().unwrap().mode };
+                match mode {
                     Mode::Off => self.handle_lirc_event_mode_off(decode_result)?,
                     Mode::On => self.handle_lirc_event_mode_on(decode_result)?,
                 }
