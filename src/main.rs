@@ -35,7 +35,7 @@ mod web_server;
 
 #[derive(Debug, Eq, PartialEq, Clone, Copy, serde::Serialize)]
 #[serde(rename_all_fields = "camelCase")]
-enum Mode {
+pub enum Mode {
     Off,
     On,
 }
@@ -44,6 +44,7 @@ pub enum Message {
     RawPowerData(RawPowerData),
     PowerData(PowerData),
     LircEvent(LircEvent),
+    SetMode(Mode),
     Stop,
 }
 
@@ -88,7 +89,7 @@ impl Main {
         let remotes = find_remotes()?;
         log::debug!("remotes {:#?}", remotes);
         let reader = LircReader::new(remotes.lirc_rx_device)?;
-        let ir_in = IrIn::start(tx, reader);
+        let ir_in = IrIn::start(tx.clone(), reader);
         let writer = LircWriter::new(remotes.lirc_tx_device)?;
         let ir_out = IrOut::start(rx_ir, writer, Remotes::new());
 
@@ -102,7 +103,7 @@ impl Main {
             state: state.clone(),
         };
 
-        let web_server = WebServer::start(state)?;
+        let web_server = WebServer::start(state, tx)?;
 
         loop {
             let m = rx.recv()?;
@@ -115,6 +116,7 @@ impl Main {
                 Message::RawPowerData(raw_power_data) => {
                     main.handle_raw_power_data(raw_power_data)?
                 }
+                Message::SetMode(mode) => main.set_mode(mode)?,
             }
         }
 

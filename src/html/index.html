@@ -1,8 +1,51 @@
 <html>
+
 <head>
   <title>UnisonHT</title>
+  <style>
+    :root {
+      color-scheme: dark;
+    }
+  </style>
+  <script type="text/javascript">
+    function handleSetMode(mode) {
+      fetch('/mode', {
+        method: 'POST',
+        body: JSON.stringify({ mode })
+      });
+    }
+
+    async function refreshState() {
+      try {
+        const resp = await fetch('/state');
+        const json = await resp.json();
+
+        const modeElem = document.getElementById('mode');
+        if (modeElem) {
+          modeElem.innerText = json.mode;
+        }
+
+        const powerElem = document.getElementById('power');
+        const rawPowerData = json.rawPowerData;
+        if (powerElem && rawPowerData.length > 0) {
+          const lastReading = rawPowerData[rawPowerData.length - 1];
+          powerElem.innerText = `${lastReading.ch0}, ${lastReading.ch1}`;
+        }
+      } finally {
+        setTimeout(refreshState, 1000);
+      }
+    }
+
+    refreshState();
+  </script>
 </head>
+
 <body>
-  UnisonHT
+  <div>Mode: <span id="mode"></span></div>
+  <div>Power: <span id="power"></span></div>
+
+  <button onclick="handleSetMode('off')">Off</button>
+  <button onclick="handleSetMode('on')">On</button>
 </body>
+
 </html>

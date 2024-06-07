@@ -1,6 +1,8 @@
 pub type Result<T> = std::result::Result<T, MyError>;
 use thiserror::Error;
 
+use crate::Message;
+
 #[derive(Error, Debug)]
 pub enum MyError {
     #[error("spi error: {0}")]
@@ -19,6 +21,8 @@ pub enum MyError {
     RecvError(#[from] std::sync::mpsc::RecvError),
     #[error("system time error: {0}")]
     SystemTimeError(#[from] std::time::SystemTimeError),
+    #[error("send error: {0}")]
+    SendError(#[from] std::sync::mpsc::SendError<Message>),
     #[error("generic error: {0}")]
     GenericError(String),
 }
