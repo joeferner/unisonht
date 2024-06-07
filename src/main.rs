@@ -19,7 +19,7 @@ use my_error::MyError;
 use power::{PowerData, RawPowerData};
 use remotes::DecodeResult;
 use rppal::gpio::Gpio;
-use serde::Serialize;
+use serde;
 
 mod ioctl;
 mod ir_in;
@@ -33,7 +33,8 @@ mod remotes;
 mod utils;
 mod web_server;
 
-#[derive(Debug, Eq, PartialEq, Clone, Copy)]
+#[derive(Debug, Eq, PartialEq, Clone, Copy, serde::Serialize)]
+#[serde(rename_all_fields = "camelCase")]
 enum Mode {
     Off,
     On,
@@ -46,7 +47,6 @@ pub enum Message {
     Stop,
 }
 
-#[derive(Serialize)]
 pub struct AppState {
     mode: Mode,
     raw_power_data: CircularBuffer<20, RawPowerData>,

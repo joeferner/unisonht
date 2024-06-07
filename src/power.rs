@@ -6,6 +6,7 @@ use crate::Message;
 use std::sync::mpsc::{self};
 use std::thread::{self, JoinHandle};
 use std::time::Duration;
+use serde;
 
 const RUNNING_MAX_WINDOW: usize = 100;
 
@@ -22,7 +23,7 @@ fn state_changed(prev: &Option<State>, new_state: &State) -> bool {
     };
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, serde::Serialize)]
 pub struct RawPowerData {
     pub ch0: f64,
     pub ch1: f64,

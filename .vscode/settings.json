@@ -1,5 +1,6 @@
 {
   "cSpell.words": [
+    "alloc",
     "Denon",
     "DEVNAME",
     "Errno",
@@ -18,6 +19,7 @@
     "RDONLY",
     "roboto",
     "rppal",
+    "serde",
     "stddev",
     "thiserror",
     "uevent",
